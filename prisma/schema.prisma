@@ -23,6 +23,7 @@ model User {
 
   wallets       Wallet[]
   goals         Goal[]
+  categories    Category[]
 }
 
 model Session {
@@ -86,6 +87,8 @@ model Category {
   icon         String?
   color        String?
   type         TransactionType
+  userId       String?
+  user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
   createdAt    DateTime        @default(now())
 }

@@ -30,6 +30,7 @@ export type CategoryMinAggregateOutputType = {
   icon: string | null
   color: string | null
   type: $Enums.TransactionType | null
+  userId: string | null
   createdAt: Date | null
 }
 
@@ -39,6 +40,7 @@ export type CategoryMaxAggregateOutputType = {
   icon: string | null
   color: string | null
   type: $Enums.TransactionType | null
+  userId: string | null
   createdAt: Date | null
 }
 
@@ -48,6 +50,7 @@ export type CategoryCountAggregateOutputType = {
   icon: number
   color: number
   type: number
+  userId: number
   createdAt: number
   _all: number
 }
@@ -59,6 +62,7 @@ export type CategoryMinAggregateInputType = {
   icon?: true
   color?: true
   type?: true
+  userId?: true
   createdAt?: true
 }
 
@@ -68,6 +72,7 @@ export type CategoryMaxAggregateInputType = {
   icon?: true
   color?: true
   type?: true
+  userId?: true
   createdAt?: true
 }
 
@@ -77,6 +82,7 @@ export type CategoryCountAggregateInputType = {
   icon?: true
   color?: true
   type?: true
+  userId?: true
   createdAt?: true
   _all?: true
 }
@@ -159,6 +165,7 @@ export type CategoryGroupByOutputType = {
   icon: string | null
   color: string | null
   type: $Enums.TransactionType
+  userId: string | null
   createdAt: Date
   _count: CategoryCountAggregateOutputType | null
   _min: CategoryMinAggregateOutputType | null
@@ -189,7 +196,9 @@ export type CategoryWhereInput = {
   icon?: Prisma.StringNullableFilter<"Category"> | string | null
   color?: Prisma.StringNullableFilter<"Category"> | string | null
   type?: Prisma.EnumTransactionTypeFilter<"Category"> | $Enums.TransactionType
+  userId?: Prisma.StringNullableFilter<"Category"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Category"> | Date | string
+  user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   transactions?: Prisma.TransactionListRelationFilter
 }
 
@@ -199,7 +208,9 @@ export type CategoryOrderByWithRelationInput = {
   icon?: Prisma.SortOrderInput | Prisma.SortOrder
   color?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
+  userId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  user?: Prisma.UserOrderByWithRelationInput
   transactions?: Prisma.TransactionOrderByRelationAggregateInput
 }
 
@@ -212,7 +223,9 @@ export type CategoryWhereUniqueInput = Prisma.AtLeast<{
   icon?: Prisma.StringNullableFilter<"Category"> | string | null
   color?: Prisma.StringNullableFilter<"Category"> | string | null
   type?: Prisma.EnumTransactionTypeFilter<"Category"> | $Enums.TransactionType
+  userId?: Prisma.StringNullableFilter<"Category"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Category"> | Date | string
+  user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   transactions?: Prisma.TransactionListRelationFilter
 }, "id">
 
@@ -222,6 +235,7 @@ export type CategoryOrderByWithAggregationInput = {
   icon?: Prisma.SortOrderInput | Prisma.SortOrder
   color?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
+  userId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.CategoryCountOrderByAggregateInput
   _max?: Prisma.CategoryMaxOrderByAggregateInput
@@ -237,6 +251,7 @@ export type CategoryScalarWhereWithAggregatesInput = {
   icon?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
   color?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
   type?: Prisma.EnumTransactionTypeWithAggregatesFilter<"Category"> | $Enums.TransactionType
+  userId?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Category"> | Date | string
 }
 
@@ -247,6 +262,7 @@ export type CategoryCreateInput = {
   color?: string | null
   type: $Enums.TransactionType
   createdAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutCategoriesInput
   transactions?: Prisma.TransactionCreateNestedManyWithoutCategoryInput
 }
 
@@ -256,6 +272,7 @@ export type CategoryUncheckedCreateInput = {
   icon?: string | null
   color?: string | null
   type: $Enums.TransactionType
+  userId?: string | null
   createdAt?: Date | string
   transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutCategoryInput
 }
@@ -267,6 +284,7 @@ export type CategoryUpdateInput = {
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutCategoriesNestedInput
   transactions?: Prisma.TransactionUpdateManyWithoutCategoryNestedInput
 }
 
@@ -276,6 +294,7 @@ export type CategoryUncheckedUpdateInput = {
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   transactions?: Prisma.TransactionUncheckedUpdateManyWithoutCategoryNestedInput
 }
@@ -286,6 +305,7 @@ export type CategoryCreateManyInput = {
   icon?: string | null
   color?: string | null
   type: $Enums.TransactionType
+  userId?: string | null
   createdAt?: Date | string
 }
 
@@ -304,7 +324,18 @@ export type CategoryUncheckedUpdateManyInput = {
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CategoryListRelationFilter = {
+  every?: Prisma.CategoryWhereInput
+  some?: Prisma.CategoryWhereInput
+  none?: Prisma.CategoryWhereInput
+}
+
+export type CategoryOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type CategoryCountOrderByAggregateInput = {
@@ -313,6 +344,7 @@ export type CategoryCountOrderByAggregateInput = {
   icon?: Prisma.SortOrder
   color?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -322,6 +354,7 @@ export type CategoryMaxOrderByAggregateInput = {
   icon?: Prisma.SortOrder
   color?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -331,12 +364,55 @@ export type CategoryMinOrderByAggregateInput = {
   icon?: Prisma.SortOrder
   color?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type CategoryNullableScalarRelationFilter = {
   is?: Prisma.CategoryWhereInput | null
   isNot?: Prisma.CategoryWhereInput | null
+}
+
+export type CategoryCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.CategoryCreateWithoutUserInput, Prisma.CategoryUncheckedCreateWithoutUserInput> | Prisma.CategoryCreateWithoutUserInput[] | Prisma.CategoryUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.CategoryCreateOrConnectWithoutUserInput | Prisma.CategoryCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.CategoryCreateManyUserInputEnvelope
+  connect?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+}
+
+export type CategoryUncheckedCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.CategoryCreateWithoutUserInput, Prisma.CategoryUncheckedCreateWithoutUserInput> | Prisma.CategoryCreateWithoutUserInput[] | Prisma.CategoryUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.CategoryCreateOrConnectWithoutUserInput | Prisma.CategoryCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.CategoryCreateManyUserInputEnvelope
+  connect?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+}
+
+export type CategoryUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.CategoryCreateWithoutUserInput, Prisma.CategoryUncheckedCreateWithoutUserInput> | Prisma.CategoryCreateWithoutUserInput[] | Prisma.CategoryUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.CategoryCreateOrConnectWithoutUserInput | Prisma.CategoryCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.CategoryUpsertWithWhereUniqueWithoutUserInput | Prisma.CategoryUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.CategoryCreateManyUserInputEnvelope
+  set?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+  disconnect?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+  delete?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+  connect?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+  update?: Prisma.CategoryUpdateWithWhereUniqueWithoutUserInput | Prisma.CategoryUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.CategoryUpdateManyWithWhereWithoutUserInput | Prisma.CategoryUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.CategoryScalarWhereInput | Prisma.CategoryScalarWhereInput[]
+}
+
+export type CategoryUncheckedUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.CategoryCreateWithoutUserInput, Prisma.CategoryUncheckedCreateWithoutUserInput> | Prisma.CategoryCreateWithoutUserInput[] | Prisma.CategoryUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.CategoryCreateOrConnectWithoutUserInput | Prisma.CategoryCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.CategoryUpsertWithWhereUniqueWithoutUserInput | Prisma.CategoryUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.CategoryCreateManyUserInputEnvelope
+  set?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+  disconnect?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+  delete?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+  connect?: Prisma.CategoryWhereUniqueInput | Prisma.CategoryWhereUniqueInput[]
+  update?: Prisma.CategoryUpdateWithWhereUniqueWithoutUserInput | Prisma.CategoryUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.CategoryUpdateManyWithWhereWithoutUserInput | Prisma.CategoryUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.CategoryScalarWhereInput | Prisma.CategoryScalarWhereInput[]
 }
 
 export type EnumTransactionTypeFieldUpdateOperationsInput = {
@@ -359,6 +435,65 @@ export type CategoryUpdateOneWithoutTransactionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CategoryUpdateToOneWithWhereWithoutTransactionsInput, Prisma.CategoryUpdateWithoutTransactionsInput>, Prisma.CategoryUncheckedUpdateWithoutTransactionsInput>
 }
 
+export type CategoryCreateWithoutUserInput = {
+  id?: string
+  name: string
+  icon?: string | null
+  color?: string | null
+  type: $Enums.TransactionType
+  createdAt?: Date | string
+  transactions?: Prisma.TransactionCreateNestedManyWithoutCategoryInput
+}
+
+export type CategoryUncheckedCreateWithoutUserInput = {
+  id?: string
+  name: string
+  icon?: string | null
+  color?: string | null
+  type: $Enums.TransactionType
+  createdAt?: Date | string
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutCategoryInput
+}
+
+export type CategoryCreateOrConnectWithoutUserInput = {
+  where: Prisma.CategoryWhereUniqueInput
+  create: Prisma.XOR<Prisma.CategoryCreateWithoutUserInput, Prisma.CategoryUncheckedCreateWithoutUserInput>
+}
+
+export type CategoryCreateManyUserInputEnvelope = {
+  data: Prisma.CategoryCreateManyUserInput | Prisma.CategoryCreateManyUserInput[]
+  skipDuplicates?: boolean
+}
+
+export type CategoryUpsertWithWhereUniqueWithoutUserInput = {
+  where: Prisma.CategoryWhereUniqueInput
+  update: Prisma.XOR<Prisma.CategoryUpdateWithoutUserInput, Prisma.CategoryUncheckedUpdateWithoutUserInput>
+  create: Prisma.XOR<Prisma.CategoryCreateWithoutUserInput, Prisma.CategoryUncheckedCreateWithoutUserInput>
+}
+
+export type CategoryUpdateWithWhereUniqueWithoutUserInput = {
+  where: Prisma.CategoryWhereUniqueInput
+  data: Prisma.XOR<Prisma.CategoryUpdateWithoutUserInput, Prisma.CategoryUncheckedUpdateWithoutUserInput>
+}
+
+export type CategoryUpdateManyWithWhereWithoutUserInput = {
+  where: Prisma.CategoryScalarWhereInput
+  data: Prisma.XOR<Prisma.CategoryUpdateManyMutationInput, Prisma.CategoryUncheckedUpdateManyWithoutUserInput>
+}
+
+export type CategoryScalarWhereInput = {
+  AND?: Prisma.CategoryScalarWhereInput | Prisma.CategoryScalarWhereInput[]
+  OR?: Prisma.CategoryScalarWhereInput[]
+  NOT?: Prisma.CategoryScalarWhereInput | Prisma.CategoryScalarWhereInput[]
+  id?: Prisma.StringFilter<"Category"> | string
+  name?: Prisma.StringFilter<"Category"> | string
+  icon?: Prisma.StringNullableFilter<"Category"> | string | null
+  color?: Prisma.StringNullableFilter<"Category"> | string | null
+  type?: Prisma.EnumTransactionTypeFilter<"Category"> | $Enums.TransactionType
+  userId?: Prisma.StringNullableFilter<"Category"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Category"> | Date | string
+}
+
 export type CategoryCreateWithoutTransactionsInput = {
   id?: string
   name: string
@@ -366,6 +501,7 @@ export type CategoryCreateWithoutTransactionsInput = {
   color?: string | null
   type: $Enums.TransactionType
   createdAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutCategoriesInput
 }
 
 export type CategoryUncheckedCreateWithoutTransactionsInput = {
@@ -374,6 +510,7 @@ export type CategoryUncheckedCreateWithoutTransactionsInput = {
   icon?: string | null
   color?: string | null
   type: $Enums.TransactionType
+  userId?: string | null
   createdAt?: Date | string
 }
 
@@ -400,9 +537,49 @@ export type CategoryUpdateWithoutTransactionsInput = {
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutCategoriesNestedInput
 }
 
 export type CategoryUncheckedUpdateWithoutTransactionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CategoryCreateManyUserInput = {
+  id?: string
+  name: string
+  icon?: string | null
+  color?: string | null
+  type: $Enums.TransactionType
+  createdAt?: Date | string
+}
+
+export type CategoryUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  transactions?: Prisma.TransactionUpdateManyWithoutCategoryNestedInput
+}
+
+export type CategoryUncheckedUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutCategoryNestedInput
+}
+
+export type CategoryUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -448,7 +625,9 @@ export type CategorySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   icon?: boolean
   color?: boolean
   type?: boolean
+  userId?: boolean
   createdAt?: boolean
+  user?: boolean | Prisma.Category$userArgs<ExtArgs>
   transactions?: boolean | Prisma.Category$transactionsArgs<ExtArgs>
   _count?: boolean | Prisma.CategoryCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["category"]>
@@ -459,7 +638,9 @@ export type CategorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   icon?: boolean
   color?: boolean
   type?: boolean
+  userId?: boolean
   createdAt?: boolean
+  user?: boolean | Prisma.Category$userArgs<ExtArgs>
 }, ExtArgs["result"]["category"]>
 
 export type CategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -468,7 +649,9 @@ export type CategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   icon?: boolean
   color?: boolean
   type?: boolean
+  userId?: boolean
   createdAt?: boolean
+  user?: boolean | Prisma.Category$userArgs<ExtArgs>
 }, ExtArgs["result"]["category"]>
 
 export type CategorySelectScalar = {
@@ -477,20 +660,27 @@ export type CategorySelectScalar = {
   icon?: boolean
   color?: boolean
   type?: boolean
+  userId?: boolean
   createdAt?: boolean
 }
 
-export type CategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "icon" | "color" | "type" | "createdAt", ExtArgs["result"]["category"]>
+export type CategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "icon" | "color" | "type" | "userId" | "createdAt", ExtArgs["result"]["category"]>
 export type CategoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user?: boolean | Prisma.Category$userArgs<ExtArgs>
   transactions?: boolean | Prisma.Category$transactionsArgs<ExtArgs>
   _count?: boolean | Prisma.CategoryCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type CategoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type CategoryIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type CategoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user?: boolean | Prisma.Category$userArgs<ExtArgs>
+}
+export type CategoryIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user?: boolean | Prisma.Category$userArgs<ExtArgs>
+}
 
 export type $CategoryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Category"
   objects: {
+    user: Prisma.$UserPayload<ExtArgs> | null
     transactions: Prisma.$TransactionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -499,6 +689,7 @@ export type $CategoryPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     icon: string | null
     color: string | null
     type: $Enums.TransactionType
+    userId: string | null
     createdAt: Date
   }, ExtArgs["result"]["category"]>
   composites: {}
@@ -894,6 +1085,7 @@ readonly fields: CategoryFieldRefs;
  */
 export interface Prisma__CategoryClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  user<T extends Prisma.Category$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Category$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   transactions<T extends Prisma.Category$transactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Category$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -929,6 +1121,7 @@ export interface CategoryFieldRefs {
   readonly icon: Prisma.FieldRef<"Category", 'String'>
   readonly color: Prisma.FieldRef<"Category", 'String'>
   readonly type: Prisma.FieldRef<"Category", 'TransactionType'>
+  readonly userId: Prisma.FieldRef<"Category", 'String'>
   readonly createdAt: Prisma.FieldRef<"Category", 'DateTime'>
 }
     
@@ -1184,6 +1377,10 @@ export type CategoryCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extens
    */
   data: Prisma.CategoryCreateManyInput | Prisma.CategoryCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CategoryIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1254,6 +1451,10 @@ export type CategoryUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extens
    * Limit how many Categories to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CategoryIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1320,6 +1521,25 @@ export type CategoryDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Limit how many Categories to delete.
    */
   limit?: number
+}
+
+/**
+ * Category.user
+ */
+export type Category$userArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**

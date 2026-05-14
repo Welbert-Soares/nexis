@@ -3,13 +3,14 @@ import { useForm } from '@tanstack/react-form'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Drawer } from 'vaul'
-import { Check, Trash2, Wallet } from 'lucide-react'
+import { Check, Trash2, Wallet, Plus } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '#/lib/utils'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { getCategories } from '#/server/services/category.service'
 import { addTransaction, editTransaction, removeTransaction } from '#/server/services/transaction.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
+import { CategorySheet, type EditableCategory } from '#/components/categories/category-sheet'
 
 type TransactionType = 'EXPENSE' | 'INCOME'
 
@@ -45,6 +46,8 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
   const [cents, setCents] = useState(() => Math.round((transaction?.amount ?? 0) * 100))
   const [saved, setSaved] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [categorySheetOpen, setCategorySheetOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<EditableCategory | undefined>()
 
   const { data: wallets = [] } = useQuery({
     queryKey: ['wallets'],
@@ -146,6 +149,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
   const canSubmit = hasWallets && !isBusy
 
   return (
+    <>
     <Drawer.Root open={open} onClose={handleClose}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={handleClose} />
@@ -257,25 +261,47 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
 
                 {/* Categorias */}
                 <div className="space-y-2">
-                  <p className="text-xs text-zinc-500">Categoria</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-zinc-500">Categoria</p>
+                    <button
+                      type="button"
+                      onClick={() => { setEditingCategory(undefined); setCategorySheetOpen(true) }}
+                      className="flex items-center gap-1 text-xs text-zinc-600 active:text-zinc-400 transition-colors"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Nova
+                    </button>
+                  </div>
                   <form.Field name="categoryId">
                     {(field) => (
                       <div className="flex gap-2 overflow-x-auto pb-1">
-                        {categories.map((cat: { id: string; name: string }) => (
-                          <button
-                            key={cat.id}
-                            type="button"
-                            onClick={() => field.handleChange(field.state.value === cat.id ? '' : cat.id)}
-                            className={cn(
-                              'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                              field.state.value === cat.id
-                                ? 'bg-zinc-100 text-zinc-900'
-                                : 'bg-zinc-800 text-zinc-400',
-                            )}
-                          >
-                            {cat.name}
-                          </button>
-                        ))}
+                        {categories.map((cat: { id: string; name: string; color: string | null; userId: string | null }) => {
+                          const isSelected = field.state.value === cat.id
+                          const color = cat.color ?? '#71717a'
+                          return (
+                            <button
+                              key={cat.id}
+                              type="button"
+                              onClick={() => {
+                                if (isSelected) {
+                                  field.handleChange('')
+                                } else if (cat.userId) {
+                                  setEditingCategory({ id: cat.id, name: cat.name, color, type, userId: cat.userId })
+                                  field.handleChange(cat.id)
+                                } else {
+                                  field.handleChange(cat.id)
+                                }
+                              }}
+                              className={cn(
+                                'shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                                isSelected ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800 text-zinc-400',
+                              )}
+                            >
+                              <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: isSelected ? '#18181b' : color }} />
+                              {cat.name}
+                            </button>
+                          )
+                        })}
                       </div>
                     )}
                   </form.Field>
@@ -342,6 +368,14 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
+
+    <CategorySheet
+      open={categorySheetOpen}
+      category={editingCategory}
+      defaultType={type}
+      onClose={() => { setCategorySheetOpen(false); setEditingCategory(undefined) }}
+    />
+    </>
   )
 }
 
