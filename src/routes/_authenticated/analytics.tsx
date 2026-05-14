@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { getAnalytics } from '#/server/services/analytics.service'
+import { getUserGoals } from '#/server/services/goal.service'
 import { fadeUp, stagger } from '#/lib/motion'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 import { cn } from '#/lib/utils'
@@ -9,6 +10,7 @@ import { cn } from '#/lib/utils'
 export const Route = createFileRoute('/_authenticated/analytics')({
   loader: ({ context: { queryClient } }) => {
     queryClient.prefetchQuery({ queryKey: ['analytics'], queryFn: () => getAnalytics() })
+    queryClient.prefetchQuery({ queryKey: ['goals'], queryFn: () => getUserGoals() })
   },
   component: AnalyticsPage,
 })
@@ -21,8 +23,16 @@ function AnalyticsPage() {
     queryFn: () => getAnalytics(),
   })
 
+  const { data: goals = [], isLoading: goalsLoading } = useQuery({
+    queryKey: ['goals'],
+    queryFn: () => getUserGoals(),
+  })
+
   async function handleRefresh() {
-    await queryClient.invalidateQueries({ queryKey: ['analytics'] })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['analytics'] }),
+      queryClient.invalidateQueries({ queryKey: ['goals'] }),
+    ])
   }
 
   const income = data?.monthly.income ?? 0
@@ -66,7 +76,15 @@ function AnalyticsPage() {
             </motion.section>
           )}
 
-          {isLoading && <AnalyticsSkeleton />}
+          {/* Metas */}
+          {!goalsLoading && goals.length > 0 && (
+            <motion.section variants={fadeUp} className="space-y-3">
+              <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">Metas</h2>
+              <GoalsList goals={goals as Goal[]} />
+            </motion.section>
+          )}
+
+          {(isLoading || goalsLoading) && <AnalyticsSkeleton />}
         </motion.div>
       </PullToRefresh>
     </div>
@@ -162,6 +180,55 @@ function CategoryBreakdown({ items }: { items: CategoryItem[] }) {
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+type Goal = {
+  id: string
+  name: string
+  targetAmount: number
+  currentAmount: number
+  deadline: Date | null
+  color: string | null
+}
+
+function GoalsList({ goals }: { goals: Goal[] }) {
+  return (
+    <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
+      {goals.map((g) => {
+        const progress = g.targetAmount > 0
+          ? Math.min(Math.round((g.currentAmount / g.targetAmount) * 100), 100)
+          : 0
+        const done = progress >= 100
+        const color = g.color ?? '#3b82f6'
+
+        return (
+          <div key={g.id} className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+                <span className="truncate text-xs text-zinc-300">{g.name}</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-zinc-600">{fmt(g.currentAmount)}</span>
+                <span className={cn('text-xs font-semibold tabular-nums', done ? 'text-emerald-400' : 'text-zinc-400')}>
+                  {progress}%
+                </span>
+              </div>
+            </div>
+            <div className="h-1 w-full rounded-full bg-zinc-800">
+              <motion.div
+                className="h-1 rounded-full"
+                style={{ backgroundColor: color }}
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
