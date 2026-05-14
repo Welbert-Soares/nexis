@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { TrendingDown, TrendingUp } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { getDashboard } from '#/server/services/dashboard.service'
 import { cn } from '#/lib/utils'
+import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardPage,
@@ -19,62 +21,69 @@ function DashboardPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-    <div className="space-y-6 px-4 pt-10 pb-4">
-      {/* Header */}
-      <header className="space-y-1">
-        <p className="text-sm text-zinc-500">Olá, {firstName}</p>
-        {isLoading ? (
-          <div className="h-10 w-40 animate-pulse rounded-lg bg-zinc-800" />
-        ) : (
-          <h1 className="text-4xl font-bold tabular-nums text-white">
-            {fmt(data?.totalBalance ?? 0)}
-          </h1>
-        )}
-        <p className="text-xs text-zinc-600">Saldo total · todas as carteiras</p>
-      </header>
+      <motion.div
+        className="space-y-6 px-4 pt-10 pb-4"
+        variants={stagger}
+        initial="hidden"
+        animate="show"
+      >
+        {/* Header */}
+        <motion.header variants={fadeUp} className="space-y-1">
+          <p className="text-sm text-zinc-500">Olá, {firstName}</p>
+          {isLoading ? (
+            <div className="h-10 w-40 animate-pulse rounded-lg bg-zinc-800" />
+          ) : (
+            <h1 className="text-4xl font-bold tabular-nums text-white">
+              {fmt(data?.totalBalance ?? 0)}
+            </h1>
+          )}
+          <p className="text-xs text-zinc-600">Saldo total · todas as carteiras</p>
+        </motion.header>
 
-      {/* Resumo mensal */}
-      <section className="grid grid-cols-2 gap-3">
-        <SummaryCard
-          label="Receitas"
-          value={data?.monthly.income ?? 0}
-          icon={<TrendingUp className="h-4 w-4 text-emerald-400" />}
-          color="text-emerald-400"
-          loading={isLoading}
-        />
-        <SummaryCard
-          label="Despesas"
-          value={data?.monthly.expenses ?? 0}
-          icon={<TrendingDown className="h-4 w-4 text-red-400" />}
-          color="text-red-400"
-          loading={isLoading}
-        />
-      </section>
+        {/* Resumo mensal */}
+        <motion.section variants={fadeUp} className="grid grid-cols-2 gap-3">
+          <SummaryCard
+            label="Receitas"
+            value={data?.monthly.income ?? 0}
+            icon={<TrendingUp className="h-4 w-4 text-emerald-400" />}
+            color="text-emerald-400"
+            loading={isLoading}
+          />
+          <SummaryCard
+            label="Despesas"
+            value={data?.monthly.expenses ?? 0}
+            icon={<TrendingDown className="h-4 w-4 text-red-400" />}
+            color="text-red-400"
+            loading={isLoading}
+          />
+        </motion.section>
 
-      {/* Transações recentes */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">
-            Recentes
-          </h2>
-          <Link to="/transactions" className="text-xs text-zinc-500 active:text-zinc-300">
-            Ver todas
-          </Link>
-        </div>
-
-        {isLoading ? (
-          <TransactionsSkeleton />
-        ) : !data?.recent.length ? (
-          <EmptyTransactions />
-        ) : (
-          <div className="space-y-1">
-            {data.recent.map((t) => (
-              <TransactionRow key={t.id} transaction={t} />
-            ))}
+        {/* Transações recentes */}
+        <motion.section variants={fadeUp} className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">
+              Recentes
+            </h2>
+            <Link to="/transactions" className="text-xs text-zinc-500 active:text-zinc-300">
+              Ver todas
+            </Link>
           </div>
-        )}
-      </section>
-    </div>
+
+          {isLoading ? (
+            <TransactionsSkeleton />
+          ) : !data?.recent.length ? (
+            <EmptyTransactions />
+          ) : (
+            <motion.div variants={stagger} className="space-y-1">
+              {data.recent.map((t) => (
+                <motion.div key={t.id} variants={scaleIn}>
+                  <TransactionRow transaction={t} />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </motion.section>
+      </motion.div>
     </div>
   )
 }

@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Plus, Target } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { cn } from '#/lib/utils'
+import { fadeUp, stagger } from '#/lib/motion'
 import { getUserGoals } from '#/server/services/goal.service'
 import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
 
@@ -51,9 +53,14 @@ function GoalsPage() {
   return (
     <>
       <div className="flex h-full flex-col pt-10">
-      <div className="space-y-6 px-4 overflow-y-auto flex-1">
+      <motion.div
+        className="space-y-6 px-4 overflow-y-auto flex-1"
+        variants={stagger}
+        initial="hidden"
+        animate="show"
+      >
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <motion.div variants={fadeUp} className="flex items-start justify-between">
           <div className="space-y-1">
             <p className="text-sm text-zinc-500">Total guardado</p>
             <p className="text-3xl font-bold tabular-nums text-white">{fmt(totalSaved)}</p>
@@ -67,7 +74,7 @@ function GoalsPage() {
           >
             <Plus className="h-5 w-5 text-zinc-300" />
           </button>
-        </div>
+        </motion.div>
 
         {/* Lista */}
         {isLoading ? (
@@ -75,13 +82,15 @@ function GoalsPage() {
         ) : goals.length === 0 ? (
           <EmptyState onAdd={() => setSheetOpen(true)} />
         ) : (
-          <div className="space-y-3 pb-4">
+          <motion.div variants={stagger} className="space-y-3 pb-4">
             {(goals as Goal[]).map((g) => (
-              <GoalCard key={g.id} goal={g} onTap={() => handleEdit(g)} />
+              <motion.div key={g.id} variants={fadeUp}>
+                <GoalCard goal={g} onTap={() => handleEdit(g)} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
       </div>
 
       <GoalSheet open={sheetOpen} goal={editing} onClose={handleClose} />
@@ -113,9 +122,12 @@ function GoalCard({ goal: g, onTap }: { goal: Goal; onTap: () => void }) {
 
       {/* Barra de progresso */}
       <div className="h-1.5 w-full rounded-full bg-zinc-800">
-        <div
-          className="h-1.5 rounded-full transition-all"
-          style={{ width: `${pct}%`, backgroundColor: color }}
+        <motion.div
+          className="h-1.5 rounded-full"
+          style={{ backgroundColor: color }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
         />
       </div>
 

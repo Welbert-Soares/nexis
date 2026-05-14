@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Plus, Wallet, TrendingUp, Banknote, PiggyBank, CreditCard } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { NewWalletSheet } from '#/components/wallets/new-wallet-sheet'
 import { cn } from '#/lib/utils'
+import { fadeUp, stagger } from '#/lib/motion'
 
 export const Route = createFileRoute('/_authenticated/wallets')({
   component: WalletsPage,
@@ -33,9 +35,14 @@ function WalletsPage() {
   return (
     <>
       <div className="flex h-full flex-col pt-10">
-      <div className="space-y-6 px-4 overflow-y-auto flex-1">
+      <motion.div
+        className="space-y-6 px-4 overflow-y-auto flex-1"
+        variants={stagger}
+        initial="hidden"
+        animate="show"
+      >
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <motion.div variants={fadeUp} className="flex items-start justify-between">
           <div className="space-y-1">
             <p className="text-sm text-zinc-500">Saldo total</p>
             <p className="text-3xl font-bold tabular-nums text-white">
@@ -48,7 +55,7 @@ function WalletsPage() {
           >
             <Plus className="h-5 w-5 text-zinc-300" />
           </button>
-        </div>
+        </motion.div>
 
         {/* Lista */}
         {isLoading ? (
@@ -56,13 +63,14 @@ function WalletsPage() {
         ) : wallets.length === 0 ? (
           <EmptyState onAdd={() => setSheetOpen(true)} />
         ) : (
-          <div className="space-y-3">
+          <motion.div variants={stagger} className="space-y-3">
             {wallets.map((wallet) => {
               const meta = WALLET_META[wallet.type as WalletType]
               const Icon = meta.icon
               return (
-                <div
+                <motion.div
                   key={wallet.id}
+                  variants={fadeUp}
                   className="flex items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4"
                 >
                   <div
@@ -87,12 +95,12 @@ function WalletsPage() {
                   >
                     {formatCurrency(wallet.balance)}
                   </p>
-                </div>
+                </motion.div>
               )
             })}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
       </div>
 
       <NewWalletSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />

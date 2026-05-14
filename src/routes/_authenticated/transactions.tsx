@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
+import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { listTransactions } from '#/server/services/transaction.service'
 import { TransactionSheet, type EditableTransaction } from '#/components/transactions/transaction-sheet'
 
@@ -145,22 +147,32 @@ function TransactionsPage() {
 
         {/* Lista com scroll próprio */}
         <div className="flex-1 overflow-y-auto px-4">
-          {isLoading ? (
-            <ListSkeleton />
-          ) : !transactions.length ? (
-            <EmptyState />
-          ) : (
-            <div className="space-y-5 pb-4">
-              {grouped.map(({ label, items }) => (
-                <div key={label} className="space-y-1">
-                  <p className="mb-2 text-xs font-medium text-zinc-600">{label}</p>
-                  {items.map((t) => (
-                    <TransactionRow key={t.id} transaction={t} onTap={() => handleRowTap(t)} />
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <ListSkeleton />
+            ) : !transactions.length ? (
+              <EmptyState />
+            ) : (
+              <motion.div
+                key={`${year}-${month}-${filter}`}
+                variants={stagger}
+                initial="hidden"
+                animate="show"
+                className="space-y-5 pb-4"
+              >
+                {grouped.map(({ label, items }) => (
+                  <motion.div key={label} variants={fadeUp} className="space-y-1">
+                    <p className="mb-2 text-xs font-medium text-zinc-600">{label}</p>
+                    {items.map((t) => (
+                      <motion.div key={t.id} variants={scaleIn}>
+                        <TransactionRow transaction={t} onTap={() => handleRowTap(t)} />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
