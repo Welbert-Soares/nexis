@@ -1,0 +1,170 @@
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { TrendingDown, TrendingUp } from 'lucide-react'
+import { getDashboard } from '#/server/services/dashboard.service'
+import { cn } from '#/lib/utils'
+
+export const Route = createFileRoute('/_authenticated/dashboard')({
+  component: DashboardPage,
+})
+
+function DashboardPage() {
+  const { session } = Route.useRouteContext()
+  const firstName = session.user.name.split(' ')[0]
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: () => getDashboard(),
+  })
+
+  return (
+    <div className="space-y-6 px-4 pt-10 pb-4">
+      {/* Header */}
+      <header className="space-y-1">
+        <p className="text-sm text-zinc-500">Olá, {firstName}</p>
+        {isLoading ? (
+          <div className="h-10 w-40 animate-pulse rounded-lg bg-zinc-800" />
+        ) : (
+          <h1 className="text-4xl font-bold tabular-nums text-white">
+            {fmt(data?.totalBalance ?? 0)}
+          </h1>
+        )}
+        <p className="text-xs text-zinc-600">Saldo total · todas as carteiras</p>
+      </header>
+
+      {/* Resumo mensal */}
+      <section className="grid grid-cols-2 gap-3">
+        <SummaryCard
+          label="Receitas"
+          value={data?.monthly.income ?? 0}
+          icon={<TrendingUp className="h-4 w-4 text-emerald-400" />}
+          color="text-emerald-400"
+          loading={isLoading}
+        />
+        <SummaryCard
+          label="Despesas"
+          value={data?.monthly.expenses ?? 0}
+          icon={<TrendingDown className="h-4 w-4 text-red-400" />}
+          color="text-red-400"
+          loading={isLoading}
+        />
+      </section>
+
+      {/* Transações recentes */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">
+            Recentes
+          </h2>
+          <Link to="/transactions" className="text-xs text-zinc-500 active:text-zinc-300">
+            Ver todas
+          </Link>
+        </div>
+
+        {isLoading ? (
+          <TransactionsSkeleton />
+        ) : !data?.recent.length ? (
+          <EmptyTransactions />
+        ) : (
+          <div className="space-y-1">
+            {data.recent.map((t) => (
+              <TransactionRow key={t.id} transaction={t} />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}
+
+function SummaryCard({
+  label, value, icon, color, loading,
+}: {
+  label: string
+  value: number
+  icon: React.ReactNode
+  color: string
+  loading: boolean
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
+      <div className="flex items-center gap-2 text-zinc-500">
+        {icon}
+        <span className="text-xs">{label}</span>
+      </div>
+      {loading ? (
+        <div className="h-6 w-24 animate-pulse rounded bg-zinc-800" />
+      ) : (
+        <p className={cn('text-lg font-semibold tabular-nums', color)}>{fmt(value)}</p>
+      )}
+    </div>
+  )
+}
+
+type Transaction = {
+  id: string
+  type: 'INCOME' | 'EXPENSE'
+  amount: number
+  description: string | null
+  date: Date
+  category: { name: string; color: string | null } | null
+  wallet: { name: string; color: string | null }
+}
+
+function TransactionRow({ transaction: t }: { transaction: Transaction }) {
+  const isExpense = t.type === 'EXPENSE'
+  const label = t.description ?? t.category?.name ?? 'Sem descrição'
+  const dot = t.category?.color ?? t.wallet.color ?? '#71717a'
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl px-1 py-2.5">
+      <div
+        className="h-2 w-2 shrink-0 rounded-full"
+        style={{ backgroundColor: dot }}
+      />
+      <div className="flex-1 min-w-0">
+        <p className="truncate text-sm text-white">{label}</p>
+        <p className="text-xs text-zinc-600">
+          {t.wallet.name} · {fmtDate(new Date(t.date))}
+        </p>
+      </div>
+      <p className={cn('tabular-nums text-sm font-medium shrink-0', isExpense ? 'text-red-400' : 'text-emerald-400')}>
+        {isExpense ? '-' : '+'}{fmt(t.amount)}
+      </p>
+    </div>
+  )
+}
+
+function EmptyTransactions() {
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-900/50 py-10 text-center">
+      <p className="text-sm text-zinc-500">Nenhuma transação ainda</p>
+      <p className="text-xs text-zinc-700">Toque em + para adicionar</p>
+    </div>
+  )
+}
+
+function TransactionsSkeleton() {
+  return (
+    <div className="space-y-3">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center gap-3 py-1">
+          <div className="h-2 w-2 rounded-full bg-zinc-800 animate-pulse" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-3.5 w-32 animate-pulse rounded bg-zinc-800" />
+            <div className="h-3 w-20 animate-pulse rounded bg-zinc-800/60" />
+          </div>
+          <div className="h-3.5 w-16 animate-pulse rounded bg-zinc-800" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function fmt(value: number) {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
+
+function fmtDate(date: Date) {
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+}
