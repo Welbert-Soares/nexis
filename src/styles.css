@@ -164,11 +164,6 @@ body,
   min-height: 100dvh;
 }
 
-/* Safe area para iPhones com notch/Dynamic Island */
-body {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-}
 
 body {
   margin: 0;
