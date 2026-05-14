@@ -152,7 +152,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
         <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
           <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
 
-          <div className="overflow-y-auto px-4 pb-8 pt-4">
+          <div className="overflow-y-auto overflow-x-hidden px-4 pb-8 pt-4">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-base font-semibold text-white">
                 {isEdit ? 'Editar transação' : 'Nova transação'}
@@ -247,7 +247,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                         value={field.state.value}
                         max={toDateInput(new Date())}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        className="w-full rounded-xl bg-zinc-800 px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-zinc-600 [color-scheme:dark]"
+                        className="w-full max-w-full box-border rounded-xl bg-zinc-800 px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-zinc-600 [color-scheme:dark]"
                       />
                     </div>
                   )}
