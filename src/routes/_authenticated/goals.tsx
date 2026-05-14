@@ -10,6 +10,8 @@ import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 
 export const Route = createFileRoute('/_authenticated/goals')({
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData({ queryKey: ['goals'], queryFn: () => getUserGoals() }),
   component: GoalsPage,
 })
 
