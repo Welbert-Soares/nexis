@@ -21,13 +21,15 @@ function LoginPage() {
       {/* Hero com vídeo */}
       <div className="relative flex-1 overflow-hidden">
         <video
-          src="/nexis-video.webm"
           autoPlay
           muted
           loop
           playsInline
           className="h-full w-full object-cover"
-        />
+        >
+          <source src="/nexis-video.mp4" type="video/mp4" />
+          <source src="/nexis-video.webm" type="video/webm" />
+        </video>
         {/* Gradiente de fade para o fundo */}
         <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-transparent to-zinc-950" />
       </div>
