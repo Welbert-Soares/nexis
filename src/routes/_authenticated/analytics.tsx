@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Plus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getAnalytics } from '#/server/services/analytics.service'
 import { getUserGoals } from '#/server/services/goal.service'
+import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
 import { fadeUp, stagger } from '#/lib/motion'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 import { cn } from '#/lib/utils'
@@ -17,6 +20,8 @@ export const Route = createFileRoute('/_authenticated/analytics')({
 
 function AnalyticsPage() {
   const queryClient = useQueryClient()
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [editing, setEditing] = useState<EditableGoal | undefined>()
 
   const { data, isLoading } = useQuery({
     queryKey: ['analytics'],
@@ -77,16 +82,35 @@ function AnalyticsPage() {
           )}
 
           {/* Metas */}
-          {!goalsLoading && goals.length > 0 && (
+          {!goalsLoading && (
             <motion.section variants={fadeUp} className="space-y-3">
-              <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">Metas</h2>
-              <GoalsList goals={goals as Goal[]} />
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">Metas</h2>
+                <button
+                  onClick={() => { setEditing(undefined); setSheetOpen(true) }}
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 active:bg-zinc-700 transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5 text-zinc-400" />
+                </button>
+              </div>
+              {goals.length > 0
+                ? <GoalsList goals={goals as Goal[]} onTap={(g) => { setEditing(g); setSheetOpen(true) }} />
+                : <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 py-6 text-center">
+                    <p className="text-xs text-zinc-600">Nenhuma meta ainda</p>
+                  </div>
+              }
             </motion.section>
           )}
 
           {(isLoading || goalsLoading) && <AnalyticsSkeleton />}
         </motion.div>
       </PullToRefresh>
+
+      <GoalSheet
+        open={sheetOpen}
+        goal={editing}
+        onClose={() => { setSheetOpen(false); setEditing(undefined) }}
+      />
     </div>
   )
 }
@@ -193,7 +217,7 @@ type Goal = {
   color: string | null
 }
 
-function GoalsList({ goals }: { goals: Goal[] }) {
+function GoalsList({ goals, onTap }: { goals: Goal[]; onTap: (g: EditableGoal) => void }) {
   return (
     <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
       {goals.map((g) => {
@@ -204,7 +228,11 @@ function GoalsList({ goals }: { goals: Goal[] }) {
         const color = g.color ?? '#3b82f6'
 
         return (
-          <div key={g.id} className="space-y-2">
+          <button
+            key={g.id}
+            onClick={() => onTap({ id: g.id, name: g.name, targetAmount: g.targetAmount, currentAmount: g.currentAmount, deadline: g.deadline ? new Date(g.deadline) : null, color: g.color })}
+            className="w-full space-y-2 text-left"
+          >
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
@@ -226,7 +254,7 @@ function GoalsList({ goals }: { goals: Goal[] }) {
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
             </div>
-          </div>
+          </button>
         )
       })}
     </div>
