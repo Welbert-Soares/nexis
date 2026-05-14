@@ -51,7 +51,7 @@ export function TransferSheet({ open, wallets, onClose }: Props) {
           <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
 
           <div className="overflow-y-auto px-4 pb-8 pt-4">
-            <h2 className="mb-5 text-base font-semibold text-white">Transferir</h2>
+            <Drawer.Title className="mb-5 text-base font-semibold text-white">Transferir</Drawer.Title>
 
             {saved ? (
               <div className="flex flex-col items-center gap-3 py-10">

@@ -154,9 +154,9 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
 
           <div className="overflow-y-auto overflow-x-hidden px-4 pb-8 pt-4">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-white">
+              <Drawer.Title className="text-base font-semibold text-white">
                 {isEdit ? 'Editar transação' : 'Nova transação'}
-              </h2>
+              </Drawer.Title>
               {isEdit && !saved && (
                 <button
                   type="button"

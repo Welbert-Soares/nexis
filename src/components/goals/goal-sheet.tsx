@@ -132,9 +132,9 @@ export function GoalSheet({ open, goal, onClose }: Props) {
 
           <div className="overflow-y-auto px-4 pb-8 pt-4">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-white">
+              <Drawer.Title className="text-base font-semibold text-white">
                 {isEdit ? 'Editar meta' : 'Nova meta'}
-              </h2>
+              </Drawer.Title>
               {isEdit && !saved && (
                 <button
                   type="button"
