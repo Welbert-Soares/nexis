@@ -35,7 +35,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     links: [
       { rel: 'stylesheet', href: appCss },
       { rel: 'manifest', href: '/manifest.json' },
-      { rel: 'apple-touch-icon', href: '/logo-nexis.webp' },
+      { rel: 'apple-touch-icon', href: '/logo-nexis-fundo.webp' },
     ],
   }),
   shellComponent: RootDocument,

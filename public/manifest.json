@@ -9,16 +9,16 @@
   "background_color": "#09090b",
   "icons": [
     {
-      "src": "logo-nexis.webp",
+      "src": "logo-nexis-fundo.webp",
       "type": "image/webp",
       "sizes": "512x512",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "logo-nexis.webp",
+      "src": "logo-nexis-fundo.webp",
       "type": "image/webp",
       "sizes": "192x192",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ],
   "categories": ["finance", "productivity"]
