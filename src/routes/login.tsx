@@ -17,21 +17,23 @@ function LoginPage() {
   }
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-zinc-950">
-      {/* Vídeo cobre toda a tela */}
-      <video
-        src="/nexis-video.webm"
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      {/* Gradiente de fade */}
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/20 via-transparent to-zinc-950" />
+    <div className="flex h-dvh flex-col bg-zinc-950">
+      {/* Hero com vídeo */}
+      <div className="relative flex-1 overflow-hidden">
+        <video
+          src="/nexis-video.webm"
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="h-full w-full object-cover"
+        />
+        {/* Gradiente de fade para o fundo */}
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-transparent to-zinc-950" />
+      </div>
 
-      {/* Conteúdo na parte inferior */}
-      <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-6 px-6 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-2">
+      {/* Conteúdo inferior */}
+      <div className="flex flex-col items-center gap-6 px-6 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-2">
         {/* Logo + subtítulo */}
         <div className="flex flex-col items-center gap-2">
           <img

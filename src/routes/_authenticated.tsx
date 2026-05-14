@@ -13,7 +13,7 @@ export const Route = createFileRoute('/_authenticated')({
 
 function AuthenticatedLayout() {
   return (
-    <div className="flex flex-col bg-zinc-950" style={{ height: '100dvh', paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="flex h-dvh flex-col bg-zinc-950">
       <main className="min-h-0 flex-1">
         <Outlet />
       </main>
