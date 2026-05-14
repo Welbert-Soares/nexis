@@ -3,7 +3,7 @@ import { useForm } from '@tanstack/react-form'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Drawer } from 'vaul'
-import { Check, Trash2, Wallet, Plus } from 'lucide-react'
+import { Check, Trash2, Wallet, Plus, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, TrendingUp } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '#/lib/utils'
 import { getUserWallets } from '#/server/services/wallet.service'
@@ -11,6 +11,11 @@ import { getCategories } from '#/server/services/category.service'
 import { addTransaction, editTransaction, removeTransaction } from '#/server/services/transaction.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
 import { CategorySheet, type EditableCategory } from '#/components/categories/category-sheet'
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag,
+  MoreHorizontal, Briefcase, Laptop, TrendingUp,
+}
 
 type TransactionType = 'EXPENSE' | 'INCOME'
 
@@ -275,9 +280,10 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                   <form.Field name="categoryId">
                     {(field) => (
                       <div className="flex gap-2 overflow-x-auto pb-1">
-                        {categories.map((cat: { id: string; name: string; color: string | null; userId: string | null }) => {
+                        {categories.map((cat: { id: string; name: string; color: string | null; icon: string | null; userId: string | null }) => {
                           const isSelected = field.state.value === cat.id
                           const color = cat.color ?? '#71717a'
+                          const Icon = cat.icon ? ICON_MAP[cat.icon] : null
                           return (
                             <button
                               key={cat.id}
@@ -297,7 +303,10 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                                 isSelected ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800 text-zinc-400',
                               )}
                             >
-                              <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: isSelected ? '#18181b' : color }} />
+                              {Icon
+                                ? <Icon className="h-3 w-3 shrink-0" style={{ color: isSelected ? '#18181b' : color }} strokeWidth={2} />
+                                : <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: isSelected ? '#18181b' : color }} />
+                              }
                               {cat.name}
                             </button>
                           )

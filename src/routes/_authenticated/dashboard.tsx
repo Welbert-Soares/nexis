@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { TrendingDown, TrendingUp } from 'lucide-react'
+import { TrendingDown, TrendingUp, Wallet, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getDashboard } from '#/server/services/dashboard.service'
 import { cn } from '#/lib/utils'
@@ -70,49 +70,60 @@ function DashboardPage() {
           user={session.user}
         />
 
+        {/* Onboarding — sem carteiras */}
+        {!isLoading && !data?.hasWallets && (
+          <motion.section variants={fadeUp}>
+            <OnboardingCard />
+          </motion.section>
+        )}
+
         {/* Resumo mensal */}
-        <motion.section variants={fadeUp} className="grid grid-cols-2 gap-3">
-          <SummaryCard
-            label="Receitas"
-            value={data?.monthly.income ?? 0}
-            icon={<TrendingUp className="h-4 w-4 text-emerald-400" />}
-            color="text-emerald-400"
-            loading={isLoading}
-          />
-          <SummaryCard
-            label="Despesas"
-            value={data?.monthly.expenses ?? 0}
-            icon={<TrendingDown className="h-4 w-4 text-red-400" />}
-            color="text-red-400"
-            loading={isLoading}
-          />
-        </motion.section>
+        {(isLoading || data?.hasWallets) && (
+          <motion.section variants={fadeUp} className="grid grid-cols-2 gap-3">
+            <SummaryCard
+              label="Receitas"
+              value={data?.monthly.income ?? 0}
+              icon={<TrendingUp className="h-4 w-4 text-emerald-400" />}
+              color="text-emerald-400"
+              loading={isLoading}
+            />
+            <SummaryCard
+              label="Despesas"
+              value={data?.monthly.expenses ?? 0}
+              icon={<TrendingDown className="h-4 w-4 text-red-400" />}
+              color="text-red-400"
+              loading={isLoading}
+            />
+          </motion.section>
+        )}
 
         {/* Transações recentes */}
-        <motion.section variants={fadeUp} className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">
-              Recentes
-            </h2>
-            <Link to="/transactions" className="text-xs text-zinc-500 active:text-zinc-300">
-              Ver todas
-            </Link>
-          </div>
+        {(isLoading || data?.hasWallets) && (
+          <motion.section variants={fadeUp} className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">
+                Recentes
+              </h2>
+              <Link to="/transactions" className="text-xs text-zinc-500 active:text-zinc-300">
+                Ver todas
+              </Link>
+            </div>
 
-          {isLoading ? (
-            <TransactionsSkeleton />
-          ) : !data?.recent.length ? (
-            <EmptyTransactions />
-          ) : (
-            <motion.div variants={stagger} className="space-y-1">
-              {data.recent.map((t) => (
-                <motion.div key={t.id} variants={scaleIn}>
-                  <TransactionRow transaction={t} />
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </motion.section>
+            {isLoading ? (
+              <TransactionsSkeleton />
+            ) : !data?.recent.length ? (
+              <EmptyTransactions />
+            ) : (
+              <motion.div variants={stagger} className="space-y-1">
+                {data.recent.map((t) => (
+                  <motion.div key={t.id} variants={scaleIn}>
+                    <TransactionRow transaction={t} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </motion.section>
+        )}
       </motion.div>
       </PullToRefresh>
     </div>
@@ -173,6 +184,45 @@ function TransactionRow({ transaction: t }: { transaction: Transaction }) {
       <p className={cn('tabular-nums text-sm font-medium shrink-0', isExpense ? 'text-red-400' : 'text-emerald-400')}>
         {isExpense ? '-' : '+'}{fmt(t.amount)}
       </p>
+    </div>
+  )
+}
+
+function OnboardingCard() {
+  return (
+    <div className="space-y-3">
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-400/10">
+            <Wallet className="h-5 w-5 text-blue-400" strokeWidth={1.5} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-white">Bem-vindo ao Nexis</p>
+            <p className="text-xs text-zinc-500">Comece criando sua primeira carteira</p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {[
+            { step: '1', text: 'Crie uma carteira (conta corrente, dinheiro...)' },
+            { step: '2', text: 'Registre suas receitas e despesas' },
+            { step: '3', text: 'Acompanhe seu saldo em tempo real' },
+          ].map((s) => (
+            <div key={s.step} className="flex items-center gap-3">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-zinc-400">
+                {s.step}
+              </span>
+              <p className="text-xs text-zinc-500">{s.text}</p>
+            </div>
+          ))}
+        </div>
+        <Link
+          to="/wallets"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-400 py-3 text-sm font-semibold text-white active:bg-blue-500 transition-colors"
+        >
+          Criar carteira
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
     </div>
   )
 }

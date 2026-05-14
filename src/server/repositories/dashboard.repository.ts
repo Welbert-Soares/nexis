@@ -57,6 +57,7 @@ export async function getDashboardData(userId: string) {
 
   return {
     totalBalance,
+    hasWallets: wallets.length > 0,
     monthly: { income, expenses },
     recent: recent.map((t) => ({ ...t, amount: t.amount.toNumber() })),
     categoryBreakdown,
