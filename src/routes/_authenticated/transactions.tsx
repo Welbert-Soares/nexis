@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
@@ -52,6 +52,7 @@ function TransactionsPage() {
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [filter, setFilter] = useState<Filter>('ALL')
+  const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<EditableTransaction | undefined>()
   const queryClient = useQueryClient()
 
@@ -97,7 +98,18 @@ function TransactionsPage() {
     })
   }
 
-  const grouped = groupByDate(transactions as Tx[])
+  const filtered = search.trim()
+    ? (transactions as Tx[]).filter((t) => {
+        const q = search.toLowerCase()
+        return (
+          t.description?.toLowerCase().includes(q) ||
+          t.category?.name.toLowerCase().includes(q) ||
+          t.wallet.name.toLowerCase().includes(q)
+        )
+      })
+    : (transactions as Tx[])
+
+  const grouped = groupByDate(filtered)
   const isCurrent = year === now.getFullYear() && month === now.getMonth() + 1
   const sheetOpen = action === 'new' || !!editing
 
@@ -156,6 +168,23 @@ function TransactionsPage() {
               </button>
             ))}
           </div>
+
+          {/* Busca */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-600" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por descrição, categoria..."
+              className="w-full rounded-xl bg-zinc-800/60 py-2.5 pl-8 pr-8 text-xs text-white placeholder-zinc-600 outline-none focus:ring-1 focus:ring-zinc-600"
+            />
+            {search && (
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+                <X className="h-3.5 w-3.5 text-zinc-500" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Lista com scroll próprio */}
@@ -163,8 +192,8 @@ function TransactionsPage() {
           <AnimatePresence mode="wait">
             {isLoading ? (
               <ListSkeleton />
-            ) : !transactions.length ? (
-              <EmptyState />
+            ) : !filtered.length ? (
+              <EmptyState hasSearch={!!search} />
             ) : (
               <motion.div
                 key={`${year}-${month}-${filter}`}
@@ -220,11 +249,15 @@ function TransactionRow({ transaction: t, onTap }: { transaction: Tx; onTap: () 
   )
 }
 
-function EmptyState() {
+function EmptyState({ hasSearch }: { hasSearch?: boolean }) {
   return (
     <div className="flex flex-col items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-900/50 py-12 text-center">
-      <p className="text-sm text-zinc-500">Nenhuma transação neste período</p>
-      <p className="text-xs text-zinc-700">Toque em + para adicionar</p>
+      <p className="text-sm text-zinc-500">
+        {hasSearch ? 'Nenhum resultado encontrado' : 'Nenhuma transação neste período'}
+      </p>
+      <p className="text-xs text-zinc-700">
+        {hasSearch ? 'Tente outros termos' : 'Toque em + para adicionar'}
+      </p>
     </div>
   )
 }
