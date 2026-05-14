@@ -113,14 +113,22 @@ function WalletsPage() {
                     <p className="truncate text-sm font-medium text-white">{wallet.name}</p>
                     <p className="text-xs text-zinc-500">{meta.label}</p>
                   </div>
-                  <p
-                    className={cn(
-                      'tabular-nums text-sm font-semibold',
-                      wallet.balance >= 0 ? 'text-white' : 'text-red-400',
+                  <div className="text-right">
+                    {wallet.type === 'CREDIT' ? (
+                      <>
+                        <p className={cn('tabular-nums text-sm font-semibold', wallet.balance < 0 ? 'text-red-400' : 'text-white')}>
+                          {formatCurrency(Math.abs(wallet.balance))}
+                        </p>
+                        <p className="text-[10px] text-zinc-600">
+                          {wallet.balance < 0 ? 'fatura' : 'disponível'}
+                        </p>
+                      </>
+                    ) : (
+                      <p className={cn('tabular-nums text-sm font-semibold', wallet.balance >= 0 ? 'text-white' : 'text-red-400')}>
+                        {formatCurrency(wallet.balance)}
+                      </p>
                     )}
-                  >
-                    {formatCurrency(wallet.balance)}
-                  </p>
+                  </div>
                 </motion.button>
               )
             })}
