@@ -102,6 +102,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
             id: transaction!.id,
             type,
             amount,
+            walletId: values.walletId || undefined,
             categoryId: values.categoryId || null,
             description: values.description || null,
             date,

@@ -70,6 +70,7 @@ export async function updateTransaction(
   data: {
     amount: number
     type: 'INCOME' | 'EXPENSE'
+    walletId?: string
     categoryId?: string | null
     description?: string | null
     date?: Date
@@ -80,24 +81,44 @@ export async function updateTransaction(
   })
   if (!old) throw new Error('Transaction not found')
 
+  const newWalletId = data.walletId ?? old.walletId
+  const walletChanged = newWalletId !== old.walletId
+
   const oldDelta = old.type === 'EXPENSE' ? -old.amount.toNumber() : old.amount.toNumber()
   const newDelta = data.type === 'EXPENSE' ? -data.amount : data.amount
-  const balanceDiff = newDelta - oldDelta
+
+  const updateTx = prisma.transaction.update({
+    where: { id },
+    data: {
+      amount: data.amount,
+      type: data.type,
+      walletId: newWalletId,
+      categoryId: data.categoryId ?? null,
+      description: data.description ?? null,
+      ...(data.date ? { date: data.date } : {}),
+    },
+  })
+
+  if (walletChanged) {
+    // Reverte o efeito na carteira antiga e aplica na nova
+    return prisma.$transaction([
+      updateTx,
+      prisma.wallet.update({
+        where: { id: old.walletId },
+        data: { balance: { increment: -oldDelta } },
+      }),
+      prisma.wallet.update({
+        where: { id: newWalletId },
+        data: { balance: { increment: newDelta } },
+      }),
+    ])
+  }
 
   return prisma.$transaction([
-    prisma.transaction.update({
-      where: { id },
-      data: {
-        amount: data.amount,
-        type: data.type,
-        categoryId: data.categoryId ?? null,
-        description: data.description ?? null,
-        ...(data.date ? { date: data.date } : {}),
-      },
-    }),
+    updateTx,
     prisma.wallet.update({
       where: { id: old.walletId },
-      data: { balance: { increment: balanceDiff } },
+      data: { balance: { increment: newDelta - oldDelta } },
     }),
   ])
 }

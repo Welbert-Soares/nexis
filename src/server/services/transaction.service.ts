@@ -37,6 +37,7 @@ const editTransactionSchema = z.object({
   id: z.string(),
   amount: z.number().positive(),
   type: z.enum(['INCOME', 'EXPENSE']),
+  walletId: z.string().optional(),
   categoryId: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   date: z.coerce.date().optional(),
