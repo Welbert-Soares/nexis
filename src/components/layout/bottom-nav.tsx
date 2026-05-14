@@ -48,16 +48,11 @@ function NavLink({
       to={item.to}
       className={cn(
         'flex flex-col items-center gap-1 px-4 py-1 text-xs transition-all active:scale-90 active:opacity-70',
-        active ? 'text-white' : 'text-zinc-600',
+        active ? 'text-zinc-200' : 'text-zinc-600',
       )}
     >
-      <div className={cn(
-        'flex items-center justify-center rounded-full transition-all',
-        active ? 'bg-zinc-800 px-3 py-1' : 'px-3 py-1',
-      )}>
-        <item.icon className="h-5 w-5" strokeWidth={active ? 2 : 1.5} />
-      </div>
-      <span className={cn(active ? 'font-medium' : '')}>{item.label}</span>
+      <item.icon className="h-5 w-5" strokeWidth={active ? 2 : 1.5} />
+      <span>{item.label}</span>
     </Link>
   )
 }
