@@ -12,8 +12,9 @@ import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData({ queryKey: ['dashboard'], queryFn: () => getDashboard() }),
+  loader: ({ context: { queryClient } }) => {
+    queryClient.prefetchQuery({ queryKey: ['dashboard'], queryFn: () => getDashboard() })
+  },
   component: DashboardPage,
 })
 

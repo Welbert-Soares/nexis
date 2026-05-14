@@ -11,8 +11,9 @@ import { cn } from '#/lib/utils'
 import { fadeUp, stagger } from '#/lib/motion'
 
 export const Route = createFileRoute('/_authenticated/wallets')({
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData({ queryKey: ['wallets'], queryFn: () => getUserWallets() }),
+  loader: ({ context: { queryClient } }) => {
+    queryClient.prefetchQuery({ queryKey: ['wallets'], queryFn: () => getUserWallets() })
+  },
   component: WalletsPage,
 })
 

@@ -18,7 +18,7 @@ export const Route = createFileRoute('/_authenticated/transactions')({
   validateSearch: searchSchema,
   loader: ({ context: { queryClient } }) => {
     const now = new Date()
-    return queryClient.ensureQueryData({
+    queryClient.prefetchQuery({
       queryKey: ['transactions', now.getFullYear(), now.getMonth() + 1, 'ALL'],
       queryFn: () => listTransactions({ data: { year: now.getFullYear(), month: now.getMonth() + 1 } }),
     })

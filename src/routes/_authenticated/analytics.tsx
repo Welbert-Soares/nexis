@@ -7,8 +7,9 @@ import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/_authenticated/analytics')({
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData({ queryKey: ['analytics'], queryFn: () => getAnalytics() }),
+  loader: ({ context: { queryClient } }) => {
+    queryClient.prefetchQuery({ queryKey: ['analytics'], queryFn: () => getAnalytics() })
+  },
   component: AnalyticsPage,
 })
 
