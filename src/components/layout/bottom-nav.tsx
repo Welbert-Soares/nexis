@@ -1,12 +1,12 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { LayoutDashboard, List, Plus, Target, Wallet } from 'lucide-react'
+import { BarChart2, LayoutDashboard, List, Plus, Wallet } from 'lucide-react'
 import { cn } from '#/lib/utils'
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Início' },
   { to: '/transactions', icon: List, label: 'Transações' },
   { to: '/wallets', icon: Wallet, label: 'Carteiras' },
-  { to: '/goals', icon: Target, label: 'Metas' },
+  { to: '/analytics', icon: BarChart2, label: 'Análise' },
 ] as const
 
 export function BottomNav() {

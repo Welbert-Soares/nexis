@@ -10,6 +10,7 @@ import { ProfileSheet } from '#/components/profile/profile-sheet'
 import { Avatar } from '#/components/ui/avatar'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 
+
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardPage,
 })
@@ -83,16 +84,6 @@ function DashboardPage() {
             loading={isLoading}
           />
         </motion.section>
-
-        {/* Gastos por categoria */}
-        {!isLoading && !!data?.categoryBreakdown.length && (
-          <motion.section variants={fadeUp} className="space-y-3">
-            <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">
-              Gastos do mês
-            </h2>
-            <CategoryBreakdown items={data.categoryBreakdown} />
-          </motion.section>
-        )}
 
         {/* Transações recentes */}
         <motion.section variants={fadeUp} className="space-y-3">
@@ -209,37 +200,6 @@ function TransactionsSkeleton() {
   )
 }
 
-type CategoryItem = { id: string; name: string; color: string; amount: number }
-
-function CategoryBreakdown({ items }: { items: CategoryItem[] }) {
-  const max = Math.max(...items.map((i) => i.amount))
-  return (
-    <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
-      {items.map((item) => (
-        <div key={item.id} className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className="text-xs text-zinc-400">{item.name}</span>
-            </div>
-            <span className="tabular-nums text-xs font-medium text-zinc-300">
-              {fmt(item.amount)}
-            </span>
-          </div>
-          <div className="h-1 w-full rounded-full bg-zinc-800">
-            <motion.div
-              className="h-1 rounded-full"
-              style={{ backgroundColor: item.color }}
-              initial={{ width: 0 }}
-              animate={{ width: `${(item.amount / max) * 100}%` }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 function fmt(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
