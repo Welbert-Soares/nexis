@@ -242,13 +242,15 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                   {(field) => (
                     <div className="space-y-2">
                       <p className="text-xs text-zinc-500">Data</p>
-                      <input
-                        type="date"
-                        value={field.state.value}
-                        max={toDateInput(new Date())}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        className="w-full max-w-full box-border rounded-xl bg-zinc-800 px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-zinc-600 [color-scheme:dark]"
-                      />
+                      <div className="overflow-hidden rounded-xl bg-zinc-800 focus-within:ring-1 focus-within:ring-zinc-600">
+                        <input
+                          type="date"
+                          value={field.state.value}
+                          max={toDateInput(new Date())}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          className="w-full min-w-0 bg-transparent px-4 py-3 text-sm text-white outline-none [color-scheme:dark]"
+                        />
+                      </div>
                     </div>
                   )}
                 </form.Field>
