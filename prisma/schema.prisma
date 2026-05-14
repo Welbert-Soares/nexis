@@ -94,17 +94,23 @@ model Category {
 }
 
 model Transaction {
-  id          String          @id @default(cuid())
-  amount      Decimal         @db.Decimal(12, 2)
+  id          String              @id @default(cuid())
+  amount      Decimal             @db.Decimal(12, 2)
   type        TransactionType
   description String?
-  date        DateTime        @default(now())
+  date        DateTime            @default(now())
   walletId    String
-  wallet      Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  wallet      Wallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)
   categoryId  String?
-  category    Category?       @relation(fields: [categoryId], references: [id])
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  category    Category?           @relation(fields: [categoryId], references: [id])
+  recurring   Boolean             @default(false)
+  interval    RecurrenceInterval?
+  nextDue     DateTime?
+  parentId    String?
+  parent      Transaction?        @relation("RecurringChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Transaction[]       @relation("RecurringChildren")
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 }
 
 model Goal {
@@ -134,4 +140,11 @@ enum WalletType {
 enum TransactionType {
   INCOME
   EXPENSE
+}
+
+enum RecurrenceInterval {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  YEARLY
 }

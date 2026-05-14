@@ -8,6 +8,7 @@ import {
   getRecentTransactions,
   getTransactionsByMonth,
   updateTransaction,
+  processDueRecurring,
 } from '#/server/repositories/transaction.repository'
 
 async function getSessionOrThrow() {
@@ -23,6 +24,9 @@ const createTransactionSchema = z.object({
   categoryId: z.string().optional(),
   description: z.string().optional(),
   date: z.coerce.date().optional(),
+  recurring: z.boolean().optional(),
+  interval: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'YEARLY']).optional(),
+  nextDue: z.coerce.date().optional(),
 })
 
 export const addTransaction = createServerFn({ method: 'POST' })
@@ -75,4 +79,10 @@ export const listTransactions = createServerFn({ method: 'GET' })
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     return getTransactionsByMonth(session.user.id, data.year, data.month, data.type)
+  })
+
+export const triggerRecurring = createServerFn({ method: 'POST' })
+  .handler(async () => {
+    const session = await getSessionOrThrow()
+    return processDueRecurring(session.user.id)
   })

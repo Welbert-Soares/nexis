@@ -3,7 +3,7 @@ import { useForm } from '@tanstack/react-form'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Drawer } from 'vaul'
-import { Check, Trash2, Wallet, Plus, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, TrendingUp } from 'lucide-react'
+import { Check, Trash2, Wallet, Plus, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, TrendingUp, Repeat2 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '#/lib/utils'
 import { getUserWallets } from '#/server/services/wallet.service'
@@ -35,6 +35,24 @@ interface Props {
   onClose?: () => void
 }
 
+const INTERVALS = [
+  { value: 'WEEKLY', label: 'Semanal' },
+  { value: 'BIWEEKLY', label: 'Quinzenal' },
+  { value: 'MONTHLY', label: 'Mensal' },
+  { value: 'YEARLY', label: 'Anual' },
+] as const
+
+function calcNextDue(from: Date, interval: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'YEARLY') {
+  const d = new Date(from)
+  switch (interval) {
+    case 'WEEKLY':   d.setDate(d.getDate() + 7); break
+    case 'BIWEEKLY': d.setDate(d.getDate() + 14); break
+    case 'MONTHLY':  d.setMonth(d.getMonth() + 1); break
+    case 'YEARLY':   d.setFullYear(d.getFullYear() + 1); break
+  }
+  return d
+}
+
 function toDateInput(d: Date) {
   const date = new Date(d)
   const y = date.getFullYear()
@@ -53,6 +71,8 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [categorySheetOpen, setCategorySheetOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<EditableCategory | undefined>()
+  const [recurring, setRecurring] = useState(false)
+  const [interval, setInterval] = useState<'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'YEARLY'>('MONTHLY')
 
   const { data: wallets = [] } = useQuery({
     queryKey: ['wallets'],
@@ -118,8 +138,17 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
         })
       }
 
+      const nextDue = recurring ? calcNextDue(date, interval) : undefined
       return addTransaction({
-        data: { type, amount, walletId, categoryId: values.categoryId || undefined, description: values.description || undefined, date },
+        data: {
+          type, amount, walletId,
+          categoryId: values.categoryId || undefined,
+          description: values.description || undefined,
+          date,
+          recurring: recurring || undefined,
+          interval: recurring ? interval : undefined,
+          nextDue,
+        },
       })
     },
     onSuccess: () => {
@@ -356,6 +385,42 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                     />
                   )}
                 </form.Field>
+
+                {/* Recorrência — só para novas transações */}
+                {!isEdit && (
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => setRecurring((r) => !r)}
+                      className="flex w-full items-center justify-between rounded-xl bg-zinc-800 px-4 py-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Repeat2 className="h-4 w-4 text-zinc-500" />
+                        <span className="text-sm text-zinc-300">Repetir</span>
+                      </div>
+                      <div className={cn('h-5 w-9 rounded-full transition-colors', recurring ? 'bg-blue-400' : 'bg-zinc-700')}>
+                        <div className={cn('m-0.5 h-4 w-4 rounded-full bg-white transition-transform', recurring ? 'translate-x-4' : 'translate-x-0')} />
+                      </div>
+                    </button>
+                    {recurring && (
+                      <div className="flex gap-2">
+                        {INTERVALS.map((i) => (
+                          <button
+                            key={i.value}
+                            type="button"
+                            onClick={() => setInterval(i.value)}
+                            className={cn(
+                              'flex-1 rounded-full py-1.5 text-xs font-medium transition-colors',
+                              interval === i.value ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800 text-zinc-400',
+                            )}
+                          >
+                            {i.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {saveMutation.isError && (
                   <p className="text-center text-xs text-red-400">

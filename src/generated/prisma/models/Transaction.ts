@@ -42,6 +42,10 @@ export type TransactionMinAggregateOutputType = {
   date: Date | null
   walletId: string | null
   categoryId: string | null
+  recurring: boolean | null
+  interval: $Enums.RecurrenceInterval | null
+  nextDue: Date | null
+  parentId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -54,6 +58,10 @@ export type TransactionMaxAggregateOutputType = {
   date: Date | null
   walletId: string | null
   categoryId: string | null
+  recurring: boolean | null
+  interval: $Enums.RecurrenceInterval | null
+  nextDue: Date | null
+  parentId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -66,6 +74,10 @@ export type TransactionCountAggregateOutputType = {
   date: number
   walletId: number
   categoryId: number
+  recurring: number
+  interval: number
+  nextDue: number
+  parentId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -88,6 +100,10 @@ export type TransactionMinAggregateInputType = {
   date?: true
   walletId?: true
   categoryId?: true
+  recurring?: true
+  interval?: true
+  nextDue?: true
+  parentId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +116,10 @@ export type TransactionMaxAggregateInputType = {
   date?: true
   walletId?: true
   categoryId?: true
+  recurring?: true
+  interval?: true
+  nextDue?: true
+  parentId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -112,6 +132,10 @@ export type TransactionCountAggregateInputType = {
   date?: true
   walletId?: true
   categoryId?: true
+  recurring?: true
+  interval?: true
+  nextDue?: true
+  parentId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -211,6 +235,10 @@ export type TransactionGroupByOutputType = {
   date: Date
   walletId: string
   categoryId: string | null
+  recurring: boolean
+  interval: $Enums.RecurrenceInterval | null
+  nextDue: Date | null
+  parentId: string | null
   createdAt: Date
   updatedAt: Date
   _count: TransactionCountAggregateOutputType | null
@@ -246,10 +274,16 @@ export type TransactionWhereInput = {
   date?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   walletId?: Prisma.StringFilter<"Transaction"> | string
   categoryId?: Prisma.StringNullableFilter<"Transaction"> | string | null
+  recurring?: Prisma.BoolFilter<"Transaction"> | boolean
+  interval?: Prisma.EnumRecurrenceIntervalNullableFilter<"Transaction"> | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
+  parentId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   wallet?: Prisma.XOR<Prisma.WalletScalarRelationFilter, Prisma.WalletWhereInput>
   category?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
+  parent?: Prisma.XOR<Prisma.TransactionNullableScalarRelationFilter, Prisma.TransactionWhereInput> | null
+  children?: Prisma.TransactionListRelationFilter
 }
 
 export type TransactionOrderByWithRelationInput = {
@@ -260,10 +294,16 @@ export type TransactionOrderByWithRelationInput = {
   date?: Prisma.SortOrder
   walletId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  recurring?: Prisma.SortOrder
+  interval?: Prisma.SortOrderInput | Prisma.SortOrder
+  nextDue?: Prisma.SortOrderInput | Prisma.SortOrder
+  parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   wallet?: Prisma.WalletOrderByWithRelationInput
   category?: Prisma.CategoryOrderByWithRelationInput
+  parent?: Prisma.TransactionOrderByWithRelationInput
+  children?: Prisma.TransactionOrderByRelationAggregateInput
 }
 
 export type TransactionWhereUniqueInput = Prisma.AtLeast<{
@@ -277,10 +317,16 @@ export type TransactionWhereUniqueInput = Prisma.AtLeast<{
   date?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   walletId?: Prisma.StringFilter<"Transaction"> | string
   categoryId?: Prisma.StringNullableFilter<"Transaction"> | string | null
+  recurring?: Prisma.BoolFilter<"Transaction"> | boolean
+  interval?: Prisma.EnumRecurrenceIntervalNullableFilter<"Transaction"> | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
+  parentId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   wallet?: Prisma.XOR<Prisma.WalletScalarRelationFilter, Prisma.WalletWhereInput>
   category?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
+  parent?: Prisma.XOR<Prisma.TransactionNullableScalarRelationFilter, Prisma.TransactionWhereInput> | null
+  children?: Prisma.TransactionListRelationFilter
 }, "id">
 
 export type TransactionOrderByWithAggregationInput = {
@@ -291,6 +337,10 @@ export type TransactionOrderByWithAggregationInput = {
   date?: Prisma.SortOrder
   walletId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  recurring?: Prisma.SortOrder
+  interval?: Prisma.SortOrderInput | Prisma.SortOrder
+  nextDue?: Prisma.SortOrderInput | Prisma.SortOrder
+  parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.TransactionCountOrderByAggregateInput
@@ -311,6 +361,10 @@ export type TransactionScalarWhereWithAggregatesInput = {
   date?: Prisma.DateTimeWithAggregatesFilter<"Transaction"> | Date | string
   walletId?: Prisma.StringWithAggregatesFilter<"Transaction"> | string
   categoryId?: Prisma.StringNullableWithAggregatesFilter<"Transaction"> | string | null
+  recurring?: Prisma.BoolWithAggregatesFilter<"Transaction"> | boolean
+  interval?: Prisma.EnumRecurrenceIntervalNullableWithAggregatesFilter<"Transaction"> | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.DateTimeNullableWithAggregatesFilter<"Transaction"> | Date | string | null
+  parentId?: Prisma.StringNullableWithAggregatesFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Transaction"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Transaction"> | Date | string
 }
@@ -321,10 +375,15 @@ export type TransactionCreateInput = {
   type: $Enums.TransactionType
   description?: string | null
   date?: Date | string
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   wallet: Prisma.WalletCreateNestedOneWithoutTransactionsInput
   category?: Prisma.CategoryCreateNestedOneWithoutTransactionsInput
+  parent?: Prisma.TransactionCreateNestedOneWithoutChildrenInput
+  children?: Prisma.TransactionCreateNestedManyWithoutParentInput
 }
 
 export type TransactionUncheckedCreateInput = {
@@ -335,8 +394,13 @@ export type TransactionUncheckedCreateInput = {
   date?: Date | string
   walletId: string
   categoryId?: string | null
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  parentId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  children?: Prisma.TransactionUncheckedCreateNestedManyWithoutParentInput
 }
 
 export type TransactionUpdateInput = {
@@ -345,10 +409,15 @@ export type TransactionUpdateInput = {
   type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   wallet?: Prisma.WalletUpdateOneRequiredWithoutTransactionsNestedInput
   category?: Prisma.CategoryUpdateOneWithoutTransactionsNestedInput
+  parent?: Prisma.TransactionUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.TransactionUpdateManyWithoutParentNestedInput
 }
 
 export type TransactionUncheckedUpdateInput = {
@@ -359,8 +428,13 @@ export type TransactionUncheckedUpdateInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   walletId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  children?: Prisma.TransactionUncheckedUpdateManyWithoutParentNestedInput
 }
 
 export type TransactionCreateManyInput = {
@@ -371,6 +445,10 @@ export type TransactionCreateManyInput = {
   date?: Date | string
   walletId: string
   categoryId?: string | null
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  parentId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -381,6 +459,9 @@ export type TransactionUpdateManyMutationInput = {
   type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -393,6 +474,10 @@ export type TransactionUncheckedUpdateManyInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   walletId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -407,6 +492,11 @@ export type TransactionOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type TransactionNullableScalarRelationFilter = {
+  is?: Prisma.TransactionWhereInput | null
+  isNot?: Prisma.TransactionWhereInput | null
+}
+
 export type TransactionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
@@ -415,6 +505,10 @@ export type TransactionCountOrderByAggregateInput = {
   date?: Prisma.SortOrder
   walletId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  recurring?: Prisma.SortOrder
+  interval?: Prisma.SortOrder
+  nextDue?: Prisma.SortOrder
+  parentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -431,6 +525,10 @@ export type TransactionMaxOrderByAggregateInput = {
   date?: Prisma.SortOrder
   walletId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  recurring?: Prisma.SortOrder
+  interval?: Prisma.SortOrder
+  nextDue?: Prisma.SortOrder
+  parentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -443,6 +541,10 @@ export type TransactionMinOrderByAggregateInput = {
   date?: Prisma.SortOrder
   walletId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  recurring?: Prisma.SortOrder
+  interval?: Prisma.SortOrder
+  nextDue?: Prisma.SortOrder
+  parentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -535,15 +637,82 @@ export type TransactionUncheckedUpdateManyWithoutCategoryNestedInput = {
   deleteMany?: Prisma.TransactionScalarWhereInput | Prisma.TransactionScalarWhereInput[]
 }
 
+export type TransactionCreateNestedOneWithoutChildrenInput = {
+  create?: Prisma.XOR<Prisma.TransactionCreateWithoutChildrenInput, Prisma.TransactionUncheckedCreateWithoutChildrenInput>
+  connectOrCreate?: Prisma.TransactionCreateOrConnectWithoutChildrenInput
+  connect?: Prisma.TransactionWhereUniqueInput
+}
+
+export type TransactionCreateNestedManyWithoutParentInput = {
+  create?: Prisma.XOR<Prisma.TransactionCreateWithoutParentInput, Prisma.TransactionUncheckedCreateWithoutParentInput> | Prisma.TransactionCreateWithoutParentInput[] | Prisma.TransactionUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.TransactionCreateOrConnectWithoutParentInput | Prisma.TransactionCreateOrConnectWithoutParentInput[]
+  createMany?: Prisma.TransactionCreateManyParentInputEnvelope
+  connect?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+}
+
+export type TransactionUncheckedCreateNestedManyWithoutParentInput = {
+  create?: Prisma.XOR<Prisma.TransactionCreateWithoutParentInput, Prisma.TransactionUncheckedCreateWithoutParentInput> | Prisma.TransactionCreateWithoutParentInput[] | Prisma.TransactionUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.TransactionCreateOrConnectWithoutParentInput | Prisma.TransactionCreateOrConnectWithoutParentInput[]
+  createMany?: Prisma.TransactionCreateManyParentInputEnvelope
+  connect?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+}
+
+export type NullableEnumRecurrenceIntervalFieldUpdateOperationsInput = {
+  set?: $Enums.RecurrenceInterval | null
+}
+
+export type TransactionUpdateOneWithoutChildrenNestedInput = {
+  create?: Prisma.XOR<Prisma.TransactionCreateWithoutChildrenInput, Prisma.TransactionUncheckedCreateWithoutChildrenInput>
+  connectOrCreate?: Prisma.TransactionCreateOrConnectWithoutChildrenInput
+  upsert?: Prisma.TransactionUpsertWithoutChildrenInput
+  disconnect?: Prisma.TransactionWhereInput | boolean
+  delete?: Prisma.TransactionWhereInput | boolean
+  connect?: Prisma.TransactionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TransactionUpdateToOneWithWhereWithoutChildrenInput, Prisma.TransactionUpdateWithoutChildrenInput>, Prisma.TransactionUncheckedUpdateWithoutChildrenInput>
+}
+
+export type TransactionUpdateManyWithoutParentNestedInput = {
+  create?: Prisma.XOR<Prisma.TransactionCreateWithoutParentInput, Prisma.TransactionUncheckedCreateWithoutParentInput> | Prisma.TransactionCreateWithoutParentInput[] | Prisma.TransactionUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.TransactionCreateOrConnectWithoutParentInput | Prisma.TransactionCreateOrConnectWithoutParentInput[]
+  upsert?: Prisma.TransactionUpsertWithWhereUniqueWithoutParentInput | Prisma.TransactionUpsertWithWhereUniqueWithoutParentInput[]
+  createMany?: Prisma.TransactionCreateManyParentInputEnvelope
+  set?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+  disconnect?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+  delete?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+  connect?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+  update?: Prisma.TransactionUpdateWithWhereUniqueWithoutParentInput | Prisma.TransactionUpdateWithWhereUniqueWithoutParentInput[]
+  updateMany?: Prisma.TransactionUpdateManyWithWhereWithoutParentInput | Prisma.TransactionUpdateManyWithWhereWithoutParentInput[]
+  deleteMany?: Prisma.TransactionScalarWhereInput | Prisma.TransactionScalarWhereInput[]
+}
+
+export type TransactionUncheckedUpdateManyWithoutParentNestedInput = {
+  create?: Prisma.XOR<Prisma.TransactionCreateWithoutParentInput, Prisma.TransactionUncheckedCreateWithoutParentInput> | Prisma.TransactionCreateWithoutParentInput[] | Prisma.TransactionUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.TransactionCreateOrConnectWithoutParentInput | Prisma.TransactionCreateOrConnectWithoutParentInput[]
+  upsert?: Prisma.TransactionUpsertWithWhereUniqueWithoutParentInput | Prisma.TransactionUpsertWithWhereUniqueWithoutParentInput[]
+  createMany?: Prisma.TransactionCreateManyParentInputEnvelope
+  set?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+  disconnect?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+  delete?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+  connect?: Prisma.TransactionWhereUniqueInput | Prisma.TransactionWhereUniqueInput[]
+  update?: Prisma.TransactionUpdateWithWhereUniqueWithoutParentInput | Prisma.TransactionUpdateWithWhereUniqueWithoutParentInput[]
+  updateMany?: Prisma.TransactionUpdateManyWithWhereWithoutParentInput | Prisma.TransactionUpdateManyWithWhereWithoutParentInput[]
+  deleteMany?: Prisma.TransactionScalarWhereInput | Prisma.TransactionScalarWhereInput[]
+}
+
 export type TransactionCreateWithoutWalletInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: $Enums.TransactionType
   description?: string | null
   date?: Date | string
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   category?: Prisma.CategoryCreateNestedOneWithoutTransactionsInput
+  parent?: Prisma.TransactionCreateNestedOneWithoutChildrenInput
+  children?: Prisma.TransactionCreateNestedManyWithoutParentInput
 }
 
 export type TransactionUncheckedCreateWithoutWalletInput = {
@@ -553,8 +722,13 @@ export type TransactionUncheckedCreateWithoutWalletInput = {
   description?: string | null
   date?: Date | string
   categoryId?: string | null
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  parentId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  children?: Prisma.TransactionUncheckedCreateNestedManyWithoutParentInput
 }
 
 export type TransactionCreateOrConnectWithoutWalletInput = {
@@ -594,6 +768,10 @@ export type TransactionScalarWhereInput = {
   date?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   walletId?: Prisma.StringFilter<"Transaction"> | string
   categoryId?: Prisma.StringNullableFilter<"Transaction"> | string | null
+  recurring?: Prisma.BoolFilter<"Transaction"> | boolean
+  interval?: Prisma.EnumRecurrenceIntervalNullableFilter<"Transaction"> | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
+  parentId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
 }
@@ -604,9 +782,14 @@ export type TransactionCreateWithoutCategoryInput = {
   type: $Enums.TransactionType
   description?: string | null
   date?: Date | string
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   wallet: Prisma.WalletCreateNestedOneWithoutTransactionsInput
+  parent?: Prisma.TransactionCreateNestedOneWithoutChildrenInput
+  children?: Prisma.TransactionCreateNestedManyWithoutParentInput
 }
 
 export type TransactionUncheckedCreateWithoutCategoryInput = {
@@ -616,8 +799,13 @@ export type TransactionUncheckedCreateWithoutCategoryInput = {
   description?: string | null
   date?: Date | string
   walletId: string
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  parentId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  children?: Prisma.TransactionUncheckedCreateNestedManyWithoutParentInput
 }
 
 export type TransactionCreateOrConnectWithoutCategoryInput = {
@@ -646,6 +834,144 @@ export type TransactionUpdateManyWithWhereWithoutCategoryInput = {
   data: Prisma.XOR<Prisma.TransactionUpdateManyMutationInput, Prisma.TransactionUncheckedUpdateManyWithoutCategoryInput>
 }
 
+export type TransactionCreateWithoutChildrenInput = {
+  id?: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  type: $Enums.TransactionType
+  description?: string | null
+  date?: Date | string
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  wallet: Prisma.WalletCreateNestedOneWithoutTransactionsInput
+  category?: Prisma.CategoryCreateNestedOneWithoutTransactionsInput
+  parent?: Prisma.TransactionCreateNestedOneWithoutChildrenInput
+}
+
+export type TransactionUncheckedCreateWithoutChildrenInput = {
+  id?: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  type: $Enums.TransactionType
+  description?: string | null
+  date?: Date | string
+  walletId: string
+  categoryId?: string | null
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  parentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type TransactionCreateOrConnectWithoutChildrenInput = {
+  where: Prisma.TransactionWhereUniqueInput
+  create: Prisma.XOR<Prisma.TransactionCreateWithoutChildrenInput, Prisma.TransactionUncheckedCreateWithoutChildrenInput>
+}
+
+export type TransactionCreateWithoutParentInput = {
+  id?: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  type: $Enums.TransactionType
+  description?: string | null
+  date?: Date | string
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  wallet: Prisma.WalletCreateNestedOneWithoutTransactionsInput
+  category?: Prisma.CategoryCreateNestedOneWithoutTransactionsInput
+  children?: Prisma.TransactionCreateNestedManyWithoutParentInput
+}
+
+export type TransactionUncheckedCreateWithoutParentInput = {
+  id?: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  type: $Enums.TransactionType
+  description?: string | null
+  date?: Date | string
+  walletId: string
+  categoryId?: string | null
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  children?: Prisma.TransactionUncheckedCreateNestedManyWithoutParentInput
+}
+
+export type TransactionCreateOrConnectWithoutParentInput = {
+  where: Prisma.TransactionWhereUniqueInput
+  create: Prisma.XOR<Prisma.TransactionCreateWithoutParentInput, Prisma.TransactionUncheckedCreateWithoutParentInput>
+}
+
+export type TransactionCreateManyParentInputEnvelope = {
+  data: Prisma.TransactionCreateManyParentInput | Prisma.TransactionCreateManyParentInput[]
+  skipDuplicates?: boolean
+}
+
+export type TransactionUpsertWithoutChildrenInput = {
+  update: Prisma.XOR<Prisma.TransactionUpdateWithoutChildrenInput, Prisma.TransactionUncheckedUpdateWithoutChildrenInput>
+  create: Prisma.XOR<Prisma.TransactionCreateWithoutChildrenInput, Prisma.TransactionUncheckedCreateWithoutChildrenInput>
+  where?: Prisma.TransactionWhereInput
+}
+
+export type TransactionUpdateToOneWithWhereWithoutChildrenInput = {
+  where?: Prisma.TransactionWhereInput
+  data: Prisma.XOR<Prisma.TransactionUpdateWithoutChildrenInput, Prisma.TransactionUncheckedUpdateWithoutChildrenInput>
+}
+
+export type TransactionUpdateWithoutChildrenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  wallet?: Prisma.WalletUpdateOneRequiredWithoutTransactionsNestedInput
+  category?: Prisma.CategoryUpdateOneWithoutTransactionsNestedInput
+  parent?: Prisma.TransactionUpdateOneWithoutChildrenNestedInput
+}
+
+export type TransactionUncheckedUpdateWithoutChildrenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  walletId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type TransactionUpsertWithWhereUniqueWithoutParentInput = {
+  where: Prisma.TransactionWhereUniqueInput
+  update: Prisma.XOR<Prisma.TransactionUpdateWithoutParentInput, Prisma.TransactionUncheckedUpdateWithoutParentInput>
+  create: Prisma.XOR<Prisma.TransactionCreateWithoutParentInput, Prisma.TransactionUncheckedCreateWithoutParentInput>
+}
+
+export type TransactionUpdateWithWhereUniqueWithoutParentInput = {
+  where: Prisma.TransactionWhereUniqueInput
+  data: Prisma.XOR<Prisma.TransactionUpdateWithoutParentInput, Prisma.TransactionUncheckedUpdateWithoutParentInput>
+}
+
+export type TransactionUpdateManyWithWhereWithoutParentInput = {
+  where: Prisma.TransactionScalarWhereInput
+  data: Prisma.XOR<Prisma.TransactionUpdateManyMutationInput, Prisma.TransactionUncheckedUpdateManyWithoutParentInput>
+}
+
 export type TransactionCreateManyWalletInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -653,6 +979,10 @@ export type TransactionCreateManyWalletInput = {
   description?: string | null
   date?: Date | string
   categoryId?: string | null
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  parentId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -663,9 +993,14 @@ export type TransactionUpdateWithoutWalletInput = {
   type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.CategoryUpdateOneWithoutTransactionsNestedInput
+  parent?: Prisma.TransactionUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.TransactionUpdateManyWithoutParentNestedInput
 }
 
 export type TransactionUncheckedUpdateWithoutWalletInput = {
@@ -675,8 +1010,13 @@ export type TransactionUncheckedUpdateWithoutWalletInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  children?: Prisma.TransactionUncheckedUpdateManyWithoutParentNestedInput
 }
 
 export type TransactionUncheckedUpdateManyWithoutWalletInput = {
@@ -686,6 +1026,10 @@ export type TransactionUncheckedUpdateManyWithoutWalletInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -697,6 +1041,10 @@ export type TransactionCreateManyCategoryInput = {
   description?: string | null
   date?: Date | string
   walletId: string
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  parentId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -707,9 +1055,14 @@ export type TransactionUpdateWithoutCategoryInput = {
   type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   wallet?: Prisma.WalletUpdateOneRequiredWithoutTransactionsNestedInput
+  parent?: Prisma.TransactionUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.TransactionUpdateManyWithoutParentNestedInput
 }
 
 export type TransactionUncheckedUpdateWithoutCategoryInput = {
@@ -719,8 +1072,13 @@ export type TransactionUncheckedUpdateWithoutCategoryInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   walletId?: Prisma.StringFieldUpdateOperationsInput | string
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  children?: Prisma.TransactionUncheckedUpdateManyWithoutParentNestedInput
 }
 
 export type TransactionUncheckedUpdateManyWithoutCategoryInput = {
@@ -730,10 +1088,105 @@ export type TransactionUncheckedUpdateManyWithoutCategoryInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   walletId?: Prisma.StringFieldUpdateOperationsInput | string
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type TransactionCreateManyParentInput = {
+  id?: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  type: $Enums.TransactionType
+  description?: string | null
+  date?: Date | string
+  walletId: string
+  categoryId?: string | null
+  recurring?: boolean
+  interval?: $Enums.RecurrenceInterval | null
+  nextDue?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type TransactionUpdateWithoutParentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  wallet?: Prisma.WalletUpdateOneRequiredWithoutTransactionsNestedInput
+  category?: Prisma.CategoryUpdateOneWithoutTransactionsNestedInput
+  children?: Prisma.TransactionUpdateManyWithoutParentNestedInput
+}
+
+export type TransactionUncheckedUpdateWithoutParentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  walletId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  children?: Prisma.TransactionUncheckedUpdateManyWithoutParentNestedInput
+}
+
+export type TransactionUncheckedUpdateManyWithoutParentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  walletId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
+  nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type TransactionCountOutputType
+ */
+
+export type TransactionCountOutputType = {
+  children: number
+}
+
+export type TransactionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  children?: boolean | TransactionCountOutputTypeCountChildrenArgs
+}
+
+/**
+ * TransactionCountOutputType without action
+ */
+export type TransactionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TransactionCountOutputType
+   */
+  select?: Prisma.TransactionCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * TransactionCountOutputType without action
+ */
+export type TransactionCountOutputTypeCountChildrenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TransactionWhereInput
+}
 
 
 export type TransactionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -744,10 +1197,17 @@ export type TransactionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   date?: boolean
   walletId?: boolean
   categoryId?: boolean
+  recurring?: boolean
+  interval?: boolean
+  nextDue?: boolean
+  parentId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>
   category?: boolean | Prisma.Transaction$categoryArgs<ExtArgs>
+  parent?: boolean | Prisma.Transaction$parentArgs<ExtArgs>
+  children?: boolean | Prisma.Transaction$childrenArgs<ExtArgs>
+  _count?: boolean | Prisma.TransactionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transaction"]>
 
 export type TransactionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -758,10 +1218,15 @@ export type TransactionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   date?: boolean
   walletId?: boolean
   categoryId?: boolean
+  recurring?: boolean
+  interval?: boolean
+  nextDue?: boolean
+  parentId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>
   category?: boolean | Prisma.Transaction$categoryArgs<ExtArgs>
+  parent?: boolean | Prisma.Transaction$parentArgs<ExtArgs>
 }, ExtArgs["result"]["transaction"]>
 
 export type TransactionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -772,10 +1237,15 @@ export type TransactionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   date?: boolean
   walletId?: boolean
   categoryId?: boolean
+  recurring?: boolean
+  interval?: boolean
+  nextDue?: boolean
+  parentId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>
   category?: boolean | Prisma.Transaction$categoryArgs<ExtArgs>
+  parent?: boolean | Prisma.Transaction$parentArgs<ExtArgs>
 }, ExtArgs["result"]["transaction"]>
 
 export type TransactionSelectScalar = {
@@ -786,22 +1256,31 @@ export type TransactionSelectScalar = {
   date?: boolean
   walletId?: boolean
   categoryId?: boolean
+  recurring?: boolean
+  interval?: boolean
+  nextDue?: boolean
+  parentId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "type" | "description" | "date" | "walletId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["transaction"]>
+export type TransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "type" | "description" | "date" | "walletId" | "categoryId" | "recurring" | "interval" | "nextDue" | "parentId" | "createdAt" | "updatedAt", ExtArgs["result"]["transaction"]>
 export type TransactionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>
   category?: boolean | Prisma.Transaction$categoryArgs<ExtArgs>
+  parent?: boolean | Prisma.Transaction$parentArgs<ExtArgs>
+  children?: boolean | Prisma.Transaction$childrenArgs<ExtArgs>
+  _count?: boolean | Prisma.TransactionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TransactionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>
   category?: boolean | Prisma.Transaction$categoryArgs<ExtArgs>
+  parent?: boolean | Prisma.Transaction$parentArgs<ExtArgs>
 }
 export type TransactionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>
   category?: boolean | Prisma.Transaction$categoryArgs<ExtArgs>
+  parent?: boolean | Prisma.Transaction$parentArgs<ExtArgs>
 }
 
 export type $TransactionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -809,6 +1288,8 @@ export type $TransactionPayload<ExtArgs extends runtime.Types.Extensions.Interna
   objects: {
     wallet: Prisma.$WalletPayload<ExtArgs>
     category: Prisma.$CategoryPayload<ExtArgs> | null
+    parent: Prisma.$TransactionPayload<ExtArgs> | null
+    children: Prisma.$TransactionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -818,6 +1299,10 @@ export type $TransactionPayload<ExtArgs extends runtime.Types.Extensions.Interna
     date: Date
     walletId: string
     categoryId: string | null
+    recurring: boolean
+    interval: $Enums.RecurrenceInterval | null
+    nextDue: Date | null
+    parentId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["transaction"]>
@@ -1216,6 +1701,8 @@ export interface Prisma__TransactionClient<T, Null = never, ExtArgs extends runt
   readonly [Symbol.toStringTag]: "PrismaPromise"
   wallet<T extends Prisma.WalletDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WalletDefaultArgs<ExtArgs>>): Prisma.Prisma__WalletClient<runtime.Types.Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   category<T extends Prisma.Transaction$categoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Transaction$categoryArgs<ExtArgs>>): Prisma.Prisma__CategoryClient<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  parent<T extends Prisma.Transaction$parentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Transaction$parentArgs<ExtArgs>>): Prisma.Prisma__TransactionClient<runtime.Types.Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  children<T extends Prisma.Transaction$childrenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Transaction$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1252,6 +1739,10 @@ export interface TransactionFieldRefs {
   readonly date: Prisma.FieldRef<"Transaction", 'DateTime'>
   readonly walletId: Prisma.FieldRef<"Transaction", 'String'>
   readonly categoryId: Prisma.FieldRef<"Transaction", 'String'>
+  readonly recurring: Prisma.FieldRef<"Transaction", 'Boolean'>
+  readonly interval: Prisma.FieldRef<"Transaction", 'RecurrenceInterval'>
+  readonly nextDue: Prisma.FieldRef<"Transaction", 'DateTime'>
+  readonly parentId: Prisma.FieldRef<"Transaction", 'String'>
   readonly createdAt: Prisma.FieldRef<"Transaction", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Transaction", 'DateTime'>
 }
@@ -1671,6 +2162,49 @@ export type Transaction$categoryArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   include?: Prisma.CategoryInclude<ExtArgs> | null
   where?: Prisma.CategoryWhereInput
+}
+
+/**
+ * Transaction.parent
+ */
+export type Transaction$parentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Transaction
+   */
+  select?: Prisma.TransactionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Transaction
+   */
+  omit?: Prisma.TransactionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TransactionInclude<ExtArgs> | null
+  where?: Prisma.TransactionWhereInput
+}
+
+/**
+ * Transaction.children
+ */
+export type Transaction$childrenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Transaction
+   */
+  select?: Prisma.TransactionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Transaction
+   */
+  omit?: Prisma.TransactionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TransactionInclude<ExtArgs> | null
+  where?: Prisma.TransactionWhereInput
+  orderBy?: Prisma.TransactionOrderByWithRelationInput | Prisma.TransactionOrderByWithRelationInput[]
+  cursor?: Prisma.TransactionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TransactionScalarFieldEnum | Prisma.TransactionScalarFieldEnum[]
 }
 
 /**

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
@@ -44,6 +44,8 @@ type Tx = {
   categoryId: string | null
   category: { name: string; color: string | null } | null
   wallet: { id: string; name: string; color: string | null }
+  recurring: boolean
+  parentId: string | null
 }
 
 function TransactionsPage() {
@@ -239,7 +241,12 @@ function TransactionRow({ transaction: t, onTap }: { transaction: Tx; onTap: () 
     >
       <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: dot }} />
       <div className="flex-1 min-w-0 text-left">
-        <p className="truncate text-sm text-white">{label}</p>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <p className="truncate text-sm text-white">{label}</p>
+          {(t.recurring || t.parentId) && (
+            <Repeat2 className="h-3 w-3 shrink-0 text-zinc-600" />
+          )}
+        </div>
         <p className="text-xs text-zinc-600">{t.wallet.name}</p>
       </div>
       <p className={cn('shrink-0 tabular-nums text-sm font-medium', isExpense ? 'text-red-400' : 'text-emerald-400')}>

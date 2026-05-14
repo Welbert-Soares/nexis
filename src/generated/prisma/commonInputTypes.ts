@@ -209,6 +209,23 @@ export type EnumTransactionTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumTransactionTypeFilter<$PrismaModel>
 }
 
+export type EnumRecurrenceIntervalNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.RecurrenceInterval | Prisma.EnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RecurrenceInterval[] | Prisma.ListEnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RecurrenceInterval[] | Prisma.ListEnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRecurrenceIntervalNullableFilter<$PrismaModel> | $Enums.RecurrenceInterval | null
+}
+
+export type EnumRecurrenceIntervalNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RecurrenceInterval | Prisma.EnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RecurrenceInterval[] | Prisma.ListEnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RecurrenceInterval[] | Prisma.ListEnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRecurrenceIntervalNullableWithAggregatesFilter<$PrismaModel> | $Enums.RecurrenceInterval | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRecurrenceIntervalNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRecurrenceIntervalNullableFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -415,6 +432,23 @@ export type NestedEnumTransactionTypeWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTransactionTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTransactionTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumRecurrenceIntervalNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.RecurrenceInterval | Prisma.EnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RecurrenceInterval[] | Prisma.ListEnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RecurrenceInterval[] | Prisma.ListEnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRecurrenceIntervalNullableFilter<$PrismaModel> | $Enums.RecurrenceInterval | null
+}
+
+export type NestedEnumRecurrenceIntervalNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RecurrenceInterval | Prisma.EnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RecurrenceInterval[] | Prisma.ListEnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RecurrenceInterval[] | Prisma.ListEnumRecurrenceIntervalFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRecurrenceIntervalNullableWithAggregatesFilter<$PrismaModel> | $Enums.RecurrenceInterval | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRecurrenceIntervalNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRecurrenceIntervalNullableFilter<$PrismaModel>
 }
 
 

@@ -1,4 +1,5 @@
 import { prisma } from '#/db'
+import type { RecurrenceInterval } from '#/generated/prisma/enums'
 
 export function createTransaction(data: {
   walletId: string
@@ -7,6 +8,10 @@ export function createTransaction(data: {
   categoryId?: string
   description?: string
   date?: Date
+  recurring?: boolean
+  interval?: RecurrenceInterval
+  nextDue?: Date
+  parentId?: string
 }) {
   const { amount, type, ...rest } = data
   const delta = type === 'EXPENSE' ? -amount : amount
@@ -20,6 +25,64 @@ export function createTransaction(data: {
       data: { balance: { increment: delta } },
     }),
   ])
+}
+
+function calcNextDue(from: Date, interval: RecurrenceInterval): Date {
+  const d = new Date(from)
+  switch (interval) {
+    case 'WEEKLY':    d.setDate(d.getDate() + 7); break
+    case 'BIWEEKLY':  d.setDate(d.getDate() + 14); break
+    case 'MONTHLY':   d.setMonth(d.getMonth() + 1); break
+    case 'YEARLY':    d.setFullYear(d.getFullYear() + 1); break
+  }
+  return d
+}
+
+export async function processDueRecurring(userId: string) {
+  const today = new Date()
+  today.setHours(23, 59, 59, 999)
+
+  const due = await prisma.transaction.findMany({
+    where: {
+      wallet: { userId },
+      recurring: true,
+      parentId: null,
+      nextDue: { lte: today },
+    },
+  })
+
+  if (!due.length) return 0
+
+  await prisma.$transaction(
+    due.flatMap((t) => {
+      const dueDate = t.nextDue!
+      const next = calcNextDue(dueDate, t.interval!)
+      const delta = t.type === 'EXPENSE' ? -t.amount.toNumber() : t.amount.toNumber()
+      return [
+        prisma.transaction.create({
+          data: {
+            walletId: t.walletId,
+            amount: t.amount,
+            type: t.type,
+            description: t.description,
+            categoryId: t.categoryId,
+            date: dueDate,
+            parentId: t.id,
+          },
+        }),
+        prisma.wallet.update({
+          where: { id: t.walletId },
+          data: { balance: { increment: delta } },
+        }),
+        prisma.transaction.update({
+          where: { id: t.id },
+          data: { nextDue: next },
+        }),
+      ]
+    }),
+  )
+
+  return due.length
 }
 
 export async function getTransactionsByMonth(

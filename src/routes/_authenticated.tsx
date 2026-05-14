@@ -1,8 +1,11 @@
+import { useEffect } from 'react'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { BottomNav } from '#/components/layout/bottom-nav'
 import { ErrorBoundary } from '#/components/ui/error-boundary'
 import { OfflineBanner } from '#/components/ui/offline-banner'
 import { getSession } from '#/server/services/auth.service'
+import { triggerRecurring } from '#/server/services/transaction.service'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async () => {
@@ -14,6 +17,18 @@ export const Route = createFileRoute('/_authenticated')({
 })
 
 function AuthenticatedLayout() {
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    triggerRecurring().then((count) => {
+      if (count > 0) {
+        queryClient.invalidateQueries({ queryKey: ['transactions'] })
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+        queryClient.invalidateQueries({ queryKey: ['wallets'] })
+      }
+    }).catch(() => {})
+  }, [])
+
   return (
     <div className="flex flex-col bg-zinc-950" style={{ height: '100dvh', paddingTop: 'env(safe-area-inset-top)' }}>
       <OfflineBanner />

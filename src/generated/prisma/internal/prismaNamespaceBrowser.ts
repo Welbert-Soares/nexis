@@ -172,6 +172,10 @@ export const TransactionScalarFieldEnum = {
   date: 'date',
   walletId: 'walletId',
   categoryId: 'categoryId',
+  recurring: 'recurring',
+  interval: 'interval',
+  nextDue: 'nextDue',
+  parentId: 'parentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
