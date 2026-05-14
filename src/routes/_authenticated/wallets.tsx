@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Wallet, TrendingUp, Banknote, PiggyBank, CreditCard } from 'lucide-react'
+import { ArrowLeftRight, Plus, Wallet, TrendingUp, Banknote, PiggyBank, CreditCard } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserWallets } from '#/server/services/wallet.service'
-import { NewWalletSheet } from '#/components/wallets/new-wallet-sheet'
+import { WalletSheet, type EditableWallet } from '#/components/wallets/wallet-sheet'
+import { TransferSheet } from '#/components/wallets/transfer-sheet'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger } from '#/lib/motion'
 
@@ -24,6 +25,8 @@ const WALLET_META: Record<WalletType, { label: string; icon: React.ElementType }
 
 function WalletsPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [editing, setEditing] = useState<EditableWallet | undefined>()
+  const [transferOpen, setTransferOpen] = useState(false)
 
   const { data: wallets = [], isLoading } = useQuery({
     queryKey: ['wallets'],
@@ -49,12 +52,22 @@ function WalletsPage() {
               {formatCurrency(totalBalance)}
             </p>
           </div>
-          <button
-            onClick={() => setSheetOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 transition-colors active:bg-zinc-700"
-          >
-            <Plus className="h-5 w-5 text-zinc-300" />
-          </button>
+          <div className="flex items-center gap-2">
+            {wallets.length >= 2 && (
+              <button
+                onClick={() => setTransferOpen(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 transition-colors active:bg-zinc-700"
+              >
+                <ArrowLeftRight className="h-4 w-4 text-zinc-300" />
+              </button>
+            )}
+            <button
+              onClick={() => setSheetOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 transition-colors active:bg-zinc-700"
+            >
+              <Plus className="h-5 w-5 text-zinc-300" />
+            </button>
+          </div>
         </motion.div>
 
         {/* Lista */}
@@ -68,10 +81,14 @@ function WalletsPage() {
               const meta = WALLET_META[wallet.type as WalletType]
               const Icon = meta.icon
               return (
-                <motion.div
+                <motion.button
                   key={wallet.id}
                   variants={fadeUp}
-                  className="flex items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4"
+                  onClick={() => {
+                    setEditing({ id: wallet.id, name: wallet.name, type: wallet.type as WalletType, color: wallet.color })
+                    setSheetOpen(true)
+                  }}
+                  className="flex w-full items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 active:bg-zinc-800/50 transition-colors"
                 >
                   <div
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
@@ -83,7 +100,7 @@ function WalletsPage() {
                       strokeWidth={1.5}
                     />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 text-left">
                     <p className="truncate text-sm font-medium text-white">{wallet.name}</p>
                     <p className="text-xs text-zinc-500">{meta.label}</p>
                   </div>
@@ -95,7 +112,7 @@ function WalletsPage() {
                   >
                     {formatCurrency(wallet.balance)}
                   </p>
-                </motion.div>
+                </motion.button>
               )
             })}
           </motion.div>
@@ -103,7 +120,16 @@ function WalletsPage() {
       </motion.div>
       </div>
 
-      <NewWalletSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
+      <WalletSheet
+        open={sheetOpen}
+        wallet={editing}
+        onClose={() => { setSheetOpen(false); setEditing(undefined) }}
+      />
+      <TransferSheet
+        open={transferOpen}
+        wallets={wallets}
+        onClose={() => setTransferOpen(false)}
+      />
     </>
   )
 }

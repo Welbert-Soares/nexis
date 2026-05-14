@@ -8,6 +8,52 @@ export async function getWalletsByUser(userId: string) {
   return wallets.map((w) => ({ ...w, balance: w.balance.toNumber() }))
 }
 
+export async function updateWallet(
+  id: string,
+  userId: string,
+  data: {
+    name?: string
+    type?: 'CHECKING' | 'SAVINGS' | 'CASH' | 'INVESTMENT' | 'CREDIT'
+    color?: string
+  },
+) {
+  const wallet = await prisma.wallet.findFirst({ where: { id, userId } })
+  if (!wallet) throw new Error('Wallet not found')
+  return prisma.wallet.update({ where: { id }, data })
+}
+
+export async function deleteWallet(id: string, userId: string) {
+  const wallet = await prisma.wallet.findFirst({ where: { id, userId } })
+  if (!wallet) throw new Error('Wallet not found')
+  return prisma.wallet.delete({ where: { id } })
+}
+
+export async function transferBetweenWallets(
+  userId: string,
+  fromWalletId: string,
+  toWalletId: string,
+  amount: number,
+) {
+  const [from, to] = await Promise.all([
+    prisma.wallet.findFirst({ where: { id: fromWalletId, userId } }),
+    prisma.wallet.findFirst({ where: { id: toWalletId, userId } }),
+  ])
+  if (!from) throw new Error('Carteira de origem não encontrada')
+  if (!to) throw new Error('Carteira de destino não encontrada')
+  if (fromWalletId === toWalletId) throw new Error('Carteiras devem ser diferentes')
+
+  return prisma.$transaction([
+    prisma.wallet.update({
+      where: { id: fromWalletId },
+      data: { balance: { decrement: amount } },
+    }),
+    prisma.wallet.update({
+      where: { id: toWalletId },
+      data: { balance: { increment: amount } },
+    }),
+  ])
+}
+
 export function createWallet(data: {
   userId: string
   name: string

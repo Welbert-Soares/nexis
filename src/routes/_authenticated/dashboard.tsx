@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { TrendingDown, TrendingUp } from 'lucide-react'
@@ -5,6 +6,8 @@ import { motion } from 'framer-motion'
 import { getDashboard } from '#/server/services/dashboard.service'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
+import { ProfileSheet } from '#/components/profile/profile-sheet'
+import { Avatar } from '#/components/ui/avatar'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardPage,
@@ -13,6 +16,7 @@ export const Route = createFileRoute('/_authenticated/dashboard')({
 function DashboardPage() {
   const { session } = Route.useRouteContext()
   const firstName = session.user.name.split(' ')[0]
+  const [profileOpen, setProfileOpen] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard'],
@@ -28,17 +32,32 @@ function DashboardPage() {
         animate="show"
       >
         {/* Header */}
-        <motion.header variants={fadeUp} className="space-y-1">
-          <p className="text-sm text-zinc-500">Olá, {firstName}</p>
-          {isLoading ? (
-            <div className="h-10 w-40 animate-pulse rounded-lg bg-zinc-800" />
-          ) : (
-            <h1 className="text-4xl font-bold tabular-nums text-white">
-              {fmt(data?.totalBalance ?? 0)}
-            </h1>
-          )}
-          <p className="text-xs text-zinc-600">Saldo total · todas as carteiras</p>
+        <motion.header variants={fadeUp} className="flex items-start justify-between">
+          <div className="space-y-1">
+            <p className="text-sm text-zinc-500">Olá, {firstName}</p>
+            {isLoading ? (
+              <div className="h-10 w-40 animate-pulse rounded-lg bg-zinc-800" />
+            ) : (
+              <h1 className="text-4xl font-bold tabular-nums text-white">
+                {fmt(data?.totalBalance ?? 0)}
+              </h1>
+            )}
+            <p className="text-xs text-zinc-600">Saldo total · todas as carteiras</p>
+          </div>
+
+          <button
+            onClick={() => setProfileOpen(true)}
+            className="shrink-0 active:opacity-70 transition-opacity"
+          >
+            <Avatar name={session.user.name} src={session.user.image} size="sm" />
+          </button>
         </motion.header>
+
+        <ProfileSheet
+          open={profileOpen}
+          onClose={() => setProfileOpen(false)}
+          user={session.user}
+        />
 
         {/* Resumo mensal */}
         <motion.section variants={fadeUp} className="grid grid-cols-2 gap-3">
@@ -57,6 +76,16 @@ function DashboardPage() {
             loading={isLoading}
           />
         </motion.section>
+
+        {/* Gastos por categoria */}
+        {!isLoading && !!data?.categoryBreakdown.length && (
+          <motion.section variants={fadeUp} className="space-y-3">
+            <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">
+              Gastos do mês
+            </h2>
+            <CategoryBreakdown items={data.categoryBreakdown} />
+          </motion.section>
+        )}
 
         {/* Transações recentes */}
         <motion.section variants={fadeUp} className="space-y-3">
@@ -166,6 +195,38 @@ function TransactionsSkeleton() {
             <div className="h-3 w-20 animate-pulse rounded bg-zinc-800/60" />
           </div>
           <div className="h-3.5 w-16 animate-pulse rounded bg-zinc-800" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+type CategoryItem = { id: string; name: string; color: string; amount: number }
+
+function CategoryBreakdown({ items }: { items: CategoryItem[] }) {
+  const max = Math.max(...items.map((i) => i.amount))
+  return (
+    <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
+      {items.map((item) => (
+        <div key={item.id} className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+              <span className="text-xs text-zinc-400">{item.name}</span>
+            </div>
+            <span className="tabular-nums text-xs font-medium text-zinc-300">
+              {fmt(item.amount)}
+            </span>
+          </div>
+          <div className="h-1 w-full rounded-full bg-zinc-800">
+            <motion.div
+              className="h-1 rounded-full"
+              style={{ backgroundColor: item.color }}
+              initial={{ width: 0 }}
+              animate={{ width: `${(item.amount / max) * 100}%` }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            />
+          </div>
         </div>
       ))}
     </div>
