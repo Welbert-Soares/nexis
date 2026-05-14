@@ -32,7 +32,8 @@ function WalletsPage() {
 
   return (
     <>
-      <div className="space-y-6 px-4 pt-10">
+      <div className="flex h-full flex-col pt-10">
+      <div className="space-y-6 px-4 overflow-y-auto flex-1">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -91,6 +92,7 @@ function WalletsPage() {
             })}
           </div>
         )}
+      </div>
       </div>
 
       <NewWalletSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />

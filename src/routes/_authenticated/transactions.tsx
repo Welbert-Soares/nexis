@@ -88,75 +88,80 @@ function TransactionsPage() {
 
   return (
     <>
-      <div className="space-y-4 px-4 pt-10">
-        {/* Navegação de mês */}
-        <div className="flex items-center justify-between">
-          <button onClick={prevMonth} className="p-1 text-zinc-500 active:text-zinc-300">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <p className="text-sm font-medium text-white capitalize">
-            {fmtMonth(year, month)}
-          </p>
-          <button
-            onClick={nextMonth}
-            className={cn('p-1 transition-colors', isCurrent ? 'text-zinc-700' : 'text-zinc-500 active:text-zinc-300')}
-            disabled={isCurrent}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Resumo */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-3">
-            <p className="text-xs text-zinc-500">Receitas</p>
-            <p className="mt-1 tabular-nums text-base font-semibold text-emerald-400">
-              {fmt(income)}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-3">
-            <p className="text-xs text-zinc-500">Despesas</p>
-            <p className="mt-1 tabular-nums text-base font-semibold text-red-400">
-              {fmt(expenses)}
-            </p>
-          </div>
-        </div>
-
-        {/* Filtros */}
-        <div className="flex gap-2">
-          {FILTERS.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setFilter(f.value)}
-              className={cn(
-                'rounded-full px-4 py-1.5 text-xs font-medium transition-colors',
-                filter === f.value
-                  ? 'bg-zinc-100 text-zinc-900'
-                  : 'bg-zinc-800 text-zinc-400',
-              )}
-            >
-              {f.label}
+      <div className="flex h-full flex-col pt-10">
+        {/* Cabeçalho fixo */}
+        <div className="space-y-4 px-4 pb-3">
+          {/* Navegação de mês */}
+          <div className="flex items-center justify-between">
+            <button onClick={prevMonth} className="p-1 text-zinc-500 active:text-zinc-300">
+              <ChevronLeft className="h-5 w-5" />
             </button>
-          ))}
-        </div>
+            <p className="text-sm font-medium text-white capitalize">
+              {fmtMonth(year, month)}
+            </p>
+            <button
+              onClick={nextMonth}
+              className={cn('p-1 transition-colors', isCurrent ? 'text-zinc-700' : 'text-zinc-500 active:text-zinc-300')}
+              disabled={isCurrent}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
 
-        {/* Lista */}
-        {isLoading ? (
-          <ListSkeleton />
-        ) : !transactions.length ? (
-          <EmptyState />
-        ) : (
-          <div className="space-y-5 pb-4">
-            {grouped.map(({ label, items }) => (
-              <div key={label} className="space-y-1">
-                <p className="mb-2 text-xs font-medium text-zinc-600">{label}</p>
-                {items.map((t) => (
-                  <TransactionRow key={t.id} transaction={t} onTap={() => handleRowTap(t)} />
-                ))}
-              </div>
+          {/* Resumo */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-3">
+              <p className="text-xs text-zinc-500">Receitas</p>
+              <p className="mt-1 tabular-nums text-base font-semibold text-emerald-400">
+                {fmt(income)}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-3">
+              <p className="text-xs text-zinc-500">Despesas</p>
+              <p className="mt-1 tabular-nums text-base font-semibold text-red-400">
+                {fmt(expenses)}
+              </p>
+            </div>
+          </div>
+
+          {/* Filtros */}
+          <div className="flex gap-2">
+            {FILTERS.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setFilter(f.value)}
+                className={cn(
+                  'rounded-full px-4 py-1.5 text-xs font-medium transition-colors',
+                  filter === f.value
+                    ? 'bg-zinc-100 text-zinc-900'
+                    : 'bg-zinc-800 text-zinc-400',
+                )}
+              >
+                {f.label}
+              </button>
             ))}
           </div>
-        )}
+        </div>
+
+        {/* Lista com scroll próprio */}
+        <div className="flex-1 overflow-y-auto px-4">
+          {isLoading ? (
+            <ListSkeleton />
+          ) : !transactions.length ? (
+            <EmptyState />
+          ) : (
+            <div className="space-y-5 pb-4">
+              {grouped.map(({ label, items }) => (
+                <div key={label} className="space-y-1">
+                  <p className="mb-2 text-xs font-medium text-zinc-600">{label}</p>
+                  {items.map((t) => (
+                    <TransactionRow key={t.id} transaction={t} onTap={() => handleRowTap(t)} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <TransactionSheet

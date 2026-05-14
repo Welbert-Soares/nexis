@@ -13,8 +13,8 @@ export const Route = createFileRoute('/_authenticated')({
 
 function AuthenticatedLayout() {
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-950">
-      <main className="flex-1 pb-20">
+    <div className="flex h-dvh flex-col bg-zinc-950">
+      <main className="min-h-0 flex-1">
         <Outlet />
       </main>
       <BottomNav />

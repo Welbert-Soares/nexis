@@ -18,6 +18,7 @@ function DashboardPage() {
   })
 
   return (
+    <div className="h-full overflow-y-auto">
     <div className="space-y-6 px-4 pt-10 pb-4">
       {/* Header */}
       <header className="space-y-1">
@@ -73,6 +74,7 @@ function DashboardPage() {
           </div>
         )}
       </section>
+    </div>
     </div>
   )
 }
