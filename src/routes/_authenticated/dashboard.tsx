@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TrendingDown, TrendingUp } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getDashboard } from '#/server/services/dashboard.service'
@@ -8,6 +8,7 @@ import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { ProfileSheet } from '#/components/profile/profile-sheet'
 import { Avatar } from '#/components/ui/avatar'
+import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardPage,
@@ -17,14 +18,20 @@ function DashboardPage() {
   const { session } = Route.useRouteContext()
   const firstName = session.user.name.split(' ')[0]
   const [profileOpen, setProfileOpen] = useState(false)
+  const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => getDashboard(),
   })
 
+  async function handleRefresh() {
+    await queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+  }
+
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full">
+      <PullToRefresh onRefresh={handleRefresh} className="h-full overflow-y-auto">
       <motion.div
         className="space-y-6 px-4 pt-10 pb-4"
         variants={stagger}
@@ -113,6 +120,7 @@ function DashboardPage() {
           )}
         </motion.section>
       </motion.div>
+      </PullToRefresh>
     </div>
   )
 }

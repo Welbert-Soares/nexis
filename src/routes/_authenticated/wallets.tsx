@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftRight, Plus, Wallet, TrendingUp, Banknote, PiggyBank, CreditCard } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { WalletSheet, type EditableWallet } from '#/components/wallets/wallet-sheet'
 import { TransferSheet } from '#/components/wallets/transfer-sheet'
+import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger } from '#/lib/motion'
 
@@ -27,19 +28,24 @@ function WalletsPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editing, setEditing] = useState<EditableWallet | undefined>()
   const [transferOpen, setTransferOpen] = useState(false)
+  const queryClient = useQueryClient()
 
   const { data: wallets = [], isLoading } = useQuery({
     queryKey: ['wallets'],
     queryFn: () => getUserWallets(),
   })
 
+  async function handleRefresh() {
+    await queryClient.invalidateQueries({ queryKey: ['wallets'] })
+  }
+
   const totalBalance = wallets.reduce((acc, w) => acc + w.balance, 0)
 
   return (
     <>
       <div className="flex h-full flex-col pt-10">
+      <PullToRefresh onRefresh={handleRefresh} className="space-y-6 px-4 flex-1">
       <motion.div
-        className="space-y-6 px-4 overflow-y-auto flex-1"
         variants={stagger}
         initial="hidden"
         animate="show"
@@ -118,6 +124,7 @@ function WalletsPage() {
           </motion.div>
         )}
       </motion.div>
+      </PullToRefresh>
       </div>
 
       <WalletSheet

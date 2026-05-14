@@ -17,16 +17,37 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 px-4">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Nexis</h1>
+    <div className="flex h-dvh flex-col bg-zinc-950">
+      {/* Hero com vídeo */}
+      <div className="relative flex-1 overflow-hidden">
+        <video
+          src="/nexis-video.webm"
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="h-full w-full object-cover"
+        />
+        {/* Gradiente de fade para o fundo */}
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-transparent to-zinc-950" />
+      </div>
+
+      {/* Conteúdo inferior */}
+      <div className="flex flex-col items-center gap-6 px-6 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-2">
+        {/* Logo + subtítulo */}
+        <div className="flex flex-col items-center gap-2">
+          <img
+            src="/nexis-logo-texto.webp"
+            alt="Nexis"
+            className="w-40 object-contain drop-shadow-lg"
+          />
           <p className="text-sm text-zinc-400">Seu sistema financeiro pessoal</p>
         </div>
 
+        {/* Botão */}
         <button
           onClick={handleGoogleSignIn}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800 active:bg-zinc-700"
+          className="flex w-full items-center justify-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-sm font-medium text-white transition-colors active:bg-zinc-800"
         >
           <GoogleIcon />
           Entrar com Google

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { z } from 'zod'
@@ -8,6 +8,7 @@ import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { listTransactions } from '#/server/services/transaction.service'
 import { TransactionSheet, type EditableTransaction } from '#/components/transactions/transaction-sheet'
+import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 
 const searchSchema = z.object({
   action: z.enum(['new']).optional(),
@@ -45,6 +46,7 @@ function TransactionsPage() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [filter, setFilter] = useState<Filter>('ALL')
   const [editing, setEditing] = useState<EditableTransaction | undefined>()
+  const queryClient = useQueryClient()
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['transactions', year, month, filter],
@@ -70,6 +72,10 @@ function TransactionsPage() {
     if (isCurrentMonth) return
     if (month === 12) { setMonth(1); setYear((y) => y + 1) }
     else setMonth((m) => m + 1)
+  }
+
+  async function handleRefresh() {
+    await queryClient.invalidateQueries({ queryKey: ['transactions'] })
   }
 
   function handleRowTap(t: Tx) {
@@ -146,7 +152,7 @@ function TransactionsPage() {
         </div>
 
         {/* Lista com scroll próprio */}
-        <div className="flex-1 overflow-y-auto px-4">
+        <PullToRefresh onRefresh={handleRefresh} className="flex-1 px-4">
           <AnimatePresence mode="wait">
             {isLoading ? (
               <ListSkeleton />
@@ -173,7 +179,7 @@ function TransactionsPage() {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </PullToRefresh>
       </div>
 
       <TransactionSheet

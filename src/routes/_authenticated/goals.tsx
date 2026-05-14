@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Target } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger } from '#/lib/motion'
 import { getUserGoals } from '#/server/services/goal.service'
 import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
+import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 
 export const Route = createFileRoute('/_authenticated/goals')({
   component: GoalsPage,
@@ -24,11 +25,16 @@ type Goal = {
 function GoalsPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editing, setEditing] = useState<EditableGoal | undefined>()
+  const queryClient = useQueryClient()
 
   const { data: goals = [], isLoading } = useQuery({
     queryKey: ['goals'],
     queryFn: () => getUserGoals(),
   })
+
+  async function handleRefresh() {
+    await queryClient.invalidateQueries({ queryKey: ['goals'] })
+  }
 
   const totalSaved = goals.reduce((acc, g) => acc + g.currentAmount, 0)
   const totalTarget = goals.reduce((acc, g) => acc + g.targetAmount, 0)
@@ -53,8 +59,8 @@ function GoalsPage() {
   return (
     <>
       <div className="flex h-full flex-col pt-10">
+      <PullToRefresh onRefresh={handleRefresh} className="space-y-6 px-4 flex-1">
       <motion.div
-        className="space-y-6 px-4 overflow-y-auto flex-1"
         variants={stagger}
         initial="hidden"
         animate="show"
@@ -91,6 +97,7 @@ function GoalsPage() {
           </motion.div>
         )}
       </motion.div>
+      </PullToRefresh>
       </div>
 
       <GoalSheet open={sheetOpen} goal={editing} onClose={handleClose} />
