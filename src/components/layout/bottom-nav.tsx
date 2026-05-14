@@ -47,8 +47,8 @@ function NavLink({
     <Link
       to={item.to}
       className={cn(
-        'flex flex-col items-center gap-1 px-4 py-1 text-xs transition-colors',
-        active ? 'text-blue-400' : 'text-zinc-500 active:text-zinc-300',
+        'flex flex-col items-center gap-1 px-4 py-1 text-xs transition-all active:scale-90 active:opacity-70',
+        active ? 'text-blue-400' : 'text-zinc-500',
       )}
     >
       <item.icon className="h-5 w-5" strokeWidth={active ? 2 : 1.5} />
