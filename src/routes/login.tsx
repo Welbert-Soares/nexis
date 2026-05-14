@@ -17,7 +17,7 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex h-dvh flex-col bg-zinc-950">
+    <div className="fixed inset-0 flex flex-col bg-zinc-950">
       {/* Hero com vídeo */}
       <div className="relative flex-1 overflow-hidden">
         <video
