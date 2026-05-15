@@ -115,8 +115,8 @@ function GoalsPage() {
   return (
     <>
       <div className="relative flex h-full flex-col pt-10">
-      <PullToRefresh onRefresh={handleRefresh} className="space-y-6 px-4 flex-1">
-      <motion.div variants={stagger} initial="hidden" animate="show">
+      <PullToRefresh onRefresh={handleRefresh} className="space-y-6 flex-1">
+      <motion.div variants={stagger} initial="hidden" animate="show" className="px-6">
         {/* Header */}
         <motion.div variants={fadeUp} className="flex items-start justify-between">
           <div className="space-y-1">
