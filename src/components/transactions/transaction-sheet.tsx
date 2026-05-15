@@ -151,6 +151,20 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
       if (!walletId) throw new Error('Selecione uma carteira')
       const date = values.date ? new Date(values.date + 'T12:00:00') : new Date()
 
+      if (isEdit && parceling) {
+        return removeTransaction({ data: { id: transaction!.id } }).then(() =>
+          addTransaction({
+            data: {
+              type, amount, walletId,
+              categoryId: values.categoryId || undefined,
+              description: values.description || undefined,
+              date,
+              installments,
+            },
+          })
+        )
+      }
+
       if (isEdit) {
         return editTransaction({
           data: {
@@ -283,7 +297,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                   <Check className="h-7 w-7 text-emerald-400" strokeWidth={2.5} />
                 </div>
                 <p className="text-sm font-medium text-zinc-300">
-                  {isEdit ? 'Transação atualizada' : parceling ? `${installments} parcelas criadas` : 'Transação salva'}
+                  {parceling ? `${installments} parcelas criadas` : isEdit ? 'Transação atualizada' : 'Transação salva'}
                 </p>
               </div>
             ) : (
@@ -495,8 +509,8 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                       </div>
                     </button>
 
-                    {/* Parcelar — só para despesas e nova transação */}
-                    {!isEdit && type === 'EXPENSE' && (
+                    {/* Parcelar — só para despesas */}
+                    {type === 'EXPENSE' && (
                       <button
                         type="button"
                         onClick={() => {
