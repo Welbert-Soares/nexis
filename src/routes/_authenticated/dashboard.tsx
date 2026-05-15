@@ -245,15 +245,15 @@ function EmptyTransactions() {
 
 function TransactionsSkeleton() {
   return (
-    <div className="space-y-3">
+    <div className="space-y-1">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex items-center gap-3 py-1">
-          <div className="h-2 w-2 rounded-full bg-zinc-800 animate-pulse" />
+        <div key={i} className="flex items-center gap-3 rounded-xl px-1 py-2.5">
+          <div className="h-8 w-8 shrink-0 animate-pulse rounded-xl bg-zinc-800" />
           <div className="flex-1 space-y-1.5">
-            <div className="h-3.5 w-32 animate-pulse rounded bg-zinc-800" />
+            <div className="h-3.5 w-28 animate-pulse rounded bg-zinc-800" />
             <div className="h-3 w-20 animate-pulse rounded bg-zinc-800/60" />
           </div>
-          <div className="h-3.5 w-16 animate-pulse rounded bg-zinc-800" />
+          <div className="h-3.5 w-14 animate-pulse rounded bg-zinc-800" />
         </div>
       ))}
     </div>
