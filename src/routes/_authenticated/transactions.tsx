@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, type LucideIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
@@ -230,6 +230,7 @@ function TransactionsPage() {
             return (
               <div>
                 {/* Gatilho */}
+                <div className="flex items-center gap-3">
                 <button
                   onClick={() => { setFiltersOpen((o) => !o); setExpandedChip(null) }}
                   className="flex items-center gap-2"
@@ -251,6 +252,22 @@ function TransactionsPage() {
                     <ChevronLeft className="h-3.5 w-3.5 -rotate-90" />
                   </motion.span>
                 </button>
+
+                <AnimatePresence>
+                  {hasActiveFilter && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.15 }}
+                      onClick={() => { setFilter('ALL'); setWalletFilter(null); setExpandedChip(null) }}
+                      className="text-zinc-500 active:text-zinc-300 transition-colors"
+                    >
+                      <FilterX className="h-3.5 w-3.5" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+                </div>
 
                 {/* Chips expansíveis */}
                 <AnimatePresence initial={false}>
@@ -381,6 +398,7 @@ function TransactionsPage() {
                             })}
                           </>
                         )}
+
                       </div>
                     </motion.div>
                   )}
