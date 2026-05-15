@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Drawer } from 'vaul'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
@@ -241,13 +242,16 @@ function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => vo
   const currentX = useRef(0)
   const direction = useRef<'horizontal' | 'vertical' | null>(null)
   const [visible, setVisible] = useState(true)
+  const [confirming, setConfirming] = useState(false)
 
-  const { mutate: remove } = useMutation({
+  const { mutate: remove, isPending } = useMutation({
     mutationFn: () => removeTransaction({ data: { id: transaction.id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       queryClient.invalidateQueries({ queryKey: ['wallets'] })
+      setConfirming(false)
+      setVisible(false)
     },
   })
 
@@ -287,10 +291,10 @@ function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => vo
 
     if (currentX.current < SWIPE_THRESHOLD) {
       if (rowRef.current) {
-        rowRef.current.style.transition = 'transform 0.18s ease-in'
-        rowRef.current.style.transform = 'translateX(-400px)'
+        rowRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)'
       }
-      setTimeout(() => { setVisible(false); remove() }, 180)
+      updateDOM(0)
+      setConfirming(true)
     } else {
       if (rowRef.current) {
         rowRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)'
@@ -302,25 +306,60 @@ function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => vo
   if (!visible) return null
 
   return (
-    <div
-      className="relative overflow-hidden rounded-xl"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
+    <>
       <div
-        ref={bgRef}
-        className="absolute inset-0 flex items-center justify-end rounded-xl bg-red-500/15 pr-4"
-        style={{ opacity: 0 }}
+        className="relative overflow-hidden rounded-xl"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
-        <div ref={trashRef} style={{ transform: 'scale(0.7)' }}>
-          <Trash2 className="h-4 w-4 text-red-400" />
+        <div
+          ref={bgRef}
+          className="absolute inset-0 flex items-center justify-end rounded-xl bg-red-500/15 pr-4"
+          style={{ opacity: 0 }}
+        >
+          <div ref={trashRef} style={{ transform: 'scale(0.7)' }}>
+            <Trash2 className="h-4 w-4 text-red-400" />
+          </div>
+        </div>
+        <div ref={rowRef} style={{ transform: 'translateX(0px)' }}>
+          <TransactionRow transaction={transaction} onTap={onTap} />
         </div>
       </div>
-      <div ref={rowRef} style={{ transform: 'translateX(0px)' }}>
-        <TransactionRow transaction={transaction} onTap={onTap} />
-      </div>
-    </div>
+
+      <Drawer.Root open={confirming} onClose={() => setConfirming(false)}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={() => setConfirming(false)} />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
+            <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
+            <div className="flex flex-col items-center gap-4 px-4 py-8 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
+                <Trash2 className="h-5 w-5 text-red-400" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-white">Excluir transação?</p>
+                <p className="text-xs text-zinc-500">Esta ação não pode ser desfeita.</p>
+              </div>
+              <div className="flex w-full gap-3">
+                <button
+                  onClick={() => setConfirming(false)}
+                  className="flex-1 rounded-xl border border-zinc-700 py-3 text-sm text-zinc-400"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => remove()}
+                  disabled={isPending}
+                  className="flex-1 rounded-xl bg-red-500/20 py-3 text-sm font-medium text-red-400 disabled:opacity-50"
+                >
+                  {isPending ? 'Excluindo...' : 'Excluir'}
+                </button>
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+    </>
   )
 }
 
