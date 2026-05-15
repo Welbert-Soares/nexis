@@ -16,8 +16,19 @@ export const Route = createFileRoute('/_authenticated')({
   component: AuthenticatedLayout,
 })
 
+function useAppHeight() {
+  useEffect(() => {
+    const set = () =>
+      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
+    set()
+    window.addEventListener('resize', set)
+    return () => window.removeEventListener('resize', set)
+  }, [])
+}
+
 function AuthenticatedLayout() {
   const queryClient = useQueryClient()
+  useAppHeight()
 
   useEffect(() => {
     triggerRecurring().then((count) => {
@@ -30,7 +41,10 @@ function AuthenticatedLayout() {
   }, [])
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-zinc-950" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div
+      className="flex flex-col bg-zinc-950"
+      style={{ height: 'var(--app-height, 100dvh)', paddingTop: 'env(safe-area-inset-top)' }}
+    >
       <OfflineBanner />
       <main className="min-h-0 flex-1 overflow-hidden">
         <ErrorBoundary>
