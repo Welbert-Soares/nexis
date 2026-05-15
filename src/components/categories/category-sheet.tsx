@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Drawer } from 'vaul'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Trash2, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, TrendingUp, TrendingDown, Zap, Plane, Coffee, Music, Gift, Smartphone, PiggyBank, Receipt, ShoppingCart, Dumbbell, Baby, Shirt, Gamepad2, Dog, type LucideIcon } from 'lucide-react'
+import { Check, Trash2, type LucideIcon } from 'lucide-react'
 import { cn } from '#/lib/utils'
+import { CATEGORY_ICONS } from '#/lib/category-icons'
 import { addCategory, editCategory, removeCategory } from '#/server/services/category.service'
 
 export type EditableCategory = {
@@ -29,33 +30,12 @@ const COLORS = [
 ]
 
 const ICON_OPTIONS: { name: string; icon: LucideIcon }[] = [
-  { name: 'UtensilsCrossed', icon: UtensilsCrossed },
-  { name: 'ShoppingCart', icon: ShoppingCart },
-  { name: 'ShoppingBag', icon: ShoppingBag },
-  { name: 'Car', icon: Car },
-  { name: 'Plane', icon: Plane },
-  { name: 'Home', icon: Home },
-  { name: 'Zap', icon: Zap },
-  { name: 'Smartphone', icon: Smartphone },
-  { name: 'Heart', icon: Heart },
-  { name: 'Dumbbell', icon: Dumbbell },
-  { name: 'Baby', icon: Baby },
-  { name: 'Dog', icon: Dog },
-  { name: 'BookOpen', icon: BookOpen },
-  { name: 'Music', icon: Music },
-  { name: 'Gamepad2', icon: Gamepad2 },
-  { name: 'Coffee', icon: Coffee },
-  { name: 'Gift', icon: Gift },
-  { name: 'Shirt', icon: Shirt },
-  { name: 'Briefcase', icon: Briefcase },
-  { name: 'Laptop', icon: Laptop },
-  { name: 'TrendingUp', icon: TrendingUp },
-  { name: 'PiggyBank', icon: PiggyBank },
-  { name: 'Receipt', icon: Receipt },
-  { name: 'TrendingDown', icon: TrendingDown },
-  { name: 'Smile', icon: Smile },
-  { name: 'MoreHorizontal', icon: MoreHorizontal },
-]
+  'UtensilsCrossed', 'ShoppingCart', 'ShoppingBag', 'Car', 'Plane', 'Home',
+  'Zap', 'Smartphone', 'Heart', 'Dumbbell', 'Baby', 'Dog',
+  'BookOpen', 'Music', 'Gamepad2', 'Coffee', 'Gift', 'Shirt',
+  'Briefcase', 'Laptop', 'TrendingUp', 'PiggyBank', 'Receipt', 'TrendingDown',
+  'Smile', 'MoreHorizontal',
+].map((name) => ({ name, icon: CATEGORY_ICONS[name] }))
 
 export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose }: Props) {
   const isEdit = !!category
