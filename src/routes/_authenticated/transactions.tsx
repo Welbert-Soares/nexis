@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { listTransactions, removeTransaction } from '#/server/services/transaction.service'
+import { getUserWallets } from '#/server/services/wallet.service'
 import { TransactionSheet, type EditableTransaction } from '#/components/transactions/transaction-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 
@@ -55,6 +56,7 @@ function TransactionsPage() {
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [filter, setFilter] = useState<Filter>('ALL')
+  const [walletFilter, setWalletFilter] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<EditableTransaction | undefined>()
   const [confirmingTx, setConfirmingTx] = useState<Tx | null>(null)
@@ -92,11 +94,22 @@ function TransactionsPage() {
     setPendingDelete(null)
   }
 
+  const { data: wallets = [] } = useQuery({
+    queryKey: ['wallets'],
+    queryFn: () => getUserWallets(),
+    staleTime: 5 * 60 * 1000,
+  })
+
   const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ['transactions', year, month, filter],
+    queryKey: ['transactions', year, month, filter, walletFilter],
     queryFn: () =>
       listTransactions({
-        data: { year, month, type: filter === 'ALL' ? undefined : filter },
+        data: {
+          year,
+          month,
+          type: filter === 'ALL' ? undefined : filter,
+          walletId: walletFilter ?? undefined,
+        },
       }),
   })
 
@@ -188,7 +201,7 @@ function TransactionsPage() {
             </div>
           </div>
 
-          {/* Filtros */}
+          {/* Filtros de tipo */}
           <div className="flex gap-2">
             {FILTERS.map((f) => (
               <button
@@ -205,6 +218,43 @@ function TransactionsPage() {
               </button>
             ))}
           </div>
+
+          {/* Filtro por carteira */}
+          {wallets.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
+              <button
+                onClick={() => setWalletFilter(null)}
+                className={cn(
+                  'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                  walletFilter === null
+                    ? 'bg-zinc-100 text-zinc-900'
+                    : 'bg-zinc-800/60 text-zinc-500',
+                )}
+              >
+                Todas
+              </button>
+              {wallets.map((w) => (
+                <button
+                  key={w.id}
+                  onClick={() => setWalletFilter(w.id === walletFilter ? null : w.id)}
+                  className={cn(
+                    'shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                    walletFilter === w.id
+                      ? 'bg-zinc-100 text-zinc-900'
+                      : 'bg-zinc-800/60 text-zinc-500',
+                  )}
+                >
+                  {w.color && (
+                    <span
+                      className="h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: w.color }}
+                    />
+                  )}
+                  {w.name}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Busca */}
           <div className="relative">

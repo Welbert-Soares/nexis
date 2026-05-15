@@ -90,6 +90,7 @@ export async function getTransactionsByMonth(
   year: number,
   month: number,
   type?: 'INCOME' | 'EXPENSE',
+  walletId?: string,
 ) {
   const start = new Date(year, month - 1, 1)
   const end = new Date(year, month, 1)
@@ -99,6 +100,7 @@ export async function getTransactionsByMonth(
       wallet: { userId },
       date: { gte: start, lt: end },
       ...(type ? { type } : {}),
+      ...(walletId ? { walletId } : {}),
     },
     include: {
       category: true,

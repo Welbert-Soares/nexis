@@ -72,13 +72,14 @@ const listSchema = z.object({
   year: z.number().int(),
   month: z.number().int().min(1).max(12),
   type: z.enum(['INCOME', 'EXPENSE']).optional(),
+  walletId: z.string().optional(),
 })
 
 export const listTransactions = createServerFn({ method: 'GET' })
   .inputValidator(listSchema)
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
-    return getTransactionsByMonth(session.user.id, data.year, data.month, data.type)
+    return getTransactionsByMonth(session.user.id, data.year, data.month, data.type, data.walletId)
   })
 
 export const triggerRecurring = createServerFn({ method: 'POST' })
