@@ -249,7 +249,7 @@ function DonutChart({ items }: { items: CategoryItem[] }) {
   return (
     <div ref={ref} className="rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
       <button
-        className="w-full p-4 flex items-center gap-4 active:bg-zinc-800/40 transition-colors"
+        className="w-full p-4 flex items-center gap-4"
         onClick={() => setExpanded((v) => !v)}
       >
         <svg viewBox="0 0 120 120" className="w-28 h-28 shrink-0 -rotate-90">
