@@ -59,6 +59,9 @@ const editTransactionSchema = z.object({
   categoryId: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   date: z.coerce.date().optional(),
+  recurring: z.boolean().optional(),
+  interval: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'YEARLY']).optional(),
+  nextDue: z.coerce.date().optional(),
 })
 
 export const editTransaction = createServerFn({ method: 'POST' })

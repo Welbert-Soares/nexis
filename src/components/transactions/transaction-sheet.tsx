@@ -25,6 +25,8 @@ export type EditableTransaction = {
   date: Date
   walletId: string
   categoryId: string | null
+  recurring?: boolean
+  interval?: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'YEARLY' | null
 }
 
 interface Props {
@@ -69,8 +71,8 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [categorySheetOpen, setCategorySheetOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<EditableCategory | undefined>()
-  const [recurring, setRecurring] = useState(false)
-  const [interval, setInterval] = useState<'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'YEARLY'>('MONTHLY')
+  const [recurring, setRecurring] = useState(transaction?.recurring ?? false)
+  const [interval, setInterval] = useState<'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'YEARLY'>(transaction?.interval ?? 'MONTHLY')
   const [parceling, setParceling] = useState(false)
   const [installments, setInstallments] = useState(2)
   const [expandedCatId, setExpandedCatId] = useState<string | null>(null)
@@ -127,6 +129,8 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
       form.setFieldValue('categoryId', transaction.categoryId ?? '')
       form.setFieldValue('description', transaction.description ?? '')
       form.setFieldValue('date', toDateInput(new Date(transaction.date)))
+      setRecurring(transaction.recurring ?? false)
+      setInterval(transaction.interval ?? 'MONTHLY')
     }
   }, [transaction?.id])
 
@@ -154,6 +158,9 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
             categoryId: values.categoryId || null,
             description: values.description || null,
             date,
+            recurring: recurring || undefined,
+            interval: recurring ? interval : undefined,
+            nextDue: recurring && !transaction!.recurring ? calcNextDue(date, interval) : undefined,
           },
         })
       }
@@ -452,48 +459,47 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                   )}
                 </form.Field>
 
-                {/* Recorrência / Parcelas — só para novas transações */}
-                {!isEdit && (
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      {/* Repetir */}
+                {/* Recorrência / Parcelas */}
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    {/* Repetir */}
+                    <button
+                      type="button"
+                      onClick={() => { setRecurring((r) => !r); setParceling(false) }}
+                      className={cn(
+                        'flex flex-1 items-center justify-between rounded-xl px-4 py-3 transition-colors',
+                        recurring ? 'bg-blue-400/10' : 'bg-zinc-800',
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Repeat2 className={cn('h-4 w-4', recurring ? 'text-blue-400' : 'text-zinc-500')} />
+                        <span className={cn('text-sm', recurring ? 'text-blue-300' : 'text-zinc-300')}>Repetir</span>
+                      </div>
+                      <div className={cn('h-5 w-9 rounded-full transition-colors', recurring ? 'bg-blue-400' : 'bg-zinc-700')}>
+                        <div className={cn('m-0.5 h-4 w-4 rounded-full bg-white transition-transform', recurring ? 'translate-x-4' : 'translate-x-0')} />
+                      </div>
+                    </button>
+
+                    {/* Parcelar — só para despesas e nova transação */}
+                    {!isEdit && type === 'EXPENSE' && (
                       <button
                         type="button"
-                        onClick={() => { setRecurring((r) => !r); setParceling(false) }}
+                        onClick={() => { setParceling((p) => !p); setRecurring(false) }}
                         className={cn(
                           'flex flex-1 items-center justify-between rounded-xl px-4 py-3 transition-colors',
-                          recurring ? 'bg-blue-400/10' : 'bg-zinc-800',
+                          parceling ? 'bg-purple-400/10' : 'bg-zinc-800',
                         )}
                       >
                         <div className="flex items-center gap-2">
-                          <Repeat2 className={cn('h-4 w-4', recurring ? 'text-blue-400' : 'text-zinc-500')} />
-                          <span className={cn('text-sm', recurring ? 'text-blue-300' : 'text-zinc-300')}>Repetir</span>
+                          <Layers className={cn('h-4 w-4', parceling ? 'text-purple-400' : 'text-zinc-500')} />
+                          <span className={cn('text-sm', parceling ? 'text-purple-300' : 'text-zinc-300')}>Parcelar</span>
                         </div>
-                        <div className={cn('h-5 w-9 rounded-full transition-colors', recurring ? 'bg-blue-400' : 'bg-zinc-700')}>
-                          <div className={cn('m-0.5 h-4 w-4 rounded-full bg-white transition-transform', recurring ? 'translate-x-4' : 'translate-x-0')} />
+                        <div className={cn('h-5 w-9 rounded-full transition-colors', parceling ? 'bg-purple-400' : 'bg-zinc-700')}>
+                          <div className={cn('m-0.5 h-4 w-4 rounded-full bg-white transition-transform', parceling ? 'translate-x-4' : 'translate-x-0')} />
                         </div>
                       </button>
-
-                      {/* Parcelar — só para despesas */}
-                      {type === 'EXPENSE' && (
-                        <button
-                          type="button"
-                          onClick={() => { setParceling((p) => !p); setRecurring(false) }}
-                          className={cn(
-                            'flex flex-1 items-center justify-between rounded-xl px-4 py-3 transition-colors',
-                            parceling ? 'bg-purple-400/10' : 'bg-zinc-800',
-                          )}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Layers className={cn('h-4 w-4', parceling ? 'text-purple-400' : 'text-zinc-500')} />
-                            <span className={cn('text-sm', parceling ? 'text-purple-300' : 'text-zinc-300')}>Parcelar</span>
-                          </div>
-                          <div className={cn('h-5 w-9 rounded-full transition-colors', parceling ? 'bg-purple-400' : 'bg-zinc-700')}>
-                            <div className={cn('m-0.5 h-4 w-4 rounded-full bg-white transition-transform', parceling ? 'translate-x-4' : 'translate-x-0')} />
-                          </div>
-                        </button>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
                     {/* Intervalo de recorrência */}
                     {recurring && (
@@ -541,8 +547,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                         </button>
                       </div>
                     )}
-                  </div>
-                )}
+                </div>
 
                 {saveMutation.isError && (
                   <p className="text-center text-xs text-red-400">

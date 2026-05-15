@@ -172,6 +172,9 @@ export async function updateTransaction(
     categoryId?: string | null
     description?: string | null
     date?: Date
+    recurring?: boolean
+    interval?: RecurrenceInterval
+    nextDue?: Date
   },
 ) {
   const old = await prisma.transaction.findFirst({
@@ -194,6 +197,9 @@ export async function updateTransaction(
       categoryId: data.categoryId ?? null,
       description: data.description ?? null,
       ...(data.date ? { date: data.date } : {}),
+      ...(data.recurring !== undefined ? { recurring: data.recurring } : {}),
+      ...(data.interval !== undefined ? { interval: data.interval } : {}),
+      ...(data.nextDue !== undefined ? { nextDue: data.nextDue } : {}),
     },
   })
 

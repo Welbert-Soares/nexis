@@ -48,6 +48,7 @@ type Tx = {
   category: { name: string; color: string | null; icon: string | null } | null
   wallet: { id: string; name: string; color: string | null }
   recurring: boolean
+  interval: string | null
   parentId: string | null
 }
 
@@ -160,6 +161,8 @@ function TransactionsPage() {
       date: new Date(t.date),
       walletId: t.walletId,
       categoryId: t.categoryId,
+      recurring: t.recurring,
+      interval: t.interval as EditableTransaction['interval'],
     })
   }
 
