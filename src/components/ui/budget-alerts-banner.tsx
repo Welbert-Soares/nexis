@@ -24,7 +24,7 @@ export function BudgetAlertsBanner() {
 
   useEffect(() => {
     if (alerts.length === 0 || dismissed) return
-    const timer = setTimeout(() => setDismissed(true), 3000)
+    const timer = setTimeout(() => setDismissed(true), 4000)
     return () => clearTimeout(timer)
   }, [alerts.length, dismissed])
 

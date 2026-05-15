@@ -6,8 +6,7 @@ import { ErrorBoundary } from '#/components/ui/error-boundary'
 import { OfflineBanner } from '#/components/ui/offline-banner'
 import { BudgetAlertsBanner } from '#/components/ui/budget-alerts-banner'
 import { NavigationProgress } from '#/components/ui/navigation-progress'
-import { InstallPrompt } from '#/components/ui/install-prompt'
-import { NotificationPermission } from '#/components/ui/notification-permission'
+import { AppToasts } from '#/components/ui/app-toasts'
 import { getSession } from '#/server/services/auth.service'
 import { triggerRecurring } from '#/server/services/transaction.service'
 
@@ -44,8 +43,7 @@ function AuthenticatedLayout() {
       </main>
       <BottomNav />
       <BudgetAlertsBanner />
-      <InstallPrompt />
-      <NotificationPermission />
+      <AppToasts />
     </div>
   )
 }
