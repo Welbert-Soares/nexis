@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { BottomNav } from '#/components/layout/bottom-nav'
 import { ErrorBoundary } from '#/components/ui/error-boundary'
 import { OfflineBanner } from '#/components/ui/offline-banner'
+import { BudgetAlertsBanner } from '#/components/ui/budget-alerts-banner'
 import { getSession } from '#/server/services/auth.service'
 import { triggerRecurring } from '#/server/services/transaction.service'
 
@@ -32,6 +33,7 @@ function AuthenticatedLayout() {
   return (
     <div className="fixed inset-0 flex flex-col bg-zinc-950">
       <OfflineBanner />
+      <BudgetAlertsBanner />
       <main className="min-h-0 flex-1 overflow-hidden">
         <ErrorBoundary>
           <Outlet />
