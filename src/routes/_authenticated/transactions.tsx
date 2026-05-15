@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X, Repeat2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2 } from 'lucide-react'
+import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
-import { listTransactions } from '#/server/services/transaction.service'
+import { listTransactions, removeTransaction } from '#/server/services/transaction.service'
 import { TransactionSheet, type EditableTransaction } from '#/components/transactions/transaction-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 
@@ -209,7 +209,7 @@ function TransactionsPage() {
                     <p className="mb-2 text-xs font-medium text-zinc-600">{label}</p>
                     {items.map((t) => (
                       <motion.div key={t.id} variants={scaleIn}>
-                        <TransactionRow transaction={t} onTap={() => handleRowTap(t)} />
+                        <SwipeableRow transaction={t} onTap={() => handleRowTap(t)} />
                       </motion.div>
                     ))}
                   </motion.div>
@@ -226,6 +226,59 @@ function TransactionsPage() {
         onClose={() => setEditing(undefined)}
       />
     </>
+  )
+}
+
+const SWIPE_THRESHOLD = -72
+
+function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => void }) {
+  const queryClient = useQueryClient()
+  const x = useMotionValue(0)
+  const controls = useAnimation()
+  const bgOpacity = useTransform(x, [-72, -20], [1, 0])
+  const trashScale = useTransform(x, [-72, -36], [1, 0.7])
+
+  const { mutate: remove } = useMutation({
+    mutationFn: () => removeTransaction({ data: { id: transaction.id } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
+    },
+  })
+
+  async function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
+    if (info.offset.x < SWIPE_THRESHOLD) {
+      await controls.start({ x: -400, transition: { duration: 0.18, ease: 'easeIn' } })
+      remove()
+    } else {
+      controls.start({ x: 0, transition: { type: 'spring', stiffness: 500, damping: 35 } })
+    }
+  }
+
+  return (
+    <div className="relative overflow-hidden rounded-xl">
+      <motion.div
+        className="absolute inset-0 flex items-center justify-end rounded-xl bg-red-500/15 pr-4"
+        style={{ opacity: bgOpacity }}
+      >
+        <motion.div style={{ scale: trashScale }}>
+          <Trash2 className="h-4 w-4 text-red-400" />
+        </motion.div>
+      </motion.div>
+
+      <motion.div
+        drag="x"
+        dragDirectionLock
+        dragConstraints={{ left: -100, right: 0 }}
+        dragElastic={{ left: 0.12, right: 0 }}
+        style={{ x }}
+        animate={controls}
+        onDragEnd={handleDragEnd}
+      >
+        <TransactionRow transaction={transaction} onTap={onTap} />
+      </motion.div>
+    </div>
   )
 }
 
