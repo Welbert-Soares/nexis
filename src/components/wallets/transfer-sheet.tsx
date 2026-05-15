@@ -5,7 +5,7 @@ import { ArrowRight, Check } from 'lucide-react'
 import { transferUserWallets } from '#/server/services/wallet.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
 
-type Wallet = { id: string; name: string; color: string | null }
+type Wallet = { id: string; name: string; color: string | null; balance: number }
 
 interface Props {
   open: boolean
@@ -41,7 +41,10 @@ export function TransferSheet({ open, wallets, onClose }: Props) {
     onClose()
   }
 
-  const canSubmit = fromId && toId && fromId !== toId && cents > 0
+  const fromWallet = wallets.find((w) => w.id === fromId)
+  const amount = cents / 100
+  const insufficientFunds = !!fromWallet && amount > fromWallet.balance
+  const canSubmit = fromId && toId && fromId !== toId && cents > 0 && !insufficientFunds
 
   return (
     <Drawer.Root open={open} onClose={handleClose}>
@@ -81,13 +84,26 @@ export function TransferSheet({ open, wallets, onClose }: Props) {
                   />
                 </div>
 
+                {/* Saldo disponível */}
+                {fromWallet && (
+                  <p className="text-xs text-zinc-500">
+                    Disponível: <span className="tabular-nums text-zinc-300">{fmt(fromWallet.balance)}</span>
+                  </p>
+                )}
+
                 {/* Valor */}
                 <div className="space-y-2">
                   <p className="text-xs text-zinc-500">Valor</p>
                   <CurrencyInput cents={cents} onChange={setCents} />
                 </div>
 
-                {mutation.isError && (
+                {insufficientFunds && (
+                  <p className="text-xs text-red-400">
+                    Saldo insuficiente — disponível {fmt(fromWallet!.balance)}
+                  </p>
+                )}
+
+                {mutation.isError && !insufficientFunds && (
                   <p className="text-center text-xs text-red-400">
                     {mutation.error instanceof Error ? mutation.error.message : 'Erro ao transferir'}
                   </p>
@@ -107,6 +123,10 @@ export function TransferSheet({ open, wallets, onClose }: Props) {
       </Drawer.Portal>
     </Drawer.Root>
   )
+}
+
+function fmt(v: number) {
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
 function WalletSelect({
