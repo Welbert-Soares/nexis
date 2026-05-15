@@ -4,19 +4,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Drawer } from 'vaul'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Trash2, Wallet, Plus, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, TrendingUp, Repeat2 } from 'lucide-react'
+import { Check, Trash2, Wallet, Plus, Repeat2 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '#/lib/utils'
+import { CATEGORY_ICONS } from '#/lib/category-icons'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { getCategories } from '#/server/services/category.service'
 import { addTransaction, editTransaction, removeTransaction } from '#/server/services/transaction.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
 import { CategorySheet, type EditableCategory } from '#/components/categories/category-sheet'
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag,
-  MoreHorizontal, Briefcase, Laptop, TrendingUp,
-}
 
 type TransactionType = 'EXPENSE' | 'INCOME'
 
@@ -336,7 +333,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                           const isSelected = field.state.value === cat.id
                           const isExpanded = expandedCatId === cat.id
                           const color = cat.color ?? '#71717a'
-                          const Icon = cat.icon ? ICON_MAP[cat.icon] : null
+                          const Icon = cat.icon ? CATEGORY_ICONS[cat.icon] : null
                           return (
                             <motion.button
                               layout
@@ -348,7 +345,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                                 if (!isSelected) {
                                   field.handleChange(cat.id)
                                   if (cat.userId) {
-                                    setEditingCategory({ id: cat.id, name: cat.name, color, type, userId: cat.userId })
+                                    setEditingCategory({ id: cat.id, name: cat.name, color, icon: cat.icon, type, userId: cat.userId })
                                   }
                                 }
                               }}

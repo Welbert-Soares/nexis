@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Drawer } from 'vaul'
-import { Check, Trash2 } from 'lucide-react'
+import { Check, Trash2, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, TrendingUp, TrendingDown, Zap, Plane, Coffee, Music, Gift, Smartphone, PiggyBank, Receipt, ShoppingCart, Dumbbell, Baby, Shirt, Gamepad2, Dog, type LucideIcon } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import { addCategory, editCategory, removeCategory } from '#/server/services/category.service'
 
@@ -9,6 +9,7 @@ export type EditableCategory = {
   id: string
   name: string
   color: string
+  icon: string | null
   type: 'INCOME' | 'EXPENSE'
   userId: string | null
 }
@@ -26,12 +27,42 @@ const COLORS = [
   '#f97316', '#10b981', '#6366f1', '#84cc16',
 ]
 
+const ICON_OPTIONS: { name: string; icon: LucideIcon }[] = [
+  { name: 'UtensilsCrossed', icon: UtensilsCrossed },
+  { name: 'ShoppingCart', icon: ShoppingCart },
+  { name: 'ShoppingBag', icon: ShoppingBag },
+  { name: 'Car', icon: Car },
+  { name: 'Plane', icon: Plane },
+  { name: 'Home', icon: Home },
+  { name: 'Zap', icon: Zap },
+  { name: 'Smartphone', icon: Smartphone },
+  { name: 'Heart', icon: Heart },
+  { name: 'Dumbbell', icon: Dumbbell },
+  { name: 'Baby', icon: Baby },
+  { name: 'Dog', icon: Dog },
+  { name: 'BookOpen', icon: BookOpen },
+  { name: 'Music', icon: Music },
+  { name: 'Gamepad2', icon: Gamepad2 },
+  { name: 'Coffee', icon: Coffee },
+  { name: 'Gift', icon: Gift },
+  { name: 'Shirt', icon: Shirt },
+  { name: 'Briefcase', icon: Briefcase },
+  { name: 'Laptop', icon: Laptop },
+  { name: 'TrendingUp', icon: TrendingUp },
+  { name: 'PiggyBank', icon: PiggyBank },
+  { name: 'Receipt', icon: Receipt },
+  { name: 'TrendingDown', icon: TrendingDown },
+  { name: 'Smile', icon: Smile },
+  { name: 'MoreHorizontal', icon: MoreHorizontal },
+]
+
 export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose }: Props) {
   const isEdit = !!category
   const isGlobal = isEdit && !category.userId
   const queryClient = useQueryClient()
   const [name, setName] = useState(category?.name ?? '')
   const [color, setColor] = useState(category?.color ?? COLORS[0])
+  const [icon, setIcon] = useState<string | null>(category?.icon ?? null)
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(category?.type ?? defaultType)
   const [saved, setSaved] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -40,6 +71,7 @@ export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose
     if (open) {
       setName(category?.name ?? '')
       setColor(category?.color ?? COLORS[0])
+      setIcon(category?.icon ?? null)
       setType(category?.type ?? defaultType)
       setSaved(false)
       setConfirmDelete(false)
@@ -49,8 +81,8 @@ export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose
   const saveMutation = useMutation({
     mutationFn: () =>
       isEdit
-        ? editCategory({ data: { id: category.id, name, color } })
-        : addCategory({ data: { name, color, type } }),
+        ? editCategory({ data: { id: category.id, name, color, icon } })
+        : addCategory({ data: { name, color, icon: icon ?? undefined, type } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
       setSaved(true)
@@ -67,6 +99,8 @@ export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose
   })
 
   const canSave = name.trim().length > 0 && !saveMutation.isPending && !saved
+
+  const PreviewIcon = icon ? ICON_OPTIONS.find((o) => o.name === icon)?.icon : null
 
   return (
     <Drawer.Root open={open} onClose={onClose}>
@@ -155,6 +189,34 @@ export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose
                   />
                 </div>
 
+                {/* Ícone */}
+                <div className="space-y-2">
+                  <p className="text-xs text-zinc-500">Ícone</p>
+                  <div className="grid grid-cols-6 gap-2">
+                    {ICON_OPTIONS.map((opt) => {
+                      const isSelected = icon === opt.name
+                      return (
+                        <button
+                          key={opt.name}
+                          type="button"
+                          onClick={() => setIcon(isSelected ? null : opt.name)}
+                          className="flex h-10 w-full items-center justify-center rounded-xl transition-colors"
+                          style={{
+                            backgroundColor: isSelected ? `${color}26` : '#27272a',
+                            border: `2px solid ${isSelected ? color : 'transparent'}`,
+                          }}
+                        >
+                          <opt.icon
+                            className="h-4 w-4"
+                            style={{ color: isSelected ? color : '#71717a' }}
+                            strokeWidth={1.75}
+                          />
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
                 {/* Cor */}
                 <div className="space-y-2">
                   <p className="text-xs text-zinc-500">Cor</p>
@@ -175,7 +237,15 @@ export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose
 
                 {/* Preview */}
                 <div className="flex items-center gap-3 rounded-xl bg-zinc-800/50 px-4 py-3">
-                  <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                  <div
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+                    style={{ backgroundColor: `${color}20` }}
+                  >
+                    {PreviewIcon
+                      ? <PreviewIcon className="h-4 w-4" style={{ color }} strokeWidth={1.75} />
+                      : <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+                    }
+                  </div>
                   <span className="text-sm text-zinc-300">{name || 'Prévia da categoria'}</span>
                 </div>
 

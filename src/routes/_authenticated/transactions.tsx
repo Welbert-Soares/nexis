@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, type LucideIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
@@ -11,6 +11,7 @@ import { listTransactions, removeTransaction } from '#/server/services/transacti
 import { getUserWallets } from '#/server/services/wallet.service'
 import { TransactionSheet, type EditableTransaction } from '#/components/transactions/transaction-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
+import { CATEGORY_ICONS } from '#/lib/category-icons'
 
 const searchSchema = z.object({
   action: z.enum(['new']).optional(),
@@ -27,11 +28,6 @@ export const Route = createFileRoute('/_authenticated/transactions')({
   },
   component: TransactionsPage,
 })
-
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag,
-  MoreHorizontal, Briefcase, Laptop, TrendingUp, TrendingDown, Wallet,
-}
 
 type Filter = 'ALL' | 'INCOME' | 'EXPENSE'
 

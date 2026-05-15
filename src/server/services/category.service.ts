@@ -26,6 +26,7 @@ export const addCategory = createServerFn({ method: 'POST' })
   .inputValidator(z.object({
     name: z.string().min(1),
     color: z.string(),
+    icon: z.string().optional(),
     type: z.enum(['INCOME', 'EXPENSE']),
   }))
   .handler(async ({ data }) => {
@@ -38,10 +39,11 @@ export const editCategory = createServerFn({ method: 'POST' })
     id: z.string(),
     name: z.string().min(1),
     color: z.string(),
+    icon: z.string().nullable().optional(),
   }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
-    return updateCategory(data.id, session.user.id, { name: data.name, color: data.color })
+    return updateCategory(data.id, session.user.id, { name: data.name, color: data.color, icon: data.icon })
   })
 
 export const removeCategory = createServerFn({ method: 'POST' })

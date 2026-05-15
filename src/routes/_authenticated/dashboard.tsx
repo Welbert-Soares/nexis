@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { TrendingDown, TrendingUp, Wallet, ArrowRight, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, type LucideIcon } from 'lucide-react'
+import { TrendingDown, TrendingUp, Wallet, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getDashboard } from '#/server/services/dashboard.service'
 import { cn } from '#/lib/utils'
@@ -9,11 +9,7 @@ import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { ProfileSheet } from '#/components/profile/profile-sheet'
 import { Avatar } from '#/components/ui/avatar'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
-
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag,
-  MoreHorizontal, Briefcase, Laptop, TrendingUp, TrendingDown, Wallet,
-}
+import { CATEGORY_ICONS } from '#/lib/category-icons'
 
 
 export const Route = createFileRoute('/_authenticated/dashboard')({

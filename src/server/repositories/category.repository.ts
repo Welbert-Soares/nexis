@@ -10,13 +10,14 @@ export function getCategoriesByType(type: 'INCOME' | 'EXPENSE', userId: string) 
 export function createCategory(data: {
   name: string
   color: string
+  icon?: string
   type: 'INCOME' | 'EXPENSE'
   userId: string
 }) {
   return prisma.category.create({ data })
 }
 
-export function updateCategory(id: string, userId: string, data: { name: string; color: string }) {
+export function updateCategory(id: string, userId: string, data: { name: string; color: string; icon?: string | null }) {
   return prisma.category.update({
     where: { id, userId },
     data,
