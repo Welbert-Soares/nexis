@@ -175,7 +175,7 @@ function GoalsPage() {
             <EmptyState onAdd={() => setSheetOpen(true)} />
           </div>
         ) : (
-          <motion.div variants={stagger} className="space-y-3 pb-4">
+          <motion.div variants={stagger} className="mt-6 space-y-3 pb-4">
             {(goals as Goal[]).map((g) => (
               <motion.div key={g.id} variants={fadeUp}>
                 <GoalCard goal={g} onTap={() => handleEdit(g)} onDeposit={() => openDeposit(g)} onWithdraw={() => openWithdraw(g)} />
