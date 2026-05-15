@@ -325,7 +325,7 @@ function TransactionsPage() {
   )
 }
 
-const SWIPE_THRESHOLD = -72
+const SWIPE_THRESHOLD = -110
 
 function SwipeableRow({ transaction, onTap, onDelete }: { transaction: Tx; onTap: () => void; onDelete: () => void }) {
   const rowRef = useRef<HTMLDivElement>(null)
@@ -337,7 +337,7 @@ function SwipeableRow({ transaction, onTap, onDelete }: { transaction: Tx; onTap
   const direction = useRef<'horizontal' | 'vertical' | null>(null)
 
   function updateDOM(x: number) {
-    const pct = Math.min(Math.abs(x) / 72, 1)
+    const pct = Math.min(Math.abs(x) / 110, 1)
     if (rowRef.current) rowRef.current.style.transform = `translateX(${x}px)`
     if (bgRef.current) bgRef.current.style.opacity = String(pct)
     if (trashRef.current) trashRef.current.style.transform = `scale(${0.7 + pct * 0.3})`
@@ -363,7 +363,8 @@ function SwipeableRow({ transaction, onTap, onDelete }: { transaction: Tx; onTap
     if (direction.current !== 'horizontal' || dx > 0) return
 
     e.stopPropagation()
-    currentX.current = Math.max(dx, -100)
+    const resistant = dx * 0.55
+    currentX.current = Math.max(resistant, -140)
     updateDOM(currentX.current)
   }
 
