@@ -73,6 +73,54 @@ export const deleteUserGoal = createServerFn({ method: 'POST' })
     await deleteGoal(data.id, session.user.id)
   })
 
+export const checkGoalDeadlines = createServerFn({ method: 'POST' }).handler(async () => {
+  const session = await getSessionOrThrow()
+  const now = new Date()
+  const in7days = new Date(now)
+  in7days.setDate(in7days.getDate() + 7)
+
+  const goals = await prisma.goal.findMany({
+    where: {
+      userId: session.user.id,
+      deadline: { gte: now, lte: in7days },
+    },
+    select: { id: true, name: true, deadline: true, targetAmount: true, seedAmount: true },
+  })
+  if (!goals.length) return 0
+
+  const goalIds = goals.map((g) => g.id)
+  const txs = await prisma.transaction.findMany({
+    where: { goalId: { in: goalIds }, deletedAt: null },
+    select: { goalId: true, amount: true, type: true },
+  })
+
+  const netMap = new Map<string, number>()
+  for (const t of txs) {
+    if (!t.goalId) continue
+    const delta = t.type === 'EXPENSE' ? t.amount.toNumber() : -t.amount.toNumber()
+    netMap.set(t.goalId, (netMap.get(t.goalId) ?? 0) + delta)
+  }
+
+  let sent = 0
+  for (const g of goals) {
+    const current = g.seedAmount.toNumber() + (netMap.get(g.id) ?? 0)
+    const target = g.targetAmount.toNumber()
+    if (current >= target) continue  // meta já atingida, sem aviso
+
+    const daysLeft = Math.ceil((new Date(g.deadline!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    const pct = Math.round((current / target) * 100)
+    const fmtBRL = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+
+    sendPushToUser(session.user.id, {
+      title: `Meta "${g.name}" vence em ${daysLeft} dia${daysLeft === 1 ? '' : 's'}`,
+      body: `${pct}% concluída · faltam ${fmtBRL(target - current)}`,
+      url: '/goals',
+    }).catch(() => {})
+    sent++
+  }
+  return sent
+})
+
 export const withdrawFromGoal = createServerFn({ method: 'POST' })
   .inputValidator(z.object({
     goalId: z.string(),

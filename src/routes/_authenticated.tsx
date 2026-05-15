@@ -10,6 +10,7 @@ import { AppToasts } from '#/components/ui/app-toasts'
 import { NotificationPermission } from '#/components/ui/notification-permission'
 import { getSession } from '#/server/services/auth.service'
 import { triggerRecurring } from '#/server/services/transaction.service'
+import { checkGoalDeadlines } from '#/server/services/goal.service'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async () => {
@@ -32,6 +33,8 @@ function AuthenticatedLayout() {
         queryClient.invalidateQueries({ queryKey: ['wallets'] })
       }
     }).catch(() => {})
+
+    checkGoalDeadlines().catch(() => {})
   }, [])
 
   return (
