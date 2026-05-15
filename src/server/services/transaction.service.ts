@@ -67,7 +67,7 @@ export const addTransaction = createServerFn({ method: 'POST' })
       }
       return null
     }
-    const [transaction] = await createTransaction(data)
+    const transaction = await createTransaction(data)
     if (data.type === 'EXPENSE') {
       checkBudgetsAndNotify(session.user.id)
     }
@@ -92,7 +92,7 @@ export const editTransaction = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const { id, ...rest } = data
-    const [transaction] = await updateTransaction(id, session.user.id, rest)
+    const transaction = await updateTransaction(id, session.user.id, rest)
     return { ...transaction, amount: transaction.amount.toNumber() }
   })
 

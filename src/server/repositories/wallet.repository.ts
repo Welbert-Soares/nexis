@@ -59,8 +59,6 @@ export async function transferBetweenWallets(
         parentId: expense.id,
       },
     })
-    await tx.wallet.update({ where: { id: fromWalletId }, data: { balance: { decrement: amount } } })
-    await tx.wallet.update({ where: { id: toWalletId }, data: { balance: { increment: amount } } })
   })
 }
 
@@ -75,7 +73,8 @@ export function createWallet(data: {
   closingDay?: number | null
   dueDay?: number | null
 }) {
-  return prisma.wallet.create({ data })
+  const { balance, ...rest } = data
+  return prisma.wallet.create({ data: { ...rest, initialBalance: balance ?? 0 } })
 }
 
 export async function getWalletsByUser(userId: string) {
@@ -83,9 +82,30 @@ export async function getWalletsByUser(userId: string) {
     where: { userId },
     orderBy: { createdAt: 'asc' },
   })
+
+  const walletIds = wallets.map((w) => w.id)
+  if (!walletIds.length) return []
+
+  const [incomeAgg, expenseAgg] = await Promise.all([
+    prisma.transaction.groupBy({
+      by: ['walletId'],
+      where: { walletId: { in: walletIds }, type: 'INCOME', deletedAt: null },
+      _sum: { amount: true },
+    }),
+    prisma.transaction.groupBy({
+      by: ['walletId'],
+      where: { walletId: { in: walletIds }, type: 'EXPENSE', deletedAt: null },
+      _sum: { amount: true },
+    }),
+  ])
+
+  const incomeMap = new Map(incomeAgg.map((r) => [r.walletId, r._sum.amount?.toNumber() ?? 0]))
+  const expenseMap = new Map(expenseAgg.map((r) => [r.walletId, r._sum.amount?.toNumber() ?? 0]))
+
   return wallets.map((w) => ({
     ...w,
-    balance: w.balance.toNumber(),
+    balance: w.initialBalance.toNumber() + (incomeMap.get(w.id) ?? 0) - (expenseMap.get(w.id) ?? 0),
+    initialBalance: w.initialBalance.toNumber(),
     creditLimit: w.creditLimit?.toNumber() ?? null,
   }))
 }

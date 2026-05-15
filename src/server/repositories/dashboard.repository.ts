@@ -6,8 +6,14 @@ export async function getDashboardData(userId: string) {
 
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
 
-  const [wallets, monthlyAgg, recent, categoryAgg] = await Promise.all([
-    prisma.wallet.findMany({ where: { userId }, select: { balance: true } }),
+  const [wallets, allTimeAgg, monthlyAgg, recent, categoryAgg] = await Promise.all([
+    prisma.wallet.findMany({ where: { userId }, select: { initialBalance: true } }),
+
+    prisma.transaction.groupBy({
+      by: ['type'],
+      where: { wallet: { userId }, deletedAt: null },
+      _sum: { amount: true },
+    }),
 
     prisma.transaction.groupBy({
       by: ['type'],
@@ -37,7 +43,10 @@ export async function getDashboardData(userId: string) {
     }),
   ])
 
-  const totalBalance = wallets.reduce((acc, w) => acc + w.balance.toNumber(), 0)
+  const seedBalance = wallets.reduce((acc, w) => acc + w.initialBalance.toNumber(), 0)
+  const allTimeIncome = allTimeAgg.find((r) => r.type === 'INCOME')?._sum.amount?.toNumber() ?? 0
+  const allTimeExpenses = allTimeAgg.find((r) => r.type === 'EXPENSE')?._sum.amount?.toNumber() ?? 0
+  const totalBalance = seedBalance + allTimeIncome - allTimeExpenses
   const income = monthlyAgg.find((r) => r.type === 'INCOME')?._sum.amount?.toNumber() ?? 0
   const expenses = monthlyAgg.find((r) => r.type === 'EXPENSE')?._sum.amount?.toNumber() ?? 0
 

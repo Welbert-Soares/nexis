@@ -14,17 +14,9 @@ export function createTransaction(data: {
   parentId?: string
 }) {
   const { amount, type, ...rest } = data
-  const delta = type === 'EXPENSE' ? -amount : amount
-
-  return prisma.$transaction([
-    prisma.transaction.create({
-      data: { amount, type, ...rest, date: rest.date ?? new Date() },
-    }),
-    prisma.wallet.update({
-      where: { id: data.walletId },
-      data: { balance: { increment: delta } },
-    }),
-  ])
+  return prisma.transaction.create({
+    data: { amount, type, ...rest, date: rest.date ?? new Date() },
+  })
 }
 
 function calcNextDue(from: Date, interval: RecurrenceInterval): Date {
@@ -58,7 +50,6 @@ export async function processDueRecurring(userId: string) {
     due.flatMap((t) => {
       const dueDate = t.nextDue!
       const next = calcNextDue(dueDate, t.interval!)
-      const delta = t.type === 'EXPENSE' ? -t.amount.toNumber() : t.amount.toNumber()
       return [
         prisma.transaction.create({
           data: {
@@ -70,10 +61,6 @@ export async function processDueRecurring(userId: string) {
             date: dueDate,
             parentId: t.id,
           },
-        }),
-        prisma.wallet.update({
-          where: { id: t.walletId },
-          data: { balance: { increment: delta } },
         }),
         prisma.transaction.update({
           where: { id: t.id },
@@ -97,7 +84,6 @@ export async function createInstallments(data: {
 }) {
   const { amount, type, installments, date, description } = data
   const perInstallment = Math.round((amount / installments) * 100) / 100
-  const totalDelta = type === 'EXPENSE' ? -(perInstallment * installments) : perInstallment * installments
 
   const creates = Array.from({ length: installments }, (_, i) => {
     const installDate = new Date(date)
@@ -110,13 +96,7 @@ export async function createInstallments(data: {
     })
   })
 
-  return prisma.$transaction([
-    ...creates,
-    prisma.wallet.update({
-      where: { id: data.walletId },
-      data: { balance: { increment: totalDelta } },
-    }),
-  ])
+  return prisma.$transaction(creates)
 }
 
 export async function getTransactionsByMonth(
@@ -153,16 +133,7 @@ export async function deleteTransaction(id: string, userId: string) {
   })
   if (!tx) throw new Error('Transaction not found')
 
-  const delta = tx.type === 'EXPENSE' ? tx.amount : tx.amount.neg()
-  const now = new Date()
-
-  return prisma.$transaction([
-    prisma.transaction.update({ where: { id }, data: { deletedAt: now } }),
-    prisma.wallet.update({
-      where: { id: tx.walletId },
-      data: { balance: { increment: delta } },
-    }),
-  ])
+  return prisma.transaction.update({ where: { id }, data: { deletedAt: new Date() } })
 }
 
 export async function updateTransaction(
@@ -186,12 +157,8 @@ export async function updateTransaction(
   if (!old) throw new Error('Transaction not found')
 
   const newWalletId = data.walletId ?? old.walletId
-  const walletChanged = newWalletId !== old.walletId
 
-  const oldDelta = old.type === 'EXPENSE' ? -old.amount.toNumber() : old.amount.toNumber()
-  const newDelta = data.type === 'EXPENSE' ? -data.amount : data.amount
-
-  const updateTx = prisma.transaction.update({
+  return prisma.transaction.update({
     where: { id },
     data: {
       amount: data.amount,
@@ -205,41 +172,17 @@ export async function updateTransaction(
       ...(data.nextDue !== undefined ? { nextDue: data.nextDue } : {}),
     },
   })
-
-  if (walletChanged) {
-    // Reverte o efeito na carteira antiga e aplica na nova
-    return prisma.$transaction([
-      updateTx,
-      prisma.wallet.update({
-        where: { id: old.walletId },
-        data: { balance: { increment: -oldDelta } },
-      }),
-      prisma.wallet.update({
-        where: { id: newWalletId },
-        data: { balance: { increment: newDelta } },
-      }),
-    ])
-  }
-
-  return prisma.$transaction([
-    updateTx,
-    prisma.wallet.update({
-      where: { id: old.walletId },
-      data: { balance: { increment: newDelta - oldDelta } },
-    }),
-  ])
 }
 
 export async function getRecentTransactions(userId: string, limit = 10) {
   const rows = await prisma.transaction.findMany({
     where: { wallet: { userId }, deletedAt: null },
-    include: { category: true, wallet: true },
+    include: {
+      category: true,
+      wallet: { select: { id: true, name: true, color: true, icon: true, type: true } },
+    },
     orderBy: { date: 'desc' },
     take: limit,
   })
-  return rows.map((t) => ({
-    ...t,
-    amount: t.amount.toNumber(),
-    wallet: { ...t.wallet, balance: t.wallet.balance.toNumber(), creditLimit: t.wallet.creditLimit?.toNumber() ?? null },
-  }))
+  return rows.map((t) => ({ ...t, amount: t.amount.toNumber() }))
 }

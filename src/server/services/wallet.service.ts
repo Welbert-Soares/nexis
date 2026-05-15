@@ -35,7 +35,7 @@ export const createUserWallet = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const wallet = await createWallet({ userId: session.user.id, ...data })
-    return { ...wallet, balance: wallet.balance.toNumber(), creditLimit: wallet.creditLimit?.toNumber() ?? null }
+    return { ...wallet, balance: wallet.initialBalance.toNumber(), initialBalance: wallet.initialBalance.toNumber(), creditLimit: wallet.creditLimit?.toNumber() ?? null }
   })
 
 const editWalletSchema = z.object({
@@ -53,7 +53,7 @@ export const editUserWallet = createServerFn({ method: 'POST' })
     const session = await getSessionOrThrow()
     const { id, ...rest } = data
     const wallet = await updateWallet(id, session.user.id, rest)
-    return { ...wallet, balance: wallet.balance.toNumber(), creditLimit: wallet.creditLimit?.toNumber() ?? null }
+    return { ...wallet, balance: wallet.initialBalance.toNumber(), initialBalance: wallet.initialBalance.toNumber(), creditLimit: wallet.creditLimit?.toNumber() ?? null }
   })
 
 export const deleteUserWallet = createServerFn({ method: 'POST' })
