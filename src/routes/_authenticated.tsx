@@ -32,7 +32,7 @@ function AuthenticatedLayout() {
   return (
     <div className="flex flex-col bg-zinc-950" style={{ height: '100dvh', paddingTop: 'env(safe-area-inset-top)' }}>
       <OfflineBanner />
-      <main className="min-h-0 flex-1">
+      <main className="min-h-0 flex-1 overflow-hidden">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
