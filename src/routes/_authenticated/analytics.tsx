@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, ChevronDown, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getAnalytics } from '#/server/services/analytics.service'
 import { getUserGoals } from '#/server/services/goal.service'
 import { getBudgets } from '#/server/services/budget.service'
-import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
 import { BudgetSheet, type EditableBudget } from '#/components/budgets/budget-sheet'
 import { fadeUp, stagger } from '#/lib/motion'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
@@ -30,8 +29,6 @@ export const Route = createFileRoute('/_authenticated/analytics')({
 
 function AnalyticsPage() {
   const queryClient = useQueryClient()
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const [editing, setEditing] = useState<EditableGoal | undefined>()
   const [budgetSheetOpen, setBudgetSheetOpen] = useState(false)
   const [editingBudget, setEditingBudget] = useState<EditableBudget | undefined>()
   const [budgetMonth, setBudgetMonth] = useState(CURRENT_MONTH)
@@ -120,15 +117,15 @@ function AnalyticsPage() {
             <motion.section variants={fadeUp} className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">Metas</h2>
-                <button
-                  onClick={() => { setEditing(undefined); setSheetOpen(true) }}
+                <Link
+                  to="/goals"
                   className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 active:bg-zinc-700 transition-colors"
                 >
-                  <Plus className="h-3.5 w-3.5 text-zinc-400" />
-                </button>
+                  <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
+                </Link>
               </div>
               {goals.length > 0
-                ? <GoalsList goals={goals as Goal[]} onTap={(g) => { setEditing(g); setSheetOpen(true) }} />
+                ? <GoalsList goals={goals as Goal[]} />
                 : <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 py-6 text-center">
                     <p className="text-xs text-zinc-600">Nenhuma meta ainda</p>
                   </div>
@@ -173,12 +170,6 @@ function AnalyticsPage() {
           {(isLoading || goalsLoading || budgetsLoading) && <AnalyticsSkeleton />}
         </motion.div>
       </PullToRefresh>
-
-      <GoalSheet
-        open={sheetOpen}
-        goal={editing}
-        onClose={() => { setSheetOpen(false); setEditing(undefined) }}
-      />
 
       <BudgetSheet
         open={budgetSheetOpen}
@@ -362,9 +353,9 @@ type Goal = {
   color: string | null
 }
 
-function GoalsList({ goals, onTap }: { goals: Goal[]; onTap: (g: EditableGoal) => void }) {
+function GoalsList({ goals }: { goals: Goal[] }) {
   return (
-    <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
+    <Link to="/goals" className="block space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
       {goals.map((g) => {
         const progress = g.targetAmount > 0
           ? Math.min(Math.round((g.currentAmount / g.targetAmount) * 100), 100)
@@ -373,9 +364,8 @@ function GoalsList({ goals, onTap }: { goals: Goal[]; onTap: (g: EditableGoal) =
         const color = g.color ?? '#3b82f6'
 
         return (
-          <button
+          <div
             key={g.id}
-            onClick={() => onTap({ id: g.id, name: g.name, targetAmount: g.targetAmount, currentAmount: g.currentAmount, deadline: g.deadline ? new Date(g.deadline) : null, color: g.color })}
             className="w-full space-y-2 text-left"
           >
             <div className="flex items-center justify-between gap-2">
@@ -399,10 +389,10 @@ function GoalsList({ goals, onTap }: { goals: Goal[]; onTap: (g: EditableGoal) =
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
             </div>
-          </button>
+          </div>
         )
       })}
-    </div>
+    </Link>
   )
 }
 
