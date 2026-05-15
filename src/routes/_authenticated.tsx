@@ -25,9 +25,13 @@ function AuthenticatedLayout() {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {})
-    }
+    if (!('serviceWorker' in navigator)) return
+    import('virtual:pwa-register')
+      .then(({ registerSW }) => registerSW({ immediate: true }))
+      .catch(() => {
+        // fallback direto caso o módulo virtual não esteja disponível
+        navigator.serviceWorker.register('/sw.js').catch(() => {})
+      })
   }, [])
 
   useEffect(() => {

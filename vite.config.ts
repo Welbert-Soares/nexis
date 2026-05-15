@@ -23,7 +23,7 @@ const config = defineConfig({
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
-      devOptions: { enabled: false },
+      devOptions: { enabled: true, type: 'module' },
     }),
   ],
 })
