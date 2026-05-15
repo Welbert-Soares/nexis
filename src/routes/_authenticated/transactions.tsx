@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, type LucideIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, ArrowLeftRight, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
@@ -447,7 +447,12 @@ function TransactionsPage() {
                     <p className="mb-2 text-xs font-medium text-zinc-600">{label}</p>
                     {items.map((t) => (
                       <motion.div key={t.id} variants={scaleIn}>
-                        <SwipeableRow transaction={t} onTap={() => handleRowTap(t)} onDelete={() => handleSwipeDelete(t)} />
+                        <SwipeableRow
+                          transaction={t}
+                          onTap={() => handleRowTap(t)}
+                          onDelete={() => handleSwipeDelete(t)}
+                          disabled={isTransfer(t)}
+                        />
                       </motion.div>
                     ))}
                   </motion.div>
@@ -530,7 +535,7 @@ function TransactionsPage() {
 
 const SWIPE_THRESHOLD = -110
 
-function SwipeableRow({ transaction, onTap, onDelete }: { transaction: Tx; onTap: () => void; onDelete: () => void }) {
+function SwipeableRow({ transaction, onTap, onDelete, disabled }: { transaction: Tx; onTap: () => void; onDelete: () => void; disabled?: boolean }) {
   const rowRef = useRef<HTMLDivElement>(null)
   const bgRef = useRef<HTMLDivElement>(null)
   const trashRef = useRef<HTMLDivElement>(null)
@@ -547,6 +552,7 @@ function SwipeableRow({ transaction, onTap, onDelete }: { transaction: Tx; onTap
   }
 
   function onTouchStart(e: React.TouchEvent) {
+    if (disabled) return
     startX.current = e.touches[0].clientX
     startY.current = e.touches[0].clientY
     currentX.current = 0
@@ -611,22 +617,32 @@ function SwipeableRow({ transaction, onTap, onDelete }: { transaction: Tx; onTap
   )
 }
 
+function isTransfer(t: Tx) {
+  return t.description?.startsWith('Transferência →') || t.description?.startsWith('Transferência ←')
+}
+
 function TransactionRow({ transaction: t, onTap }: { transaction: Tx; onTap: () => void }) {
   const isExpense = t.type === 'EXPENSE'
+  const transfer = isTransfer(t)
   const label = t.description ?? t.category?.name ?? 'Sem descrição'
-  const color = t.category?.color ?? t.wallet.color ?? '#71717a'
+  const color = transfer ? '#71717a' : (t.category?.color ?? t.wallet.color ?? '#71717a')
   const CategoryIcon = t.category?.icon ? CATEGORY_ICONS[t.category.icon] : null
 
   return (
     <button
-      onClick={onTap}
-      className="flex w-full items-center gap-3 rounded-xl px-1 py-2.5 active:bg-zinc-800/50 transition-colors"
+      onClick={transfer ? undefined : onTap}
+      className={cn(
+        'flex w-full items-center gap-3 rounded-xl px-1 py-2.5 transition-colors',
+        transfer ? 'cursor-default' : 'active:bg-zinc-800/50',
+      )}
     >
       <div
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
         style={{ backgroundColor: `${color}20` }}
       >
-        {CategoryIcon
+        {transfer
+          ? <ArrowLeftRight className="h-4 w-4 text-zinc-500" />
+          : CategoryIcon
           ? <CategoryIcon className="h-4 w-4" style={{ color }} />
           : <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
         }
@@ -634,7 +650,7 @@ function TransactionRow({ transaction: t, onTap }: { transaction: Tx; onTap: () 
       <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center gap-1.5 min-w-0">
           <p className="truncate text-sm text-white">{label}</p>
-          {(t.recurring || t.parentId) && (
+          {!transfer && (t.recurring || t.parentId) && (
             <Repeat2 className="h-3 w-3 shrink-0 text-zinc-600" />
           )}
         </div>

@@ -43,16 +43,30 @@ export async function transferBetweenWallets(
   if (!to) throw new Error('Carteira de destino não encontrada')
   if (fromWalletId === toWalletId) throw new Error('Carteiras devem ser diferentes')
 
-  return prisma.$transaction([
-    prisma.wallet.update({
-      where: { id: fromWalletId },
-      data: { balance: { decrement: amount } },
-    }),
-    prisma.wallet.update({
-      where: { id: toWalletId },
-      data: { balance: { increment: amount } },
-    }),
-  ])
+  const now = new Date()
+  return prisma.$transaction(async (tx) => {
+    const expense = await tx.transaction.create({
+      data: {
+        amount,
+        type: 'EXPENSE',
+        walletId: fromWalletId,
+        description: `Transferência → ${to.name}`,
+        date: now,
+      },
+    })
+    await tx.transaction.create({
+      data: {
+        amount,
+        type: 'INCOME',
+        walletId: toWalletId,
+        description: `Transferência ← ${from.name}`,
+        date: now,
+        parentId: expense.id,
+      },
+    })
+    await tx.wallet.update({ where: { id: fromWalletId }, data: { balance: { decrement: amount } } })
+    await tx.wallet.update({ where: { id: toWalletId }, data: { balance: { increment: amount } } })
+  })
 }
 
 export function createWallet(data: {
