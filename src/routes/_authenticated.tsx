@@ -43,7 +43,7 @@ function AuthenticatedLayout() {
   return (
     <div
       className="flex flex-col bg-zinc-950"
-      style={{ height: 'var(--app-height, 100dvh)', paddingTop: 'env(safe-area-inset-top)' }}
+      style={{ height: 'var(--app-height, 100dvh)' }}
     >
       <OfflineBanner />
       <main className="min-h-0 flex-1 overflow-hidden">
