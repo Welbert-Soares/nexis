@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftRight, Plus, Wallet, TrendingUp, Banknote, PiggyBank, CreditCard } from 'lucide-react'
+import { CATEGORY_ICONS } from '#/lib/category-icons'
 import { motion } from 'framer-motion'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { WalletSheet, type EditableWallet } from '#/components/wallets/wallet-sheet'
@@ -89,13 +90,13 @@ function WalletsPage() {
           <motion.div variants={stagger} className="space-y-3">
             {wallets.map((wallet) => {
               const meta = WALLET_META[wallet.type as WalletType]
-              const Icon = meta.icon
+              const Icon = (wallet.icon ? CATEGORY_ICONS[wallet.icon] : null) ?? meta.icon
               return (
                 <motion.button
                   key={wallet.id}
                   variants={fadeUp}
                   onClick={() => {
-                    setEditing({ id: wallet.id, name: wallet.name, type: wallet.type as WalletType, color: wallet.color })
+                    setEditing({ id: wallet.id, name: wallet.name, type: wallet.type as WalletType, color: wallet.color, icon: wallet.icon })
                     setSheetOpen(true)
                   }}
                   className="flex w-full items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 active:bg-zinc-800/50 transition-colors"

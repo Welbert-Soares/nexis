@@ -19,6 +19,7 @@ const createWalletSchema = z.object({
   name: z.string().min(1),
   type: z.enum(['CHECKING', 'SAVINGS', 'CASH', 'INVESTMENT', 'CREDIT']),
   color: z.string().optional(),
+  icon: z.string().optional(),
   balance: z.number().min(0).optional(),
 })
 
@@ -35,6 +36,7 @@ const editWalletSchema = z.object({
   name: z.string().min(1).optional(),
   type: z.enum(['CHECKING', 'SAVINGS', 'CASH', 'INVESTMENT', 'CREDIT']).optional(),
   color: z.string().optional(),
+  icon: z.string().nullable().optional(),
 })
 
 export const editUserWallet = createServerFn({ method: 'POST' })

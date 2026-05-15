@@ -15,6 +15,7 @@ export async function updateWallet(
     name?: string
     type?: 'CHECKING' | 'SAVINGS' | 'CASH' | 'INVESTMENT' | 'CREDIT'
     color?: string
+    icon?: string | null
   },
 ) {
   const wallet = await prisma.wallet.findFirst({ where: { id, userId } })
@@ -59,6 +60,7 @@ export function createWallet(data: {
   name: string
   type: 'CHECKING' | 'SAVINGS' | 'CASH' | 'INVESTMENT' | 'CREDIT'
   color?: string
+  icon?: string
   balance?: number
 }) {
   return prisma.wallet.create({ data })

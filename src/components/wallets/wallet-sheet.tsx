@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Drawer } from 'vaul'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Trash2 } from 'lucide-react'
 import { cn } from '#/lib/utils'
+import { CATEGORY_ICONS } from '#/lib/category-icons'
 import { createUserWallet, editUserWallet, deleteUserWallet } from '#/server/services/wallet.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
 
@@ -22,11 +24,18 @@ const COLORS = [
   '#8b5cf6', '#ec4899', '#06b6d4', '#71717a',
 ]
 
+const ICON_OPTIONS = [
+  'Wallet', 'CreditCard', 'Banknote', 'PiggyBank', 'TrendingUp', 'Briefcase',
+  'Home', 'ShoppingCart', 'Coffee', 'Car', 'Plane', 'Gift',
+  'Smartphone', 'Laptop', 'Zap', 'Heart', 'Star', 'MoreHorizontal',
+].filter((name) => CATEGORY_ICONS[name]).map((name) => ({ name, icon: CATEGORY_ICONS[name] }))
+
 export type EditableWallet = {
   id: string
   name: string
   type: WalletType
   color: string | null
+  icon?: string | null
 }
 
 interface Props {
@@ -39,9 +48,22 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
   const isEdit = !!wallet
   const queryClient = useQueryClient()
   const [color, setColor] = useState(wallet?.color ?? COLORS[0])
+  const [icon, setIcon] = useState<string | null>(wallet?.icon ?? null)
+  const [iconsExpanded, setIconsExpanded] = useState(false)
   const [cents, setCents] = useState(0)
   const [saved, setSaved] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const iconsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleOutside(e: PointerEvent) {
+      if (iconsRef.current && !iconsRef.current.contains(e.target as Node)) {
+        setIconsExpanded(false)
+      }
+    }
+    document.addEventListener('pointerdown', handleOutside)
+    return () => document.removeEventListener('pointerdown', handleOutside)
+  }, [])
 
   const form = useForm({
     defaultValues: {
@@ -51,13 +73,17 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
   })
 
   useEffect(() => {
-    if (wallet) {
-      form.setFieldValue('name', wallet.name)
-      form.setFieldValue('type', wallet.type)
-      setColor(wallet.color ?? COLORS[0])
+    if (open) {
+      form.setFieldValue('name', wallet?.name ?? '')
+      form.setFieldValue('type', (wallet?.type ?? 'CHECKING') as WalletType)
+      setColor(wallet?.color ?? COLORS[0])
+      setIcon(wallet?.icon ?? null)
       setCents(0)
+      setSaved(false)
+      setConfirmDelete(false)
+      setIconsExpanded(false)
     }
-  }, [wallet?.id])
+  }, [open, wallet?.id])
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: ['wallets'] })
@@ -68,11 +94,11 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
     mutationFn: (values: { name: string; type: WalletType }) => {
       if (isEdit) {
         return editUserWallet({
-          data: { id: wallet!.id, name: values.name, type: values.type, color },
+          data: { id: wallet!.id, name: values.name, type: values.type, color, icon },
         })
       }
       return createUserWallet({
-        data: { name: values.name, type: values.type, color, balance: cents / 100 },
+        data: { name: values.name, type: values.type, color, icon: icon ?? undefined, balance: cents / 100 },
       })
     },
     onSuccess: () => {
@@ -90,6 +116,7 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
   function handleClose() {
     form.reset()
     setColor(COLORS[0])
+    setIcon(null)
     setCents(0)
     setConfirmDelete(false)
     onClose()
@@ -202,6 +229,86 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
                       </div>
                     )}
                   </form.Field>
+                </div>
+
+                {/* Ícone */}
+                <div className="space-y-2">
+                  <p className="text-xs text-zinc-500">Ícone</p>
+                  <div ref={iconsRef} className="relative">
+                    <div
+                      className={cn('grid grid-cols-6 gap-2', !iconsExpanded && 'cursor-pointer')}
+                      onClick={() => !iconsExpanded && setIconsExpanded(true)}
+                    >
+                      {ICON_OPTIONS.slice(0, 12).map((opt) => {
+                        const isSelected = icon === opt.name
+                        return (
+                          <button
+                            key={opt.name}
+                            type="button"
+                            onClick={() => {
+                              if (!iconsExpanded) { setIconsExpanded(true); return }
+                              setIcon(isSelected ? null : opt.name)
+                              setIconsExpanded(false)
+                            }}
+                            className="flex h-10 w-full items-center justify-center rounded-xl transition-colors"
+                            style={{
+                              backgroundColor: isSelected ? `${color}26` : '#27272a',
+                              border: `2px solid ${isSelected ? color : 'transparent'}`,
+                            }}
+                          >
+                            <opt.icon className="h-4 w-4" style={{ color: isSelected ? color : '#71717a' }} strokeWidth={1.75} />
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    <AnimatePresence>
+                      {iconsExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeInOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="grid grid-cols-6 gap-2 pt-2">
+                            {ICON_OPTIONS.slice(12).map((opt) => {
+                              const isSelected = icon === opt.name
+                              return (
+                                <button
+                                  key={opt.name}
+                                  type="button"
+                                  onClick={() => {
+                                    if (!iconsExpanded) { setIconsExpanded(true); return }
+                                    setIcon(isSelected ? null : opt.name)
+                                    setIconsExpanded(false)
+                                  }}
+                                  className="flex h-10 w-full items-center justify-center rounded-xl transition-colors"
+                                  style={{
+                                    backgroundColor: isSelected ? `${color}26` : '#27272a',
+                                    border: `2px solid ${isSelected ? color : 'transparent'}`,
+                                  }}
+                                >
+                                  <opt.icon className="h-4 w-4" style={{ color: isSelected ? color : '#71717a' }} strokeWidth={1.75} />
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <AnimatePresence>
+                      {!iconsExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-zinc-900 to-transparent"
+                        />
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
 
                 {/* Cor */}
