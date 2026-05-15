@@ -5,16 +5,16 @@ import { X, AlertTriangle, TrendingDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getBudgets } from '#/server/services/budget.service'
 
-const now = new Date()
-const MONTH = now.getMonth() + 1
-const YEAR = now.getFullYear()
 
 export function BudgetAlertsBanner() {
   const [dismissed, setDismissed] = useState(false)
+  const now = new Date()
+  const month = now.getMonth() + 1
+  const year = now.getFullYear()
 
   const { data: budgets = [] } = useQuery({
-    queryKey: ['budgets', MONTH, YEAR],
-    queryFn: () => getBudgets({ data: { month: MONTH, year: YEAR } }),
+    queryKey: ['budgets', month, year],
+    queryFn: () => getBudgets({ data: { month, year } }),
     staleTime: 5 * 60 * 1000,
   })
 
