@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Plus, ChevronDown } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { getAnalytics } from '#/server/services/analytics.service'
 import { getUserGoals } from '#/server/services/goal.service'
 import { getBudgets } from '#/server/services/budget.service'
@@ -220,6 +220,8 @@ function MonthlyTrend({ trend }: { trend: TrendItem[] }) {
 type CategoryItem = { id: string; name: string; color: string; amount: number }
 
 function DonutChart({ items }: { items: CategoryItem[] }) {
+  const [expanded, setExpanded] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
   const total = items.reduce((acc, i) => acc + i.amount, 0)
   const R = 40
   const C = 2 * Math.PI * R
@@ -235,13 +237,25 @@ function DonutChart({ items }: { items: CategoryItem[] }) {
     return { ...item, dash, offset }
   })
 
+  useEffect(() => {
+    if (!expanded) return
+    function onOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setExpanded(false)
+    }
+    document.addEventListener('mousedown', onOutside)
+    return () => document.removeEventListener('mousedown', onOutside)
+  }, [expanded])
+
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-4">
-      <div className="flex items-center gap-4">
+    <div ref={ref} className="rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+      <button
+        className="w-full p-4 flex items-center gap-4 active:bg-zinc-800/40 transition-colors"
+        onClick={() => setExpanded((v) => !v)}
+      >
         <svg viewBox="0 0 120 120" className="w-28 h-28 shrink-0 -rotate-90">
           <circle cx={cx} cy={cy} r={R} fill="none" stroke="#27272a" strokeWidth="18" />
-          {segments.map((s) => (
-            <circle
+          {segments.map((s, i) => (
+            <motion.circle
               key={s.id}
               cx={cx}
               cy={cy}
@@ -249,12 +263,15 @@ function DonutChart({ items }: { items: CategoryItem[] }) {
               fill="none"
               stroke={s.color}
               strokeWidth="18"
-              strokeDasharray={`${s.dash} ${C}`}
               strokeDashoffset={s.offset}
               strokeLinecap="butt"
+              initial={{ strokeDasharray: `0 ${C}` }}
+              animate={{ strokeDasharray: `${s.dash} ${C}` }}
+              transition={{ duration: 0.6, delay: i * 0.07, ease: 'easeOut' }}
             />
           ))}
         </svg>
+
         <div className="flex-1 space-y-2 min-w-0">
           {items.slice(0, 5).map((item) => (
             <div key={item.id} className="flex items-center justify-between gap-2">
@@ -266,15 +283,39 @@ function DonutChart({ items }: { items: CategoryItem[] }) {
             </div>
           ))}
         </div>
-      </div>
-      <div className="space-y-2">
-        {items.map((item) => (
-          <div key={item.id} className="flex items-center justify-between">
-            <span className="text-xs text-zinc-500">{item.name}</span>
-            <span className="tabular-nums text-xs font-medium text-zinc-300">{fmt(item.amount)}</span>
-          </div>
-        ))}
-      </div>
+
+        <motion.div
+          animate={{ rotate: expanded ? 180 : 0 }}
+          transition={{ duration: 0.25 }}
+          className="shrink-0 self-end mb-1"
+        >
+          <ChevronDown className="h-4 w-4 text-zinc-600" />
+        </motion.div>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.28, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-zinc-800 px-4 py-3 space-y-2.5">
+              {items.map((item) => (
+                <div key={item.id} className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="truncate text-xs text-zinc-400">{item.name}</span>
+                  </div>
+                  <span className="tabular-nums text-xs font-medium text-zinc-300 shrink-0">{fmt(item.amount)}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
