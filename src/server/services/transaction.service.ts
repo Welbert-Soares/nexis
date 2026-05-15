@@ -7,6 +7,7 @@ import {
   createInstallments,
   deleteTransaction,
   deleteInstallmentGroup,
+  getMaxTransactionDate,
   getRecentTransactions,
   getTransactionsByMonth,
   updateTransaction,
@@ -132,6 +133,12 @@ export const listTransactions = createServerFn({ method: 'GET' })
     const session = await getSessionOrThrow()
     return getTransactionsByMonth(session.user.id, data.year, data.month, data.type, data.walletId)
   })
+
+export const getTransactionMaxDate = createServerFn({ method: 'GET' }).handler(async () => {
+  const session = await getSessionOrThrow()
+  const date = await getMaxTransactionDate(session.user.id)
+  return date ? date.toISOString() : null
+})
 
 export const triggerRecurring = createServerFn({ method: 'POST' })
   .handler(async () => {

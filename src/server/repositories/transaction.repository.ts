@@ -236,6 +236,15 @@ export async function updateTransaction(
   })
 }
 
+export async function getMaxTransactionDate(userId: string): Promise<Date | null> {
+  const row = await prisma.transaction.findFirst({
+    where: { wallet: { userId }, deletedAt: null },
+    orderBy: { date: 'desc' },
+    select: { date: true },
+  })
+  return row?.date ?? null
+}
+
 export async function getRecentTransactions(userId: string, limit = 10) {
   const rows = await prisma.transaction.findMany({
     where: { wallet: { userId }, deletedAt: null },

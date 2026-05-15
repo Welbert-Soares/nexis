@@ -7,7 +7,7 @@ import { Drawer } from 'vaul'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
-import { listTransactions, removeTransaction, removeInstallments } from '#/server/services/transaction.service'
+import { listTransactions, removeTransaction, removeInstallments, getTransactionMaxDate } from '#/server/services/transaction.service'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { TransactionSheet, type EditableTransaction } from '#/components/transactions/transaction-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
@@ -132,6 +132,12 @@ function TransactionsPage() {
     staleTime: 5 * 60 * 1000,
   })
 
+  const { data: maxDateStr } = useQuery({
+    queryKey: ['transactions-max-date'],
+    queryFn: () => getTransactionMaxDate(),
+    staleTime: 60 * 1000,
+  })
+
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['transactions', year, month, filter, walletFilter],
     queryFn: () =>
@@ -156,7 +162,21 @@ function TransactionsPage() {
     if (month === 1) { setMonth(12); setYear((y) => y - 1) }
     else setMonth((m) => m - 1)
   }
+  const canGoNext = (() => {
+    const nextYear = month === 12 ? year + 1 : year
+    const nextMonth = month === 12 ? 1 : month + 1
+    // always allow navigating within past/present
+    if (nextYear < now.getFullYear() || (nextYear === now.getFullYear() && nextMonth <= now.getMonth() + 1)) return true
+    // for future months, only allow if there are transactions up to that point
+    if (!maxDateStr) return false
+    const maxDate = new Date(maxDateStr)
+    const maxYear = maxDate.getFullYear()
+    const maxMonth = maxDate.getMonth() + 1
+    return nextYear < maxYear || (nextYear === maxYear && nextMonth <= maxMonth)
+  })()
+
   function nextMonth() {
+    if (!canGoNext) return
     if (month === 12) { setMonth(1); setYear((y) => y + 1) }
     else setMonth((m) => m + 1)
   }
@@ -241,7 +261,8 @@ function TransactionsPage() {
               </button>
               <button
                 onClick={nextMonth}
-                className="p-1 text-zinc-500 active:text-zinc-300 transition-colors"
+                disabled={!canGoNext}
+                className={cn('p-1 transition-colors', canGoNext ? 'text-zinc-500 active:text-zinc-300' : 'text-zinc-700')}
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
