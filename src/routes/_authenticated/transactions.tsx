@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2 } from 'lucide-react'
-import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
@@ -233,10 +233,14 @@ const SWIPE_THRESHOLD = -72
 
 function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => void }) {
   const queryClient = useQueryClient()
-  const x = useMotionValue(0)
-  const controls = useAnimation()
-  const bgOpacity = useTransform(x, [-72, -20], [1, 0])
-  const trashScale = useTransform(x, [-72, -36], [1, 0.7])
+  const rowRef = useRef<HTMLDivElement>(null)
+  const bgRef = useRef<HTMLDivElement>(null)
+  const trashRef = useRef<HTMLDivElement>(null)
+  const startX = useRef(0)
+  const startY = useRef(0)
+  const currentX = useRef(0)
+  const direction = useRef<'horizontal' | 'vertical' | null>(null)
+  const [visible, setVisible] = useState(true)
 
   const { mutate: remove } = useMutation({
     mutationFn: () => removeTransaction({ data: { id: transaction.id } }),
@@ -247,37 +251,75 @@ function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => vo
     },
   })
 
-  async function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
-    if (info.offset.x < SWIPE_THRESHOLD) {
-      await controls.start({ x: -400, transition: { duration: 0.18, ease: 'easeIn' } })
-      remove()
+  function updateDOM(x: number) {
+    const pct = Math.min(Math.abs(x) / 72, 1)
+    if (rowRef.current) rowRef.current.style.transform = `translateX(${x}px)`
+    if (bgRef.current) bgRef.current.style.opacity = String(pct)
+    if (trashRef.current) trashRef.current.style.transform = `scale(${0.7 + pct * 0.3})`
+  }
+
+  function onTouchStart(e: React.TouchEvent) {
+    startX.current = e.touches[0].clientX
+    startY.current = e.touches[0].clientY
+    currentX.current = 0
+    direction.current = null
+    if (rowRef.current) rowRef.current.style.transition = 'none'
+  }
+
+  function onTouchMove(e: React.TouchEvent) {
+    const dx = e.touches[0].clientX - startX.current
+    const dy = e.touches[0].clientY - startY.current
+
+    if (direction.current === null) {
+      if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return
+      direction.current = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
+    }
+
+    if (direction.current !== 'horizontal' || dx > 0) return
+
+    e.stopPropagation()
+    currentX.current = Math.max(dx, -100)
+    updateDOM(currentX.current)
+  }
+
+  function onTouchEnd() {
+    if (direction.current !== 'horizontal') return
+
+    if (currentX.current < SWIPE_THRESHOLD) {
+      if (rowRef.current) {
+        rowRef.current.style.transition = 'transform 0.18s ease-in'
+        rowRef.current.style.transform = 'translateX(-400px)'
+      }
+      setTimeout(() => { setVisible(false); remove() }, 180)
     } else {
-      controls.start({ x: 0, transition: { type: 'spring', stiffness: 500, damping: 35 } })
+      if (rowRef.current) {
+        rowRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)'
+      }
+      updateDOM(0)
     }
   }
 
-  return (
-    <div className="relative overflow-hidden rounded-xl">
-      <motion.div
-        className="absolute inset-0 flex items-center justify-end rounded-xl bg-red-500/15 pr-4"
-        style={{ opacity: bgOpacity }}
-      >
-        <motion.div style={{ scale: trashScale }}>
-          <Trash2 className="h-4 w-4 text-red-400" />
-        </motion.div>
-      </motion.div>
+  if (!visible) return null
 
-      <motion.div
-        drag="x"
-        dragDirectionLock
-        dragConstraints={{ left: -100, right: 0 }}
-        dragElastic={{ left: 0.12, right: 0 }}
-        style={{ x }}
-        animate={controls}
-        onDragEnd={handleDragEnd}
+  return (
+    <div
+      className="relative overflow-hidden rounded-xl"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      <div
+        ref={bgRef}
+        className="absolute inset-0 flex items-center justify-end rounded-xl bg-red-500/15 pr-4"
+        style={{ opacity: 0 }}
       >
+        <div ref={trashRef} style={{ transform: 'scale(0.7)' }}>
+          <Trash2 className="h-4 w-4 text-red-400" />
+        </div>
+      </div>
+      <div ref={rowRef} style={{ transform: 'translateX(0px)' }}>
         <TransactionRow transaction={transaction} onTap={onTap} />
-      </motion.div>
+      </div>
     </div>
   )
 }
