@@ -25,6 +25,12 @@ function AuthenticatedLayout() {
   const queryClient = useQueryClient()
 
   useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    }
+  }, [])
+
+  useEffect(() => {
     triggerRecurring().then((count) => {
       if (count > 0) {
         queryClient.invalidateQueries({ queryKey: ['transactions'] })
