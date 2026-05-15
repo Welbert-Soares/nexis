@@ -60,7 +60,8 @@ export const ModelName = {
   Budget: 'Budget',
   Transaction: 'Transaction',
   Goal: 'Goal',
-  PushSubscription: 'PushSubscription'
+  PushSubscription: 'PushSubscription',
+  NotificationLog: 'NotificationLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -230,6 +231,16 @@ export const PushSubscriptionScalarFieldEnum = {
 } as const
 
 export type PushSubscriptionScalarFieldEnum = (typeof PushSubscriptionScalarFieldEnum)[keyof typeof PushSubscriptionScalarFieldEnum]
+
+
+export const NotificationLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  key: 'key',
+  sentAt: 'sentAt'
+} as const
+
+export type NotificationLogScalarFieldEnum = (typeof NotificationLogScalarFieldEnum)[keyof typeof NotificationLogScalarFieldEnum]
 
 
 export const SortOrder = {

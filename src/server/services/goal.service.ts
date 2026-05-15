@@ -9,6 +9,7 @@ import {
   updateGoal,
 } from '#/server/repositories/goal.repository'
 import { sendPushToUser } from '#/server/services/push-notify.server'
+import { shouldSendNotification } from '#/server/repositories/push.repository'
 import { prisma } from '#/db'
 import { getWalletBalance } from '#/server/repositories/wallet.repository'
 
@@ -111,6 +112,9 @@ export const checkGoalDeadlines = createServerFn({ method: 'POST' }).handler(asy
     const pct = Math.round((current / target) * 100)
     const fmtBRL = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
+    const canSend = await shouldSendNotification(session.user.id, 'goal-deadline', g.id)
+    if (!canSend) continue
+
     sendPushToUser(session.user.id, {
       title: `Meta "${g.name}" vence em ${daysLeft} dia${daysLeft === 1 ? '' : 's'}`,
       body: `${pct}% concluída · faltam ${fmtBRL(target - current)}`,
@@ -188,10 +192,14 @@ export const depositGoalFromWallet = createServerFn({ method: 'POST' })
     const target = goal.targetAmount.toNumber()
 
     if (current >= target) {
-      sendPushToUser(session.user.id, {
-        title: 'Meta atingida! 🎉',
-        body: `Você completou a meta "${goal.name}"`,
-        url: '/goals',
+      shouldSendNotification(session.user.id, 'goal-completed', goalId).then((canSend) => {
+        if (canSend) {
+          sendPushToUser(session.user.id, {
+            title: 'Meta atingida! 🎉',
+            body: `Você completou a meta "${goal.name}"`,
+            url: '/goals',
+          }).catch(() => {})
+        }
       }).catch(() => {})
     }
 

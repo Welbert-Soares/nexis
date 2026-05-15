@@ -162,6 +162,16 @@ model PushSubscription {
   createdAt    DateTime @default(now())
 }
 
+model NotificationLog {
+  id     String   @id @default(cuid())
+  userId String
+  key    String   // "type:entityId:YYYY-MM-DD"
+  sentAt DateTime @default(now())
+
+  @@unique([userId, key])
+  @@index([sentAt])
+}
+
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 enum WalletType {

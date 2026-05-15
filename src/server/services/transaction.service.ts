@@ -15,6 +15,7 @@ import {
 } from '#/server/repositories/transaction.repository'
 import { sendPushToUser } from '#/server/services/push-notify.server'
 import { getExceededBudgets } from '#/server/repositories/budget.repository'
+import { shouldSendNotification } from '#/server/repositories/push.repository'
 
 async function getSessionOrThrow() {
   const session = await auth.api.getSession({ headers: getRequest().headers })
@@ -23,10 +24,13 @@ async function getSessionOrThrow() {
 }
 
 function checkBudgetsAndNotify(userId: string) {
-  getExceededBudgets(userId).then((alerts) => {
+  getExceededBudgets(userId).then(async (alerts) => {
     if (alerts.length === 0) return
     const exceeded = alerts.filter((a) => a.pct >= 1)
     const top = alerts[0]
+    const entityId = exceeded.length > 0 ? `exceeded:${exceeded.map((a) => a.name).join(',')}` : `warning:${top.name}`
+    const canSend = await shouldSendNotification(userId, 'budget', entityId)
+    if (!canSend) return
     const title = exceeded.length > 0 ? 'Limite de orçamento excedido' : 'Orçamento próximo do limite'
     const body = exceeded.length === 1
       ? `${top.name} ultrapassou o limite mensal`
@@ -145,13 +149,16 @@ export const triggerRecurring = createServerFn({ method: 'POST' })
     const session = await getSessionOrThrow()
     const count = await processDueRecurring(session.user.id)
     if (count > 0) {
-      sendPushToUser(session.user.id, {
-        title: 'Transações recorrentes',
-        body: count === 1
-          ? '1 transação recorrente foi lançada automaticamente'
-          : `${count} transações recorrentes foram lançadas automaticamente`,
-        url: '/transactions',
-      }).catch(() => {})
+      const canSend = await shouldSendNotification(session.user.id, 'recurring', `count:${count}`)
+      if (canSend) {
+        sendPushToUser(session.user.id, {
+          title: 'Transações recorrentes',
+          body: count === 1
+            ? '1 transação recorrente foi lançada automaticamente'
+            : `${count} transações recorrentes foram lançadas automaticamente`,
+          url: '/transactions',
+        }).catch(() => {})
+      }
     }
     return count
   })
