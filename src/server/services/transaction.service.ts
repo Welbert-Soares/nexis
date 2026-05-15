@@ -15,7 +15,7 @@ import {
 } from '#/server/repositories/transaction.repository'
 import { sendPushToUser } from '#/server/services/push-notify.server'
 import { getExceededBudgets } from '#/server/repositories/budget.repository'
-import { shouldSendNotification } from '#/server/repositories/push.repository'
+import { shouldSendNotification, pruneOldNotificationLogs } from '#/server/repositories/push.repository'
 
 async function getSessionOrThrow() {
   const session = await auth.api.getSession({ headers: getRequest().headers })
@@ -147,6 +147,7 @@ export const getTransactionMaxDate = createServerFn({ method: 'GET' }).handler(a
 export const triggerRecurring = createServerFn({ method: 'POST' })
   .handler(async () => {
     const session = await getSessionOrThrow()
+    pruneOldNotificationLogs().catch(() => {})
     const count = await processDueRecurring(session.user.id)
     if (count > 0) {
       const canSend = await shouldSendNotification(session.user.id, 'recurring', `count:${count}`)

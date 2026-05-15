@@ -12,6 +12,12 @@ export async function shouldSendNotification(userId: string, type: string, entit
   }
 }
 
+export async function pruneOldNotificationLogs() {
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - 7)
+  await prisma.notificationLog.deleteMany({ where: { sentAt: { lt: cutoff } } })
+}
+
 export async function upsertSubscription(userId: string, endpoint: string, subscription: string) {
   return prisma.pushSubscription.upsert({
     where: { endpoint },
