@@ -1255,6 +1255,7 @@ export const WalletScalarFieldEnum = {
   name: 'name',
   type: 'type',
   balance: 'balance',
+  initialBalance: 'initialBalance',
   currency: 'currency',
   color: 'color',
   icon: 'icon',
@@ -1308,8 +1309,10 @@ export const TransactionScalarFieldEnum = {
   interval: 'interval',
   nextDue: 'nextDue',
   parentId: 'parentId',
+  goalId: 'goalId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum]
@@ -1319,7 +1322,7 @@ export const GoalScalarFieldEnum = {
   id: 'id',
   name: 'name',
   targetAmount: 'targetAmount',
-  currentAmount: 'currentAmount',
+  seedAmount: 'seedAmount',
   deadline: 'deadline',
   icon: 'icon',
   color: 'color',
