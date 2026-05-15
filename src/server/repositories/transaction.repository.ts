@@ -85,6 +85,39 @@ export async function processDueRecurring(userId: string) {
   return due.length
 }
 
+export async function createInstallments(data: {
+  walletId: string
+  amount: number
+  type: 'INCOME' | 'EXPENSE'
+  categoryId?: string
+  description?: string
+  date: Date
+  installments: number
+}) {
+  const { amount, type, installments, date, description } = data
+  const perInstallment = Math.round((amount / installments) * 100) / 100
+  const totalDelta = type === 'EXPENSE' ? -(perInstallment * installments) : perInstallment * installments
+
+  const creates = Array.from({ length: installments }, (_, i) => {
+    const installDate = new Date(date)
+    installDate.setMonth(installDate.getMonth() + i)
+    const desc = description
+      ? `${description} (${i + 1}/${installments})`
+      : `(${i + 1}/${installments})`
+    return prisma.transaction.create({
+      data: { amount: perInstallment, type, walletId: data.walletId, categoryId: data.categoryId, description: desc, date: installDate },
+    })
+  })
+
+  return prisma.$transaction([
+    ...creates,
+    prisma.wallet.update({
+      where: { id: data.walletId },
+      data: { balance: { increment: totalDelta } },
+    }),
+  ])
+}
+
 export async function getTransactionsByMonth(
   userId: string,
   year: number,

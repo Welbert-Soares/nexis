@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { auth } from '#/lib/auth'
 import {
   createTransaction,
+  createInstallments,
   deleteTransaction,
   getRecentTransactions,
   getTransactionsByMonth,
@@ -27,12 +28,25 @@ const createTransactionSchema = z.object({
   recurring: z.boolean().optional(),
   interval: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'YEARLY']).optional(),
   nextDue: z.coerce.date().optional(),
+  installments: z.number().int().min(2).max(24).optional(),
 })
 
 export const addTransaction = createServerFn({ method: 'POST' })
   .inputValidator(createTransactionSchema)
   .handler(async ({ data }) => {
     await getSessionOrThrow()
+    if (data.installments && data.installments >= 2) {
+      await createInstallments({
+        walletId: data.walletId,
+        amount: data.amount,
+        type: data.type,
+        categoryId: data.categoryId,
+        description: data.description,
+        date: data.date ?? new Date(),
+        installments: data.installments,
+      })
+      return null
+    }
     const [transaction] = await createTransaction(data)
     return { ...transaction, amount: transaction.amount.toNumber() }
   })
