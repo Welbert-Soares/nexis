@@ -5,7 +5,7 @@ import { usePushNotifications } from '#/hooks/use-push-notifications'
 import { useHaptic } from '#/hooks/use-haptic'
 
 export function NotificationPermission() {
-  const { supported, permission, subscribed, loading, subscribe } = usePushNotifications()
+  const { supported, permission, subscribed, loading, error, subscribe } = usePushNotifications()
   const haptic = useHaptic()
   const [dismissed, setDismissed] = useState(() =>
     typeof window !== 'undefined' && localStorage.getItem('notif-prompt-dismissed') === '1',
@@ -23,7 +23,7 @@ export function NotificationPermission() {
   async function handleEnable() {
     haptic.success()
     await subscribe()
-    setDismissed(true)
+    if (!error) setDismissed(true)
   }
 
   return (
@@ -54,6 +54,9 @@ export function NotificationPermission() {
                 <X className="h-4 w-4" />
               </button>
             </div>
+            {error && (
+              <p className="mt-2 text-xs text-red-400">{error}</p>
+            )}
             <div className="mt-3 flex gap-2">
               <button
                 onClick={handleDismiss}

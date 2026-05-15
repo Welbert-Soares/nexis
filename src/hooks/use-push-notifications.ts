@@ -12,6 +12,7 @@ export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default')
   const [subscribed, setSubscribed] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const supported =
     typeof window !== 'undefined' &&
@@ -30,14 +31,23 @@ export function usePushNotifications() {
   async function subscribe() {
     if (!supported) return
     setLoading(true)
+    setError(null)
     try {
       const perm = await Notification.requestPermission()
       setPermission(perm)
       if (perm !== 'granted') return
 
       const vapidKey = await getVapidPublicKey()
-      const reg = await navigator.serviceWorker.ready
-      const sub = await reg.pushManager.subscribe({
+
+      // service worker pode não estar registrado em dev
+      const swReg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Service worker não respondeu')), 8000),
+        ),
+      ])
+
+      const sub = await swReg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey),
       })
@@ -49,6 +59,9 @@ export function usePushNotifications() {
         },
       })
       setSubscribed(true)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao ativar notificações'
+      setError(msg)
     } finally {
       setLoading(false)
     }
@@ -57,6 +70,7 @@ export function usePushNotifications() {
   async function unsubscribe() {
     if (!supported) return
     setLoading(true)
+    setError(null)
     try {
       const reg = await navigator.serviceWorker.ready
       const sub = await reg.pushManager.getSubscription()
@@ -65,10 +79,13 @@ export function usePushNotifications() {
         await sub.unsubscribe()
       }
       setSubscribed(false)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao desativar notificações'
+      setError(msg)
     } finally {
       setLoading(false)
     }
   }
 
-  return { supported, permission, subscribed, loading, subscribe, unsubscribe }
+  return { supported, permission, subscribed, loading, error, subscribe, unsubscribe }
 }

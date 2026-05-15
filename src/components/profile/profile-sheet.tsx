@@ -117,7 +117,7 @@ export function ProfileSheet({ open, onClose, user }: Props) {
   }
 
   const filtered = allCategories.filter((c) => c.type === catType)
-  const { supported: notifSupported, permission, subscribed, loading: notifLoading, subscribe, unsubscribe } = usePushNotifications()
+  const { supported: notifSupported, permission, subscribed, loading: notifLoading, error: notifError, subscribe, unsubscribe } = usePushNotifications()
   const { showPrompt: canInstall, isIOS, install } = useInstallPrompt()
   const haptic = useHaptic()
 
@@ -277,39 +277,44 @@ export function ProfileSheet({ open, onClose, user }: Props) {
 
               {/* Notificações */}
               {notifSupported && (
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-800">
-                    {subscribed
-                      ? <Bell className="h-4 w-4 text-blue-400" strokeWidth={1.5} />
-                      : <BellOff className="h-4 w-4 text-zinc-500" strokeWidth={1.5} />
-                    }
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-white">Notificações</p>
-                    <p className="text-xs text-zinc-500">
-                      {permission === 'denied'
-                        ? 'Bloqueadas nas configurações do navegador'
-                        : subscribed
-                        ? 'Ativas'
-                        : 'Desativadas'}
-                    </p>
-                  </div>
-                  {permission !== 'denied' && (
-                    <button
-                      onClick={() => subscribed ? unsubscribe() : subscribe()}
-                      disabled={notifLoading}
-                      className={cn(
-                        'relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50',
-                        subscribed ? 'bg-blue-500' : 'bg-zinc-700',
-                      )}
-                    >
-                      <span
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-800">
+                      {subscribed
+                        ? <Bell className="h-4 w-4 text-blue-400" strokeWidth={1.5} />
+                        : <BellOff className="h-4 w-4 text-zinc-500" strokeWidth={1.5} />
+                      }
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-white">Notificações</p>
+                      <p className="text-xs text-zinc-500">
+                        {permission === 'denied'
+                          ? 'Bloqueadas nas configurações do navegador'
+                          : subscribed
+                          ? 'Ativas'
+                          : 'Desativadas'}
+                      </p>
+                    </div>
+                    {permission !== 'denied' && (
+                      <button
+                        onClick={() => subscribed ? unsubscribe() : subscribe()}
+                        disabled={notifLoading}
                         className={cn(
-                          'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all',
-                          subscribed ? 'left-[calc(100%-1.375rem)]' : 'left-0.5',
+                          'relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50',
+                          subscribed ? 'bg-blue-500' : 'bg-zinc-700',
                         )}
-                      />
-                    </button>
+                      >
+                        <span
+                          className={cn(
+                            'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all',
+                            subscribed ? 'left-[calc(100%-1.375rem)]' : 'left-0.5',
+                          )}
+                        />
+                      </button>
+                    )}
+                  </div>
+                  {notifError && (
+                    <p className="text-xs text-red-400 pl-12">{notifError}</p>
                   )}
                 </div>
               )}
