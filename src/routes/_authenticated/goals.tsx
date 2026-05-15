@@ -178,7 +178,7 @@ function GoalsSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2].map((i) => (
-        <div key={i} className="h-[104px] animate-pulse rounded-2xl bg-zinc-800/50" />
+        <div key={i} className="h-[104px] shimmer rounded-2xl" />
       ))}
     </div>
   )

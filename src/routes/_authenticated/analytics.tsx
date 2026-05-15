@@ -167,7 +167,7 @@ function SummaryCard({ label, value, color, loading }: { label: string; value: n
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-3 space-y-1.5">
       <p className="text-xs text-zinc-500">{label}</p>
       {loading ? (
-        <div className="h-5 w-16 animate-pulse rounded bg-zinc-800" />
+        <div className="h-5 w-16 shimmer rounded" />
       ) : (
         <p className={cn('text-sm font-semibold tabular-nums', color)}>{fmt(value)}</p>
       )}
@@ -433,7 +433,7 @@ function AnalyticsSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2].map((i) => (
-        <div key={i} className="h-40 animate-pulse rounded-2xl bg-zinc-800/50" />
+        <div key={i} className="h-40 shimmer rounded-2xl" />
       ))}
     </div>
   )

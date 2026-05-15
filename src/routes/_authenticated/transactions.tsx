@@ -665,12 +665,12 @@ function ListSkeleton() {
     <div className="space-y-3">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="flex items-center gap-3 py-1">
-          <div className="h-2 w-2 rounded-full bg-zinc-800 animate-pulse" />
+          <div className="h-2 w-2 rounded-full shimmer" />
           <div className="flex-1 space-y-1.5">
-            <div className="h-3.5 w-32 animate-pulse rounded bg-zinc-800" />
-            <div className="h-3 w-20 animate-pulse rounded bg-zinc-800/60" />
+            <div className="h-3.5 w-32 shimmer rounded" />
+            <div className="h-3 w-20 shimmer rounded opacity-60" />
           </div>
-          <div className="h-3.5 w-16 animate-pulse rounded bg-zinc-800" />
+          <div className="h-3.5 w-16 shimmer rounded" />
         </div>
       ))}
     </div>

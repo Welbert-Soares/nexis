@@ -48,7 +48,7 @@ function DashboardPage() {
           <div className="space-y-1">
             <p className="text-sm text-zinc-500">Olá, {firstName}</p>
             {isLoading ? (
-              <div className="h-10 w-40 animate-pulse rounded-lg bg-zinc-800" />
+              <div className="h-10 w-40 shimmer rounded-lg" />
             ) : (
               <h1 className="text-4xl font-bold tabular-nums text-white">
                 {fmt(data?.totalBalance ?? 0)}
@@ -147,7 +147,7 @@ function SummaryCard({
         <span className="text-xs">{label}</span>
       </div>
       {loading ? (
-        <div className="h-6 w-24 animate-pulse rounded bg-zinc-800" />
+        <div className="h-6 w-24 shimmer rounded" />
       ) : (
         <p className={cn('text-lg font-semibold tabular-nums', color)}>{fmt(value)}</p>
       )}
@@ -248,12 +248,12 @@ function TransactionsSkeleton() {
     <div className="space-y-1">
       {[1, 2, 3].map((i) => (
         <div key={i} className="flex items-center gap-3 rounded-xl px-1 py-2.5">
-          <div className="h-8 w-8 shrink-0 animate-pulse rounded-xl bg-zinc-800" />
+          <div className="h-8 w-8 shrink-0 shimmer rounded-xl" />
           <div className="flex-1 space-y-1.5">
-            <div className="h-3.5 w-28 animate-pulse rounded bg-zinc-800" />
-            <div className="h-3 w-20 animate-pulse rounded bg-zinc-800/60" />
+            <div className="h-3.5 w-28 shimmer rounded" />
+            <div className="h-3 w-20 shimmer rounded opacity-60" />
           </div>
-          <div className="h-3.5 w-14 animate-pulse rounded bg-zinc-800" />
+          <div className="h-3.5 w-14 shimmer rounded" />
         </div>
       ))}
     </div>
