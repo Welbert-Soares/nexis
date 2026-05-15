@@ -217,7 +217,7 @@ export function GoalSheet({ open, goal, onClose }: Props) {
                         value={field.state.value}
                         min={toDateInput(new Date())}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        className="w-full rounded-xl bg-zinc-800 px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-zinc-600 [color-scheme:dark]"
+                        className="w-full max-w-full rounded-xl bg-zinc-800 px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-zinc-600 [color-scheme:dark] [appearance:none]"
                       />
                     </div>
                   )}
