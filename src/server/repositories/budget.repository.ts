@@ -14,6 +14,7 @@ export function getBudgetsWithSpending(userId: string, month: number, year: numb
               wallet: { userId },
               type: 'EXPENSE',
               date: { gte: start, lt: end },
+              deletedAt: null,
             },
             select: { amount: true },
           },

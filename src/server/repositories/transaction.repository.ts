@@ -48,6 +48,7 @@ export async function processDueRecurring(userId: string) {
       recurring: true,
       parentId: null,
       nextDue: { lte: today },
+      deletedAt: null,
     },
   })
 
@@ -132,6 +133,7 @@ export async function getTransactionsByMonth(
     where: {
       wallet: { userId },
       date: { gte: start, lt: end },
+      deletedAt: null,
       ...(type ? { type } : {}),
       ...(walletId ? { walletId } : {}),
     },
@@ -147,14 +149,15 @@ export async function getTransactionsByMonth(
 
 export async function deleteTransaction(id: string, userId: string) {
   const tx = await prisma.transaction.findFirst({
-    where: { id, wallet: { userId } },
+    where: { id, wallet: { userId }, deletedAt: null },
   })
   if (!tx) throw new Error('Transaction not found')
 
   const delta = tx.type === 'EXPENSE' ? tx.amount : tx.amount.neg()
+  const now = new Date()
 
   return prisma.$transaction([
-    prisma.transaction.delete({ where: { id } }),
+    prisma.transaction.update({ where: { id }, data: { deletedAt: now } }),
     prisma.wallet.update({
       where: { id: tx.walletId },
       data: { balance: { increment: delta } },
@@ -178,7 +181,7 @@ export async function updateTransaction(
   },
 ) {
   const old = await prisma.transaction.findFirst({
-    where: { id, wallet: { userId } },
+    where: { id, wallet: { userId }, deletedAt: null },
   })
   if (!old) throw new Error('Transaction not found')
 
@@ -229,7 +232,7 @@ export async function updateTransaction(
 
 export async function getRecentTransactions(userId: string, limit = 10) {
   const rows = await prisma.transaction.findMany({
-    where: { wallet: { userId } },
+    where: { wallet: { userId }, deletedAt: null },
     include: { category: true, wallet: true },
     orderBy: { date: 'desc' },
     take: limit,

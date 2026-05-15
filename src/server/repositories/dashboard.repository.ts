@@ -11,12 +11,12 @@ export async function getDashboardData(userId: string) {
 
     prisma.transaction.groupBy({
       by: ['type'],
-      where: { wallet: { userId }, date: { gte: startOfMonth } },
+      where: { wallet: { userId }, date: { gte: startOfMonth }, deletedAt: null },
       _sum: { amount: true },
     }),
 
     prisma.transaction.findMany({
-      where: { wallet: { userId } },
+      where: { wallet: { userId }, deletedAt: null },
       include: { category: true, wallet: { select: { id: true, name: true, color: true } } },
       orderBy: { date: 'desc' },
       take: 5,
@@ -29,6 +29,7 @@ export async function getDashboardData(userId: string) {
         type: 'EXPENSE',
         date: { gte: startOfMonth, lt: endOfMonth },
         categoryId: { not: null },
+        deletedAt: null,
       },
       _sum: { amount: true },
       orderBy: { _sum: { amount: 'desc' } },

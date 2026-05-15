@@ -12,7 +12,7 @@ export async function getAnalyticsData(userId: string) {
     // Resumo do mês atual
     prisma.transaction.groupBy({
       by: ['type'],
-      where: { wallet: { userId }, date: { gte: startOfMonth, lt: endOfMonth } },
+      where: { wallet: { userId }, date: { gte: startOfMonth, lt: endOfMonth }, deletedAt: null },
       _sum: { amount: true },
     }),
 
@@ -24,6 +24,7 @@ export async function getAnalyticsData(userId: string) {
         type: 'EXPENSE',
         date: { gte: startOfMonth, lt: endOfMonth },
         categoryId: { not: null },
+        deletedAt: null,
       },
       _sum: { amount: true },
       orderBy: { _sum: { amount: 'desc' } },
@@ -34,7 +35,7 @@ export async function getAnalyticsData(userId: string) {
 
   // Tendência mensal: busca todas as transações dos últimos 6 meses e agrupa por mês no app
   const trendRows = await prisma.transaction.findMany({
-    where: { wallet: { userId }, date: { gte: sixMonthsAgo } },
+    where: { wallet: { userId }, date: { gte: sixMonthsAgo }, deletedAt: null },
     select: { type: true, amount: true, date: true },
   })
 
