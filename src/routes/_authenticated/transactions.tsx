@@ -78,11 +78,9 @@ function TransactionsPage() {
         setExpandedChip(null)
       }
     }
-    document.addEventListener('mousedown', handleOutside)
-    document.addEventListener('touchstart', handleOutside, { passive: true })
+    document.addEventListener('pointerdown', handleOutside)
     return () => {
-      document.removeEventListener('mousedown', handleOutside)
-      document.removeEventListener('touchstart', handleOutside)
+      document.removeEventListener('pointerdown', handleOutside)
     }
   }, [])
 

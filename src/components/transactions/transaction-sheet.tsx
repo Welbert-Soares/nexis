@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Drawer } from 'vaul'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Trash2, Wallet, Plus, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, TrendingUp, Repeat2 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '#/lib/utils'
@@ -73,6 +74,10 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
   const [editingCategory, setEditingCategory] = useState<EditableCategory | undefined>()
   const [recurring, setRecurring] = useState(false)
   const [interval, setInterval] = useState<'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'YEARLY'>('MONTHLY')
+  const [expandedCatId, setExpandedCatId] = useState<string | null>(null)
+  const [expandedWalletId, setExpandedWalletId] = useState<string | null>(null)
+  const catChipsRef = useRef<HTMLDivElement>(null)
+  const walletChipsRef = useRef<HTMLDivElement>(null)
 
   const { data: wallets = [] } = useQuery({
     queryKey: ['wallets'],
@@ -92,6 +97,22 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
       date: transaction ? toDateInput(new Date(transaction.date)) : toDateInput(new Date()),
     },
   })
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent | TouchEvent) {
+      const target = e.target as Node
+      if (catChipsRef.current && !catChipsRef.current.contains(target)) {
+        setExpandedCatId(null)
+      }
+      if (walletChipsRef.current && !walletChipsRef.current.contains(target)) {
+        setExpandedWalletId(null)
+      }
+    }
+    document.addEventListener('pointerdown', handleOutside)
+    return () => {
+      document.removeEventListener('pointerdown', handleOutside)
+    }
+  }, [])
 
   useEffect(() => {
     if (wallets.length > 0 && !form.getFieldValue('walletId')) {
@@ -174,6 +195,8 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
     setType('EXPENSE')
     setCents(0)
     setConfirmDelete(false)
+    setExpandedCatId(null)
+    setExpandedWalletId(null)
     onClose?.()
     navigate({ to: '/transactions' })
   }
@@ -259,7 +282,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                     <button
                       key={t}
                       type="button"
-                      onClick={() => { setType(t); form.setFieldValue('categoryId', '') }}
+                      onClick={() => { setType(t); form.setFieldValue('categoryId', ''); setExpandedCatId(null) }}
                       className={cn(
                         'flex-1 rounded-lg py-2 text-sm font-medium transition-colors',
                         type === t
@@ -308,36 +331,51 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                   </div>
                   <form.Field name="categoryId">
                     {(field) => (
-                      <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div ref={catChipsRef} className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                         {categories.map((cat: { id: string; name: string; color: string | null; icon: string | null; userId: string | null }) => {
                           const isSelected = field.state.value === cat.id
+                          const isExpanded = expandedCatId === cat.id
                           const color = cat.color ?? '#71717a'
                           const Icon = cat.icon ? ICON_MAP[cat.icon] : null
                           return (
-                            <button
+                            <motion.button
+                              layout
+                              transition={{ layout: { duration: 0.18, ease: 'easeInOut' } }}
                               key={cat.id}
                               type="button"
                               onClick={() => {
-                                if (isSelected) {
-                                  field.handleChange('')
-                                } else if (cat.userId) {
-                                  setEditingCategory({ id: cat.id, name: cat.name, color, type, userId: cat.userId })
+                                setExpandedCatId(isExpanded ? null : cat.id)
+                                if (!isSelected) {
                                   field.handleChange(cat.id)
-                                } else {
-                                  field.handleChange(cat.id)
+                                  if (cat.userId) {
+                                    setEditingCategory({ id: cat.id, name: cat.name, color, type, userId: cat.userId })
+                                  }
                                 }
                               }}
                               className={cn(
-                                'shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                                'shrink-0 flex items-center rounded-full py-1.5 px-2.5 transition-colors',
                                 isSelected ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800 text-zinc-400',
                               )}
                             >
                               {Icon
-                                ? <Icon className="h-3 w-3 shrink-0" style={{ color: isSelected ? '#18181b' : color }} strokeWidth={2} />
+                                ? <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: isSelected ? '#18181b' : color }} strokeWidth={2} />
                                 : <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: isSelected ? '#18181b' : color }} />
                               }
-                              {cat.name}
-                            </button>
+                              <AnimatePresence>
+                                {isExpanded && (
+                                  <motion.span
+                                    key="label"
+                                    initial={{ maxWidth: 0, opacity: 0 }}
+                                    animate={{ maxWidth: 200, opacity: 1 }}
+                                    exit={{ maxWidth: 0, opacity: 0 }}
+                                    transition={{ duration: 0.18, ease: 'easeInOut' }}
+                                    className="ml-1.5 overflow-hidden whitespace-nowrap text-xs font-medium"
+                                  >
+                                    {cat.name}
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </motion.button>
                           )
                         })}
                       </div>
@@ -351,22 +389,47 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                     <p className="text-xs text-zinc-500">Carteira</p>
                     <form.Field name="walletId">
                       {(field) => (
-                        <div className="flex gap-2 overflow-x-auto pb-1">
-                          {wallets.map((w) => (
-                            <button
-                              key={w.id}
-                              type="button"
-                              onClick={() => field.handleChange(w.id)}
-                              className={cn(
-                                'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                                field.state.value === w.id
-                                  ? 'bg-zinc-100 text-zinc-900'
-                                  : 'bg-zinc-800 text-zinc-400',
-                              )}
-                            >
-                              {w.name}
-                            </button>
-                          ))}
+                        <div ref={walletChipsRef} className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                          {wallets.map((w) => {
+                            const isSelected = field.state.value === w.id
+                            const isExpanded = expandedWalletId === w.id
+                            return (
+                              <motion.button
+                                layout
+                                transition={{ layout: { duration: 0.18, ease: 'easeInOut' } }}
+                                key={w.id}
+                                type="button"
+                                onClick={() => {
+                                  field.handleChange(w.id)
+                                  setExpandedWalletId(isExpanded ? null : w.id)
+                                }}
+                                className={cn(
+                                  'shrink-0 flex items-center rounded-full py-1.5 px-2.5 transition-colors',
+                                  isSelected ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800 text-zinc-400',
+                                )}
+                              >
+                                <Wallet
+                                  className="h-3.5 w-3.5 shrink-0"
+                                  style={{ color: isSelected ? '#18181b' : (w.color ?? undefined) }}
+                                  strokeWidth={2}
+                                />
+                                <AnimatePresence>
+                                  {isExpanded && (
+                                    <motion.span
+                                      key="label"
+                                      initial={{ maxWidth: 0, opacity: 0 }}
+                                      animate={{ maxWidth: 200, opacity: 1 }}
+                                      exit={{ maxWidth: 0, opacity: 0 }}
+                                      transition={{ duration: 0.18, ease: 'easeInOut' }}
+                                      className="ml-1.5 overflow-hidden whitespace-nowrap text-xs font-medium"
+                                    >
+                                      {w.name}
+                                    </motion.span>
+                                  )}
+                                </AnimatePresence>
+                              </motion.button>
+                            )
+                          })}
                         </div>
                       )}
                     </form.Field>
