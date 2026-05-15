@@ -24,6 +24,7 @@ model User {
   wallets       Wallet[]
   goals         Goal[]
   categories    Category[]
+  budgets       Budget[]
 }
 
 model Session {
@@ -90,7 +91,23 @@ model Category {
   userId       String?
   user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  budgets      Budget[]
   createdAt    DateTime        @default(now())
+}
+
+model Budget {
+  id         String   @id @default(cuid())
+  amount     Decimal  @db.Decimal(12, 2)
+  month      Int
+  year       Int
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, categoryId, month, year])
 }
 
 model Transaction {

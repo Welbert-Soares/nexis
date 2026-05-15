@@ -5,15 +5,25 @@ import { Plus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getAnalytics } from '#/server/services/analytics.service'
 import { getUserGoals } from '#/server/services/goal.service'
+import { getBudgets } from '#/server/services/budget.service'
 import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
+import { BudgetSheet, type EditableBudget } from '#/components/budgets/budget-sheet'
 import { fadeUp, stagger } from '#/lib/motion'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 import { cn } from '#/lib/utils'
+
+const now = new Date()
+const CURRENT_MONTH = now.getMonth() + 1
+const CURRENT_YEAR = now.getFullYear()
 
 export const Route = createFileRoute('/_authenticated/analytics')({
   loader: ({ context: { queryClient } }) => {
     queryClient.prefetchQuery({ queryKey: ['analytics'], queryFn: () => getAnalytics() })
     queryClient.prefetchQuery({ queryKey: ['goals'], queryFn: () => getUserGoals() })
+    queryClient.prefetchQuery({
+      queryKey: ['budgets', CURRENT_MONTH, CURRENT_YEAR],
+      queryFn: () => getBudgets({ data: { month: CURRENT_MONTH, year: CURRENT_YEAR } }),
+    })
   },
   component: AnalyticsPage,
 })
@@ -22,6 +32,8 @@ function AnalyticsPage() {
   const queryClient = useQueryClient()
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editing, setEditing] = useState<EditableGoal | undefined>()
+  const [budgetSheetOpen, setBudgetSheetOpen] = useState(false)
+  const [editingBudget, setEditingBudget] = useState<EditableBudget | undefined>()
 
   const { data, isLoading } = useQuery({
     queryKey: ['analytics'],
@@ -33,10 +45,16 @@ function AnalyticsPage() {
     queryFn: () => getUserGoals(),
   })
 
+  const { data: budgets = [], isLoading: budgetsLoading } = useQuery({
+    queryKey: ['budgets', CURRENT_MONTH, CURRENT_YEAR],
+    queryFn: () => getBudgets({ data: { month: CURRENT_MONTH, year: CURRENT_YEAR } }),
+  })
+
   async function handleRefresh() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['analytics'] }),
       queryClient.invalidateQueries({ queryKey: ['goals'] }),
+      queryClient.invalidateQueries({ queryKey: ['budgets'] }),
     ])
   }
 
@@ -102,7 +120,28 @@ function AnalyticsPage() {
             </motion.section>
           )}
 
-          {(isLoading || goalsLoading) && <AnalyticsSkeleton />}
+          {/* Orçamentos */}
+          {!budgetsLoading && (
+            <motion.section variants={fadeUp} className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">Orçamentos</h2>
+                <button
+                  onClick={() => { setEditingBudget(undefined); setBudgetSheetOpen(true) }}
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 active:bg-zinc-700 transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5 text-zinc-400" />
+                </button>
+              </div>
+              {budgets.length > 0
+                ? <BudgetsList budgets={budgets} onTap={(b) => { setEditingBudget(b); setBudgetSheetOpen(true) }} />
+                : <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 py-6 text-center">
+                    <p className="text-xs text-zinc-600">Nenhum orçamento definido</p>
+                  </div>
+              }
+            </motion.section>
+          )}
+
+          {(isLoading || goalsLoading || budgetsLoading) && <AnalyticsSkeleton />}
         </motion.div>
       </PullToRefresh>
 
@@ -110,6 +149,14 @@ function AnalyticsPage() {
         open={sheetOpen}
         goal={editing}
         onClose={() => { setSheetOpen(false); setEditing(undefined) }}
+      />
+
+      <BudgetSheet
+        open={budgetSheetOpen}
+        budget={editingBudget}
+        month={CURRENT_MONTH}
+        year={CURRENT_YEAR}
+        onClose={() => { setBudgetSheetOpen(false); setEditingBudget(undefined) }}
       />
     </div>
   )
@@ -254,6 +301,54 @@ function GoalsList({ goals, onTap }: { goals: Goal[]; onTap: (g: EditableGoal) =
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
             </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+type BudgetItem = {
+  id: string
+  categoryId: string
+  categoryName: string
+  categoryColor: string
+  limit: number
+  spent: number
+}
+
+function BudgetsList({ budgets, onTap }: { budgets: BudgetItem[]; onTap: (b: EditableBudget) => void }) {
+  return (
+    <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
+      {budgets.map((b) => {
+        const progress = b.limit > 0 ? Math.min((b.spent / b.limit) * 100, 100) : 0
+        const over = b.spent > b.limit
+        const barColor = over ? '#f87171' : progress >= 80 ? '#fb923c' : b.categoryColor
+
+        return (
+          <button key={b.id} onClick={() => onTap({ id: b.id, categoryId: b.categoryId, limit: b.limit })} className="w-full space-y-1.5 text-left">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: b.categoryColor }} />
+                <span className="truncate text-xs text-zinc-300">{b.categoryName}</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className={cn('tabular-nums text-xs font-medium', over ? 'text-red-400' : 'text-zinc-300')}>{fmt(b.spent)}</span>
+                <span className="text-xs text-zinc-600">/ {fmt(b.limit)}</span>
+              </div>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-zinc-800">
+              <motion.div
+                className="h-1.5 rounded-full transition-colors"
+                style={{ backgroundColor: barColor }}
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              />
+            </div>
+            {over && (
+              <p className="text-[10px] text-red-400">Limite excedido em {fmt(b.spent - b.limit)}</p>
+            )}
           </button>
         )
       })}

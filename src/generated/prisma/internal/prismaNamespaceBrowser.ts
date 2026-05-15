@@ -57,6 +57,7 @@ export const ModelName = {
   Verification: 'Verification',
   Wallet: 'Wallet',
   Category: 'Category',
+  Budget: 'Budget',
   Transaction: 'Transaction',
   Goal: 'Goal'
 } as const
@@ -162,6 +163,20 @@ export const CategoryScalarFieldEnum = {
 } as const
 
 export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
+
+
+export const BudgetScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  month: 'month',
+  year: 'year',
+  userId: 'userId',
+  categoryId: 'categoryId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BudgetScalarFieldEnum = (typeof BudgetScalarFieldEnum)[keyof typeof BudgetScalarFieldEnum]
 
 
 export const TransactionScalarFieldEnum = {

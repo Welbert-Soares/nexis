@@ -48,6 +48,11 @@ export type Wallet = Prisma.WalletModel
  */
 export type Category = Prisma.CategoryModel
 /**
+ * Model Budget
+ * 
+ */
+export type Budget = Prisma.BudgetModel
+/**
  * Model Transaction
  * 
  */
