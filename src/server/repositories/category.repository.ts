@@ -24,6 +24,16 @@ export function updateCategory(id: string, userId: string, data: { name: string;
   })
 }
 
-export function deleteCategory(id: string, userId: string) {
+export async function deleteCategory(id: string, userId: string) {
+  const inUse = await prisma.transaction.count({ where: { categoryId: id } })
+  if (inUse > 0) throw new Error('Categoria em uso por transações')
   return prisma.category.delete({ where: { id, userId } })
+}
+
+export function getCategoriesWithUsage(userId: string) {
+  return prisma.category.findMany({
+    where: { OR: [{ userId: null }, { userId }] },
+    include: { _count: { select: { transactions: true } } },
+    orderBy: [{ type: 'asc' }, { userId: 'asc' }, { name: 'asc' }],
+  })
 }

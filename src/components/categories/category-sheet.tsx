@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Drawer } from 'vaul'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Trash2, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, TrendingUp, TrendingDown, Zap, Plane, Coffee, Music, Gift, Smartphone, PiggyBank, Receipt, ShoppingCart, Dumbbell, Baby, Shirt, Gamepad2, Dog, type LucideIcon } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import { addCategory, editCategory, removeCategory } from '#/server/services/category.service'
@@ -66,6 +67,18 @@ export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(category?.type ?? defaultType)
   const [saved, setSaved] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [iconsExpanded, setIconsExpanded] = useState(false)
+  const iconsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleOutside(e: PointerEvent) {
+      if (iconsRef.current && !iconsRef.current.contains(e.target as Node)) {
+        setIconsExpanded(false)
+      }
+    }
+    document.addEventListener('pointerdown', handleOutside)
+    return () => document.removeEventListener('pointerdown', handleOutside)
+  }, [])
 
   useEffect(() => {
     if (open) {
@@ -75,6 +88,7 @@ export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose
       setType(category?.type ?? defaultType)
       setSaved(false)
       setConfirmDelete(false)
+      setIconsExpanded(false)
     }
   }, [open, category, defaultType])
 
@@ -192,28 +206,75 @@ export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose
                 {/* Ícone */}
                 <div className="space-y-2">
                   <p className="text-xs text-zinc-500">Ícone</p>
-                  <div className="grid grid-cols-6 gap-2">
-                    {ICON_OPTIONS.map((opt) => {
-                      const isSelected = icon === opt.name
-                      return (
-                        <button
-                          key={opt.name}
-                          type="button"
-                          onClick={() => setIcon(isSelected ? null : opt.name)}
-                          className="flex h-10 w-full items-center justify-center rounded-xl transition-colors"
-                          style={{
-                            backgroundColor: isSelected ? `${color}26` : '#27272a',
-                            border: `2px solid ${isSelected ? color : 'transparent'}`,
-                          }}
+                  <div ref={iconsRef} className="relative">
+                    {/* Primeiras 2 fileiras — sempre visíveis */}
+                    <div
+                      className={cn('grid grid-cols-6 gap-2', !iconsExpanded && 'cursor-pointer')}
+                      onClick={() => !iconsExpanded && setIconsExpanded(true)}
+                    >
+                      {ICON_OPTIONS.slice(0, 12).map((opt) => {
+                        const isSelected = icon === opt.name
+                        return (
+                          <button
+                            key={opt.name}
+                            type="button"
+                            onClick={() => { if (!iconsExpanded) { setIconsExpanded(true); return } setIcon(isSelected ? null : opt.name); setIconsExpanded(false) }}
+                            className="flex h-10 w-full items-center justify-center rounded-xl transition-colors"
+                            style={{
+                              backgroundColor: isSelected ? `${color}26` : '#27272a',
+                              border: `2px solid ${isSelected ? color : 'transparent'}`,
+                            }}
+                          >
+                            <opt.icon className="h-4 w-4" style={{ color: isSelected ? color : '#71717a' }} strokeWidth={1.75} />
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Fileiras restantes — animadas */}
+                    <AnimatePresence>
+                      {iconsExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeInOut' }}
+                          className="overflow-hidden"
                         >
-                          <opt.icon
-                            className="h-4 w-4"
-                            style={{ color: isSelected ? color : '#71717a' }}
-                            strokeWidth={1.75}
-                          />
-                        </button>
-                      )
-                    })}
+                          <div className="grid grid-cols-6 gap-2 pt-2">
+                            {ICON_OPTIONS.slice(12).map((opt) => {
+                              const isSelected = icon === opt.name
+                              return (
+                                <button
+                                  key={opt.name}
+                                  type="button"
+                                  onClick={() => { if (!iconsExpanded) { setIconsExpanded(true); return } setIcon(isSelected ? null : opt.name); setIconsExpanded(false) }}
+                                  className="flex h-10 w-full items-center justify-center rounded-xl transition-colors"
+                                  style={{
+                                    backgroundColor: isSelected ? `${color}26` : '#27272a',
+                                    border: `2px solid ${isSelected ? color : 'transparent'}`,
+                                  }}
+                                >
+                                  <opt.icon className="h-4 w-4" style={{ color: isSelected ? color : '#71717a' }} strokeWidth={1.75} />
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Indicador de expansão */}
+                    <AnimatePresence>
+                      {!iconsExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-zinc-900 to-transparent"
+                        />
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 

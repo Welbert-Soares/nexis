@@ -7,6 +7,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  getCategoriesWithUsage,
 } from '#/server/repositories/category.repository'
 
 async function getSessionOrThrow() {
@@ -45,6 +46,11 @@ export const editCategory = createServerFn({ method: 'POST' })
     const session = await getSessionOrThrow()
     return updateCategory(data.id, session.user.id, { name: data.name, color: data.color, icon: data.icon })
   })
+
+export const getCategoriesManagement = createServerFn({ method: 'GET' }).handler(async () => {
+  const session = await getSessionOrThrow()
+  return getCategoriesWithUsage(session.user.id)
+})
 
 export const removeCategory = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ id: z.string() }))
