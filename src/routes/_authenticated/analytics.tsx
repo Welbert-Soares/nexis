@@ -392,7 +392,11 @@ function BudgetsList({ budgets, onTap }: { budgets: BudgetItem[]; onTap: (b: Edi
       {budgets.map((b) => {
         const progress = b.limit > 0 ? Math.min((b.spent / b.limit) * 100, 100) : 0
         const over = b.spent > b.limit
-        const barColor = over ? '#f87171' : progress >= 80 ? '#fb923c' : b.categoryColor
+        const barColor = progress > 90 ? '#ef4444'
+          : progress > 80 ? '#f87171'
+          : progress > 60 ? '#fb923c'
+          : progress > 30 ? '#eab308'
+          : '#22c55e'
 
         return (
           <button key={b.id} onClick={() => onTap({ id: b.id, categoryId: b.categoryId, limit: b.limit })} className="w-full space-y-1.5 text-left">
