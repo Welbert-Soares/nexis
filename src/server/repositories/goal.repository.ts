@@ -10,14 +10,16 @@ export async function getGoalsByUser(userId: string) {
   const deposits = goalIds.length
     ? await prisma.transaction.findMany({
         where: { goalId: { in: goalIds }, deletedAt: null },
-        select: { goalId: true, amount: true },
+        select: { goalId: true, amount: true, type: true },
       })
     : []
 
   const depositMap = new Map<string, number>()
   for (const d of deposits) {
     if (!d.goalId) continue
-    depositMap.set(d.goalId, (depositMap.get(d.goalId) ?? 0) + d.amount.toNumber())
+    // EXPENSE = aporte (+), INCOME = resgate (-)
+    const delta = d.type === 'EXPENSE' ? d.amount.toNumber() : -d.amount.toNumber()
+    depositMap.set(d.goalId, (depositMap.get(d.goalId) ?? 0) + delta)
   }
 
   return goals.map((g) => ({

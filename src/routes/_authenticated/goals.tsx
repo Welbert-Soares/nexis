@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { Plus, Target, PiggyBank } from 'lucide-react'
+import { Plus, Target, PiggyBank, ArrowDownLeft } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger } from '#/lib/motion'
-import { getUserGoals, depositGoalFromWallet } from '#/server/services/goal.service'
+import { getUserGoals, depositGoalFromWallet, withdrawFromGoal } from '#/server/services/goal.service'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
@@ -42,6 +42,9 @@ function GoalsPage() {
   const [depositGoal, setDepositGoal] = useState<Goal | null>(null)
   const [depositCents, setDepositCents] = useState(0)
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null)
+  const [withdrawGoal, setWithdrawGoal] = useState<Goal | null>(null)
+  const [withdrawCents, setWithdrawCents] = useState(0)
+  const [withdrawWalletId, setWithdrawWalletId] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
   const { data: goals = [], isLoading } = useQuery({
@@ -112,6 +115,36 @@ function GoalsPage() {
 
   const canConfirm = depositCents > 0 && !!selectedWalletId && !insufficientFunds && !depositMutation.isPending
 
+  function openWithdraw(g: Goal) {
+    setWithdrawGoal(g)
+    setWithdrawCents(0)
+    setWithdrawWalletId(wallets.length === 1 ? wallets[0].id : null)
+  }
+
+  function closeWithdraw() {
+    setWithdrawGoal(null)
+    setWithdrawCents(0)
+    setWithdrawWalletId(null)
+  }
+
+  const withdrawAmount = withdrawCents / 100
+  const exceedsGoal = !!withdrawGoal && withdrawAmount > withdrawGoal.currentAmount
+
+  const withdrawMutation = useMutation({
+    mutationFn: () => withdrawFromGoal({
+      data: { goalId: withdrawGoal!.id, walletId: withdrawWalletId!, amount: withdrawAmount },
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] })
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      closeWithdraw()
+    },
+  })
+
+  const canWithdraw = withdrawCents > 0 && !!withdrawWalletId && !exceedsGoal && !withdrawMutation.isPending
+
   return (
     <>
       <div className="relative flex h-full flex-col pt-10">
@@ -145,7 +178,7 @@ function GoalsPage() {
           <motion.div variants={stagger} className="space-y-3 pb-4">
             {(goals as Goal[]).map((g) => (
               <motion.div key={g.id} variants={fadeUp}>
-                <GoalCard goal={g} onTap={() => handleEdit(g)} onDeposit={() => openDeposit(g)} />
+                <GoalCard goal={g} onTap={() => handleEdit(g)} onDeposit={() => openDeposit(g)} onWithdraw={() => openWithdraw(g)} />
               </motion.div>
             ))}
           </motion.div>
@@ -215,11 +248,74 @@ function GoalsPage() {
           </Drawer.Content>
         </Drawer.Portal>
       </Drawer.Root>
+
+      {/* Drawer de resgate */}
+      <Drawer.Root open={!!withdrawGoal} onClose={closeWithdraw}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={closeWithdraw} />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
+            <Drawer.Title className="sr-only">Resgatar da meta</Drawer.Title>
+            <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
+            <div className="px-4 pb-8 pt-5 space-y-5">
+
+              {/* Título */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/15">
+                  <ArrowDownLeft className="h-4 w-4 text-amber-400" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Resgatar da meta</p>
+                  {withdrawGoal && (
+                    <p className="text-xs text-zinc-500">
+                      {withdrawGoal.name} · disponível {fmt(withdrawGoal.currentAmount)}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Destino */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-zinc-500">Transferir para</p>
+                <div className="flex flex-wrap gap-2">
+                  {(wallets as Wallet[]).map((w) => (
+                    <button
+                      key={w.id}
+                      onClick={() => setWithdrawWalletId(w.id)}
+                      className={cn(
+                        'flex flex-col rounded-xl border px-3 py-2 text-left transition-colors',
+                        withdrawWalletId === w.id
+                          ? 'border-amber-500 bg-amber-500/10'
+                          : 'border-zinc-800 bg-zinc-800/50 active:bg-zinc-700/50',
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: w.color ?? '#71717a' }} />
+                        <span className="text-xs font-medium text-zinc-200">{w.name}</span>
+                      </div>
+                      <span className="mt-0.5 text-[11px] tabular-nums text-zinc-500">{fmt(w.balance)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <CurrencyInput cents={withdrawCents} onChange={setWithdrawCents} error={exceedsGoal} />
+
+              <button
+                onClick={() => withdrawMutation.mutate()}
+                disabled={!canWithdraw}
+                className="w-full rounded-xl bg-amber-500 py-4 text-sm font-semibold text-white transition-opacity active:opacity-80 disabled:opacity-40"
+              >
+                {withdrawMutation.isPending ? 'Salvando...' : 'Confirmar resgate'}
+              </button>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </>
   )
 }
 
-function GoalCard({ goal: g, onTap, onDeposit }: { goal: Goal; onTap: () => void; onDeposit: () => void }) {
+function GoalCard({ goal: g, onTap, onDeposit, onWithdraw }: { goal: Goal; onTap: () => void; onDeposit: () => void; onWithdraw: () => void }) {
   const pct = g.targetAmount > 0
     ? Math.min(Math.round((g.currentAmount / g.targetAmount) * 100), 100)
     : 0
@@ -261,8 +357,38 @@ function GoalCard({ goal: g, onTap, onDeposit }: { goal: Goal; onTap: () => void
         </div>
       </button>
 
-      {/* Botão de aporte */}
-      {!done && (
+      {/* Ações */}
+      {g.currentAmount > 0 && (
+        <div className="flex border-t border-zinc-800">
+          {!done && (
+            <button
+              onClick={onDeposit}
+              className="flex flex-1 items-center justify-center gap-2 py-3 text-xs font-medium text-emerald-400 active:bg-emerald-500/10 transition-colors"
+            >
+              <PiggyBank className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Aportar
+            </button>
+          )}
+          {done && (
+            <button
+              onClick={onDeposit}
+              className="flex flex-1 items-center justify-center gap-2 py-3 text-xs font-medium text-zinc-500 active:bg-zinc-800/50 transition-colors"
+            >
+              <PiggyBank className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Aportar
+            </button>
+          )}
+          <div className="w-px bg-zinc-800" />
+          <button
+            onClick={onWithdraw}
+            className="flex flex-1 items-center justify-center gap-2 py-3 text-xs font-medium text-amber-400 active:bg-amber-500/10 transition-colors"
+          >
+            <ArrowDownLeft className="h-3.5 w-3.5" strokeWidth={1.75} />
+            Resgatar
+          </button>
+        </div>
+      )}
+      {g.currentAmount === 0 && !done && (
         <button
           onClick={onDeposit}
           className="flex w-full items-center justify-center gap-2 border-t border-zinc-800 py-3 text-xs font-medium text-emerald-400 active:bg-emerald-500/10 transition-colors"

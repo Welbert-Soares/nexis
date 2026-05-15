@@ -73,6 +73,41 @@ export const deleteUserGoal = createServerFn({ method: 'POST' })
     await deleteGoal(data.id, session.user.id)
   })
 
+export const withdrawFromGoal = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({
+    goalId: z.string(),
+    walletId: z.string(),
+    amount: z.number().positive(),
+  }))
+  .handler(async ({ data }) => {
+    const session = await getSessionOrThrow()
+    const { goalId, walletId, amount } = data
+
+    const [goal, wallet] = await Promise.all([
+      prisma.goal.findFirst({ where: { id: goalId, userId: session.user.id } }),
+      prisma.wallet.findFirst({ where: { id: walletId, userId: session.user.id } }),
+    ])
+    if (!goal) throw new Error('Meta não encontrada')
+    if (!wallet) throw new Error('Carteira não encontrada')
+
+    // calcula currentAmount atual
+    const txs = await prisma.transaction.findMany({
+      where: { goalId, deletedAt: null },
+      select: { amount: true, type: true },
+    })
+    const net = txs.reduce((acc, t) =>
+      acc + (t.type === 'EXPENSE' ? t.amount.toNumber() : -t.amount.toNumber()), 0)
+    const currentAmount = goal.seedAmount.toNumber() + net
+
+    if (amount > currentAmount) throw new Error('Valor excede o saldo guardado na meta')
+
+    await prisma.transaction.create({
+      data: { amount, type: 'INCOME', walletId, goalId, description: `Resgate ← ${goal.name}`, date: new Date() },
+    })
+
+    return { goalId, currentAmount: currentAmount - amount }
+  })
+
 export const depositGoalFromWallet = createServerFn({ method: 'POST' })
   .inputValidator(z.object({
     goalId: z.string(),
