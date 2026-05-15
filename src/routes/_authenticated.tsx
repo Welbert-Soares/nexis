@@ -26,12 +26,9 @@ function AuthenticatedLayout() {
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
-    import('virtual:pwa-register')
-      .then(({ registerSW }) => registerSW({ immediate: true }))
-      .catch(() => {
-        // fallback direto caso o módulo virtual não esteja disponível
-        navigator.serviceWorker.register('/sw.js').catch(() => {})
-      })
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    })
   }, [])
 
   useEffect(() => {

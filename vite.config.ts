@@ -15,15 +15,9 @@ const config = defineConfig({
     nitro(),
     viteReact(),
     VitePWA({
-      registerType: 'autoUpdate',
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.ts',
+      registerType: 'prompt',
       manifest: false, // usando o manifest.json estático em /public
-      injectManifest: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-      },
-      devOptions: { enabled: true, type: 'module' },
+      selfDestroying: true, // remove qualquer SW gerado pelo VitePWA — usamos /public/sw.js
     }),
   ],
 })
