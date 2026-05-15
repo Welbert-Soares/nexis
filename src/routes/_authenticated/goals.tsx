@@ -277,7 +277,7 @@ function GoalCard({ goal: g, onTap, onDeposit }: { goal: Goal; onTap: () => void
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 py-12 text-center">
+    <div className="mx-6 flex flex-col items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 px-8 py-12 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800">
         <Target className="h-6 w-6 text-zinc-500" strokeWidth={1.5} />
       </div>
