@@ -7,6 +7,7 @@ import { OfflineBanner } from '#/components/ui/offline-banner'
 import { BudgetAlertsBanner } from '#/components/ui/budget-alerts-banner'
 import { AppToasts } from '#/components/ui/app-toasts'
 import { NotificationPermission } from '#/components/ui/notification-permission'
+import { NavigationOverlay } from '#/components/ui/navigation-overlay'
 import { getSession } from '#/server/services/auth.service'
 import { triggerRecurring } from '#/server/services/transaction.service'
 import { checkGoalDeadlines } from '#/server/services/goal.service'
@@ -46,6 +47,7 @@ function AuthenticatedLayout() {
       <BottomNav />
       <BudgetAlertsBanner />
       <NotificationPermission />
+      <NavigationOverlay />
       <AppToasts />
     </div>
   )
