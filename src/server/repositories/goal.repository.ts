@@ -7,15 +7,18 @@ export async function getGoalsByUser(userId: string) {
   })
 
   const goalIds = goals.map((g) => g.id)
-  const depositsAgg = goalIds.length
-    ? await prisma.transaction.groupBy({
-        by: ['goalId'],
+  const deposits = goalIds.length
+    ? await prisma.transaction.findMany({
         where: { goalId: { in: goalIds }, deletedAt: null },
-        _sum: { amount: true },
+        select: { goalId: true, amount: true },
       })
     : []
 
-  const depositMap = new Map(depositsAgg.map((r) => [r.goalId!, r._sum.amount?.toNumber() ?? 0]))
+  const depositMap = new Map<string, number>()
+  for (const d of deposits) {
+    if (!d.goalId) continue
+    depositMap.set(d.goalId, (depositMap.get(d.goalId) ?? 0) + d.amount.toNumber())
+  }
 
   return goals.map((g) => ({
     ...g,
