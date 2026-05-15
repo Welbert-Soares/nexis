@@ -33,13 +33,13 @@ function AuthenticatedLayout() {
   return (
     <div className="fixed inset-0 flex flex-col bg-zinc-950">
       <OfflineBanner />
-      <BudgetAlertsBanner />
       <main className="min-h-0 flex-1 overflow-hidden">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
       </main>
       <BottomNav />
+      <BudgetAlertsBanner />
     </div>
   )
 }
