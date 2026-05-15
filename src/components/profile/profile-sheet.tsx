@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Drawer } from 'vaul'
-import { LogOut, Plus, Tag, ChevronLeft } from 'lucide-react'
+import { LogOut, Plus, Tag, ChevronLeft, Bell, BellOff, Download } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '#/lib/utils'
 import { signOut } from '#/lib/auth-client'
@@ -10,6 +10,9 @@ import { Avatar } from '#/components/ui/avatar'
 import { CATEGORY_ICONS } from '#/lib/category-icons'
 import { getCategoriesManagement, removeCategory } from '#/server/services/category.service'
 import { CategorySheet, type EditableCategory } from '#/components/categories/category-sheet'
+import { usePushNotifications } from '#/hooks/use-push-notifications'
+import { useInstallPrompt } from '#/hooks/use-install-prompt'
+import { useHaptic } from '#/hooks/use-haptic'
 
 interface Props {
   open: boolean
@@ -114,6 +117,9 @@ export function ProfileSheet({ open, onClose, user }: Props) {
   }
 
   const filtered = allCategories.filter((c) => c.type === catType)
+  const { supported: notifSupported, permission, subscribed, loading: notifLoading, subscribe, unsubscribe } = usePushNotifications()
+  const { showPrompt: canInstall, isIOS, install } = useInstallPrompt()
+  const haptic = useHaptic()
 
   return (
     <>
@@ -248,6 +254,65 @@ export function ProfileSheet({ open, onClose, user }: Props) {
                   )}
                 </AnimatePresence>
               </div>
+
+              <div className="h-px bg-zinc-800" />
+
+              {/* Instalar app — Android */}
+              {canInstall && !isIOS && (
+                <button
+                  onClick={() => { haptic.success(); install() }}
+                  className="flex w-full items-center gap-3 rounded-xl px-1 py-2 active:opacity-70 transition-opacity"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-800">
+                    <Download className="h-4 w-4 text-blue-400" strokeWidth={1.5} />
+                  </div>
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="text-sm font-medium text-white">Instalar app</p>
+                    <p className="text-xs text-zinc-500">Adicionar à tela inicial</p>
+                  </div>
+                </button>
+              )}
+
+              {(canInstall && !isIOS) && <div className="h-px bg-zinc-800" />}
+
+              {/* Notificações */}
+              {notifSupported && (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-800">
+                    {subscribed
+                      ? <Bell className="h-4 w-4 text-blue-400" strokeWidth={1.5} />
+                      : <BellOff className="h-4 w-4 text-zinc-500" strokeWidth={1.5} />
+                    }
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-white">Notificações</p>
+                    <p className="text-xs text-zinc-500">
+                      {permission === 'denied'
+                        ? 'Bloqueadas nas configurações do navegador'
+                        : subscribed
+                        ? 'Ativas'
+                        : 'Desativadas'}
+                    </p>
+                  </div>
+                  {permission !== 'denied' && (
+                    <button
+                      onClick={() => subscribed ? unsubscribe() : subscribe()}
+                      disabled={notifLoading}
+                      className={cn(
+                        'relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50',
+                        subscribed ? 'bg-blue-500' : 'bg-zinc-700',
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all',
+                          subscribed ? 'left-[calc(100%-1.375rem)]' : 'left-0.5',
+                        )}
+                      />
+                    </button>
+                  )}
+                </div>
+              )}
 
               <div className="h-px bg-zinc-800" />
 

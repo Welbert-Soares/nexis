@@ -11,13 +11,28 @@ import {
   updateTransaction,
   processDueRecurring,
 } from '#/server/repositories/transaction.repository'
-import { sendPushToUser } from '#/server/services/push.service'
+import { sendPushToUser } from '#/server/services/push-notify.server'
 import { getExceededBudgets } from '#/server/repositories/budget.repository'
 
 async function getSessionOrThrow() {
   const session = await auth.api.getSession({ headers: getRequest().headers })
   if (!session) throw new Error('Unauthorized')
   return session
+}
+
+function checkBudgetsAndNotify(userId: string) {
+  getExceededBudgets(userId).then((alerts) => {
+    if (alerts.length === 0) return
+    const exceeded = alerts.filter((a) => a.pct >= 1)
+    const top = alerts[0]
+    const title = exceeded.length > 0 ? 'Limite de orçamento excedido' : 'Orçamento próximo do limite'
+    const body = exceeded.length === 1
+      ? `${top.name} ultrapassou o limite mensal`
+      : exceeded.length > 1
+      ? `${exceeded.length} orçamentos ultrapassados este mês`
+      : `${top.name} está em ${Math.round(top.pct * 100)}% do limite`
+    sendPushToUser(userId, { title, body, url: '/analytics' }).catch(() => {})
+  }).catch(() => {})
 }
 
 const createTransactionSchema = z.object({
@@ -47,22 +62,14 @@ export const addTransaction = createServerFn({ method: 'POST' })
         date: data.date ?? new Date(),
         installments: data.installments,
       })
+      if (data.type === 'EXPENSE') {
+        checkBudgetsAndNotify(session.user.id)
+      }
       return null
     }
     const [transaction] = await createTransaction(data)
     if (data.type === 'EXPENSE') {
-      getExceededBudgets(session.user.id).then((alerts) => {
-        if (alerts.length === 0) return
-        const exceeded = alerts.filter((a) => a.pct >= 1)
-        const top = alerts[0]
-        const title = exceeded.length > 0 ? 'Limite de orçamento excedido' : 'Orçamento próximo do limite'
-        const body = exceeded.length === 1
-          ? `${top.name} ultrapassou o limite mensal`
-          : exceeded.length > 1
-          ? `${exceeded.length} orçamentos ultrapassados este mês`
-          : `${top.name} está em ${Math.round(top.pct * 100)}% do limite`
-        sendPushToUser(session.user.id, { title, body, url: '/analytics' }).catch(() => {})
-      }).catch(() => {})
+      checkBudgetsAndNotify(session.user.id)
     }
     return { ...transaction, amount: transaction.amount.toNumber() }
   })

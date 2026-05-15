@@ -8,6 +8,7 @@ import {
   getGoalsByUser,
   updateGoal,
 } from '#/server/repositories/goal.repository'
+import { sendPushToUser } from '#/server/services/push-notify.server'
 
 async function getSessionOrThrow() {
   const session = await auth.api.getSession({ headers: getRequest().headers })
@@ -55,10 +56,19 @@ export const updateUserGoal = createServerFn({ method: 'POST' })
     const session = await getSessionOrThrow()
     const { id, ...rest } = data
     const goal = await updateGoal(id, session.user.id, rest)
+    const current = goal.currentAmount.toNumber()
+    const target = goal.targetAmount.toNumber()
+    if (current >= target) {
+      sendPushToUser(session.user.id, {
+        title: 'Meta atingida! 🎉',
+        body: `Você completou a meta "${goal.name}"`,
+        url: '/analytics',
+      }).catch(() => {})
+    }
     return {
       ...goal,
-      targetAmount: goal.targetAmount.toNumber(),
-      currentAmount: goal.currentAmount.toNumber(),
+      targetAmount: target,
+      currentAmount: current,
     }
   })
 
