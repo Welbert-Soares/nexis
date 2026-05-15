@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Target } from 'lucide-react'
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
+import { Plus, Target, PiggyBank } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { Drawer } from 'vaul'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger } from '#/lib/motion'
-import { getUserGoals } from '#/server/services/goal.service'
+import { getUserGoals, updateUserGoal } from '#/server/services/goal.service'
 import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
+import { CurrencyInput } from '#/components/ui/currency-input'
 
 export const Route = createFileRoute('/_authenticated/goals')({
   loader: ({ context: { queryClient } }) => {
@@ -28,6 +30,8 @@ type Goal = {
 function GoalsPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editing, setEditing] = useState<EditableGoal | undefined>()
+  const [depositGoal, setDepositGoal] = useState<Goal | null>(null)
+  const [depositCents, setDepositCents] = useState(0)
   const queryClient = useQueryClient()
 
   const { data: goals = [], isLoading } = useQuery({
@@ -58,6 +62,17 @@ function GoalsPage() {
     setEditing(undefined)
     setSheetOpen(false)
   }
+
+  const depositMutation = useMutation({
+    mutationFn: (g: Goal) => updateUserGoal({
+      data: { id: g.id, currentAmount: g.currentAmount + depositCents / 100 },
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] })
+      setDepositGoal(null)
+      setDepositCents(0)
+    },
+  })
 
   return (
     <>
@@ -94,7 +109,7 @@ function GoalsPage() {
           <motion.div variants={stagger} className="space-y-3 pb-4">
             {(goals as Goal[]).map((g) => (
               <motion.div key={g.id} variants={fadeUp}>
-                <GoalCard goal={g} onTap={() => handleEdit(g)} />
+                <GoalCard goal={g} onTap={() => handleEdit(g)} onDeposit={() => { setDepositGoal(g); setDepositCents(0) }} />
               </motion.div>
             ))}
           </motion.div>
@@ -104,11 +119,40 @@ function GoalsPage() {
       </div>
 
       <GoalSheet open={sheetOpen} goal={editing} onClose={handleClose} />
+
+      <Drawer.Root open={!!depositGoal} onClose={() => { setDepositGoal(null); setDepositCents(0) }}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={() => setDepositGoal(null)} />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
+            <Drawer.Title className="sr-only">Aportar na meta</Drawer.Title>
+            <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
+            <div className="px-4 pb-8 pt-5 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15">
+                  <PiggyBank className="h-4 w-4 text-emerald-400" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Aportar na meta</p>
+                  {depositGoal && <p className="text-xs text-zinc-500">{depositGoal.name}</p>}
+                </div>
+              </div>
+              <CurrencyInput cents={depositCents} onChange={setDepositCents} />
+              <button
+                onClick={() => depositGoal && depositMutation.mutate(depositGoal)}
+                disabled={depositCents === 0 || depositMutation.isPending}
+                className="w-full rounded-xl bg-emerald-500 py-4 text-sm font-semibold text-white transition-opacity active:opacity-80 disabled:opacity-40"
+              >
+                {depositMutation.isPending ? 'Salvando...' : 'Confirmar aporte'}
+              </button>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </>
   )
 }
 
-function GoalCard({ goal: g, onTap }: { goal: Goal; onTap: () => void }) {
+function GoalCard({ goal: g, onTap, onDeposit }: { goal: Goal; onTap: () => void; onDeposit: () => void }) {
   const pct = g.targetAmount > 0
     ? Math.min(Math.round((g.currentAmount / g.targetAmount) * 100), 100)
     : 0
@@ -146,9 +190,19 @@ function GoalCard({ goal: g, onTap }: { goal: Goal; onTap: () => void }) {
           {fmt(g.currentAmount)}
           <span className="text-zinc-600"> / {fmt(g.targetAmount)}</span>
         </p>
-        {g.deadline && (
-          <p className="text-xs text-zinc-600">{fmtDeadline(new Date(g.deadline))}</p>
-        )}
+        <div className="flex items-center gap-2">
+          {g.deadline && (
+            <p className="text-xs text-zinc-600">{fmtDeadline(new Date(g.deadline))}</p>
+          )}
+          {!done && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDeposit() }}
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 active:bg-emerald-500/30 transition-colors"
+            >
+              <PiggyBank className="h-3.5 w-3.5 text-emerald-400" strokeWidth={1.75} />
+            </button>
+          )}
+        </div>
       </div>
     </button>
   )
