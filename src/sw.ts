@@ -4,10 +4,10 @@ import { registerRoute } from 'workbox-routing'
 import { CacheFirst } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
 
-declare const self: ServiceWorkerGlobalScope & typeof globalThis
-declare const __WB_MANIFEST: Array<{ url: string; revision: string | null }>
+declare const self: ServiceWorkerGlobalScope &
+  typeof globalThis & { __WB_MANIFEST: Array<{ url: string; revision: string | null }> }
 
-precacheAndRoute(__WB_MANIFEST)
+precacheAndRoute(self.__WB_MANIFEST)
 
 registerRoute(
   ({ url }) => url.origin === 'https://fonts.googleapis.com',
