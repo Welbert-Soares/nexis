@@ -62,3 +62,8 @@ export type Transaction = Prisma.TransactionModel
  * 
  */
 export type Goal = Prisma.GoalModel
+/**
+ * Model PushSubscription
+ * 
+ */
+export type PushSubscription = Prisma.PushSubscriptionModel

@@ -11,6 +11,8 @@ import {
   updateTransaction,
   processDueRecurring,
 } from '#/server/repositories/transaction.repository'
+import { sendPushToUser } from '#/server/services/push.service'
+import { getExceededBudgets } from '#/server/repositories/budget.repository'
 
 async function getSessionOrThrow() {
   const session = await auth.api.getSession({ headers: getRequest().headers })
@@ -34,7 +36,7 @@ const createTransactionSchema = z.object({
 export const addTransaction = createServerFn({ method: 'POST' })
   .inputValidator(createTransactionSchema)
   .handler(async ({ data }) => {
-    await getSessionOrThrow()
+    const session = await getSessionOrThrow()
     if (data.installments && data.installments >= 2) {
       await createInstallments({
         walletId: data.walletId,
@@ -48,6 +50,20 @@ export const addTransaction = createServerFn({ method: 'POST' })
       return null
     }
     const [transaction] = await createTransaction(data)
+    if (data.type === 'EXPENSE') {
+      getExceededBudgets(session.user.id).then((alerts) => {
+        if (alerts.length === 0) return
+        const exceeded = alerts.filter((a) => a.pct >= 1)
+        const top = alerts[0]
+        const title = exceeded.length > 0 ? 'Limite de orçamento excedido' : 'Orçamento próximo do limite'
+        const body = exceeded.length === 1
+          ? `${top.name} ultrapassou o limite mensal`
+          : exceeded.length > 1
+          ? `${exceeded.length} orçamentos ultrapassados este mês`
+          : `${top.name} está em ${Math.round(top.pct * 100)}% do limite`
+        sendPushToUser(session.user.id, { title, body, url: '/analytics' }).catch(() => {})
+      }).catch(() => {})
+    }
     return { ...transaction, amount: transaction.amount.toNumber() }
   })
 
@@ -102,5 +118,15 @@ export const listTransactions = createServerFn({ method: 'GET' })
 export const triggerRecurring = createServerFn({ method: 'POST' })
   .handler(async () => {
     const session = await getSessionOrThrow()
-    return processDueRecurring(session.user.id)
+    const count = await processDueRecurring(session.user.id)
+    if (count > 0) {
+      sendPushToUser(session.user.id, {
+        title: 'Transações recorrentes',
+        body: count === 1
+          ? '1 transação recorrente foi lançada automaticamente'
+          : `${count} transações recorrentes foram lançadas automaticamente`,
+        url: '/transactions',
+      }).catch(() => {})
+    }
+    return count
   })

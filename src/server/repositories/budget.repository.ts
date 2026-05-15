@@ -35,3 +35,18 @@ export function upsertBudget(userId: string, categoryId: string, month: number, 
 export function deleteBudget(id: string, userId: string) {
   return prisma.budget.delete({ where: { id, userId } })
 }
+
+export async function getExceededBudgets(userId: string) {
+  const now = new Date()
+  const month = now.getMonth() + 1
+  const year = now.getFullYear()
+  const budgets = await getBudgetsWithSpending(userId, month, year)
+  return budgets
+    .map((b) => ({
+      name: b.category.name,
+      limit: b.amount.toNumber(),
+      spent: b.category.transactions.reduce((acc, t) => acc + t.amount.toNumber(), 0),
+    }))
+    .map((b) => ({ ...b, pct: b.limit > 0 ? b.spent / b.limit : 0 }))
+    .filter((b) => b.pct >= 0.8)
+}
