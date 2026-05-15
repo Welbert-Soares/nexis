@@ -124,6 +124,13 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
 
   const isBusy = saveMutation.isPending || deleteMutation.isPending || saved
 
+  const isDirty = !isEdit || (
+    form.state.values.name !== wallet!.name ||
+    form.state.values.type !== wallet!.type ||
+    color !== (wallet!.color ?? COLORS[0]) ||
+    icon !== (wallet!.icon ?? null)
+  )
+
   return (
     <Drawer.Root open={open} onClose={handleClose}>
       <Drawer.Portal>
@@ -338,7 +345,7 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
 
                 <button
                   type="submit"
-                  disabled={isBusy}
+                  disabled={isBusy || !isDirty}
                   onClick={() => saveMutation.mutate(form.state.values)}
                   className="w-full rounded-xl bg-blue-400 py-4 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
                 >

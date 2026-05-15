@@ -232,7 +232,19 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
 
   const hasWallets = wallets.length > 0
   const isBusy = saveMutation.isPending || deleteMutation.isPending || saved
-  const canSubmit = hasWallets && !isBusy
+
+  const isDirty = !isEdit || parceling || (
+    type !== transaction!.type ||
+    cents !== Math.round(transaction!.amount * 100) ||
+    form.state.values.date !== toDateInput(new Date(transaction!.date)) ||
+    form.state.values.walletId !== transaction!.walletId ||
+    (form.state.values.categoryId || null) !== transaction!.categoryId ||
+    (form.state.values.description || null) !== (transaction!.description ?? null) ||
+    recurring !== (transaction!.recurring ?? false) ||
+    (recurring && interval !== (transaction!.interval ?? 'MONTHLY'))
+  )
+
+  const canSubmit = hasWallets && !isBusy && isDirty
 
   return (
     <>

@@ -92,7 +92,13 @@ export function CategorySheet({ open, category, defaultType = 'EXPENSE', onClose
     },
   })
 
-  const canSave = name.trim().length > 0 && !saveMutation.isPending && !saved
+  const isDirty = !isEdit || (
+    name.trim() !== (category!.name ?? '') ||
+    color !== (category!.color ?? COLORS[0]) ||
+    icon !== (category!.icon ?? null)
+  )
+
+  const canSave = name.trim().length > 0 && !saveMutation.isPending && !saved && isDirty
 
   const PreviewIcon = icon ? ICON_OPTIONS.find((o) => o.name === icon)?.icon : null
 
