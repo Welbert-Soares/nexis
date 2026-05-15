@@ -9,6 +9,7 @@ import {
   updateGoal,
 } from '#/server/repositories/goal.repository'
 import { sendPushToUser } from '#/server/services/push-notify.server'
+import { prisma } from '#/db'
 
 async function getSessionOrThrow() {
   const session = await auth.api.getSession({ headers: getRequest().headers })
@@ -77,4 +78,50 @@ export const deleteUserGoal = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     await deleteGoal(data.id, session.user.id)
+  })
+
+export const depositGoalFromWallet = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({
+    goalId: z.string(),
+    walletId: z.string(),
+    amount: z.number().positive(),
+  }))
+  .handler(async ({ data }) => {
+    const session = await getSessionOrThrow()
+    const { goalId, walletId, amount } = data
+
+    const [goal, wallet] = await Promise.all([
+      prisma.goal.findFirst({ where: { id: goalId, userId: session.user.id } }),
+      prisma.wallet.findFirst({ where: { id: walletId, userId: session.user.id } }),
+    ])
+    if (!goal) throw new Error('Meta não encontrada')
+    if (!wallet) throw new Error('Carteira não encontrada')
+
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.transaction.create({
+        data: {
+          amount,
+          type: 'EXPENSE',
+          walletId,
+          description: `Aporte → ${goal.name}`,
+          date: new Date(),
+        },
+      })
+      return tx.goal.update({
+        where: { id: goalId },
+        data: { currentAmount: { increment: amount } },
+      })
+    })
+
+    const current = updated.currentAmount.toNumber()
+    const target = updated.targetAmount.toNumber()
+    if (current >= target) {
+      sendPushToUser(session.user.id, {
+        title: 'Meta atingida! 🎉',
+        body: `Você completou a meta "${goal.name}"`,
+        url: '/goals',
+      }).catch(() => {})
+    }
+
+    return { ...updated, targetAmount: target, currentAmount: current }
   })

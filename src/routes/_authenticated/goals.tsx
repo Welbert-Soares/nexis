@@ -6,7 +6,8 @@ import { motion } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger } from '#/lib/motion'
-import { getUserGoals, updateUserGoal } from '#/server/services/goal.service'
+import { getUserGoals, depositGoalFromWallet } from '#/server/services/goal.service'
+import { getUserWallets } from '#/server/services/wallet.service'
 import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 import { CurrencyInput } from '#/components/ui/currency-input'
@@ -14,6 +15,7 @@ import { CurrencyInput } from '#/components/ui/currency-input'
 export const Route = createFileRoute('/_authenticated/goals')({
   loader: ({ context: { queryClient } }) => {
     queryClient.prefetchQuery({ queryKey: ['goals'], queryFn: () => getUserGoals() })
+    queryClient.prefetchQuery({ queryKey: ['wallets'], queryFn: () => getUserWallets() })
   },
   component: GoalsPage,
 })
@@ -27,11 +29,19 @@ type Goal = {
   color: string | null
 }
 
+type Wallet = {
+  id: string
+  name: string
+  color: string | null
+  balance: number
+}
+
 function GoalsPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editing, setEditing] = useState<EditableGoal | undefined>()
   const [depositGoal, setDepositGoal] = useState<Goal | null>(null)
   const [depositCents, setDepositCents] = useState(0)
+  const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
   const { data: goals = [], isLoading } = useQuery({
@@ -39,8 +49,16 @@ function GoalsPage() {
     queryFn: () => getUserGoals(),
   })
 
+  const { data: wallets = [] } = useQuery({
+    queryKey: ['wallets'],
+    queryFn: () => getUserWallets(),
+  })
+
   async function handleRefresh() {
-    await queryClient.invalidateQueries({ queryKey: ['goals'] })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['goals'] }),
+      queryClient.invalidateQueries({ queryKey: ['wallets'] }),
+    ])
   }
 
   const totalSaved = goals.reduce((acc, g) => acc + g.currentAmount, 0)
@@ -63,26 +81,42 @@ function GoalsPage() {
     setSheetOpen(false)
   }
 
+  function openDeposit(g: Goal) {
+    setDepositGoal(g)
+    setDepositCents(0)
+    setSelectedWalletId(wallets.length === 1 ? wallets[0].id : null)
+  }
+
+  function closeDeposit() {
+    setDepositGoal(null)
+    setDepositCents(0)
+    setSelectedWalletId(null)
+  }
+
+  const selectedWallet = wallets.find((w) => w.id === selectedWalletId) as Wallet | undefined
+  const depositAmount = depositCents / 100
+  const insufficientFunds = !!selectedWallet && depositAmount > selectedWallet.balance
+
   const depositMutation = useMutation({
-    mutationFn: (g: Goal) => updateUserGoal({
-      data: { id: g.id, currentAmount: g.currentAmount + depositCents / 100 },
+    mutationFn: () => depositGoalFromWallet({
+      data: { goalId: depositGoal!.id, walletId: selectedWalletId!, amount: depositAmount },
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
-      setDepositGoal(null)
-      setDepositCents(0)
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      closeDeposit()
     },
   })
+
+  const canConfirm = depositCents > 0 && !!selectedWalletId && !insufficientFunds && !depositMutation.isPending
 
   return (
     <>
       <div className="flex h-full flex-col pt-10">
       <PullToRefresh onRefresh={handleRefresh} className="space-y-6 px-4 flex-1">
-      <motion.div
-        variants={stagger}
-        initial="hidden"
-        animate="show"
-      >
+      <motion.div variants={stagger} initial="hidden" animate="show">
         {/* Header */}
         <motion.div variants={fadeUp} className="flex items-start justify-between">
           <div className="space-y-1">
@@ -109,7 +143,7 @@ function GoalsPage() {
           <motion.div variants={stagger} className="space-y-3 pb-4">
             {(goals as Goal[]).map((g) => (
               <motion.div key={g.id} variants={fadeUp}>
-                <GoalCard goal={g} onTap={() => handleEdit(g)} onDeposit={() => { setDepositGoal(g); setDepositCents(0) }} />
+                <GoalCard goal={g} onTap={() => handleEdit(g)} onDeposit={() => openDeposit(g)} />
               </motion.div>
             ))}
           </motion.div>
@@ -120,13 +154,16 @@ function GoalsPage() {
 
       <GoalSheet open={sheetOpen} goal={editing} onClose={handleClose} />
 
-      <Drawer.Root open={!!depositGoal} onClose={() => { setDepositGoal(null); setDepositCents(0) }}>
+      {/* Drawer de aporte */}
+      <Drawer.Root open={!!depositGoal} onClose={closeDeposit}>
         <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={() => setDepositGoal(null)} />
+          <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={closeDeposit} />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
             <Drawer.Title className="sr-only">Aportar na meta</Drawer.Title>
             <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
             <div className="px-4 pb-8 pt-5 space-y-5">
+
+              {/* Título */}
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15">
                   <PiggyBank className="h-4 w-4 text-emerald-400" strokeWidth={1.5} />
@@ -136,10 +173,45 @@ function GoalsPage() {
                   {depositGoal && <p className="text-xs text-zinc-500">{depositGoal.name}</p>}
                 </div>
               </div>
+
+              {/* Seletor de carteira */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-zinc-500">Debitar de</p>
+                <div className="flex flex-wrap gap-2">
+                  {(wallets as Wallet[]).map((w) => (
+                    <button
+                      key={w.id}
+                      onClick={() => setSelectedWalletId(w.id)}
+                      className={cn(
+                        'flex flex-col rounded-xl border px-3 py-2 text-left transition-colors',
+                        selectedWalletId === w.id
+                          ? 'border-emerald-500 bg-emerald-500/10'
+                          : 'border-zinc-800 bg-zinc-800/50 active:bg-zinc-700/50',
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: w.color ?? '#71717a' }} />
+                        <span className="text-xs font-medium text-zinc-200">{w.name}</span>
+                      </div>
+                      <span className="mt-0.5 text-[11px] tabular-nums text-zinc-500">{fmt(w.balance)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Valor */}
               <CurrencyInput cents={depositCents} onChange={setDepositCents} />
+
+              {/* Aviso de saldo insuficiente */}
+              {insufficientFunds && (
+                <p className="text-xs text-red-400">
+                  Saldo insuficiente — disponível {fmt(selectedWallet!.balance)}
+                </p>
+              )}
+
               <button
-                onClick={() => depositGoal && depositMutation.mutate(depositGoal)}
-                disabled={depositCents === 0 || depositMutation.isPending}
+                onClick={() => depositMutation.mutate()}
+                disabled={!canConfirm}
                 className="w-full rounded-xl bg-emerald-500 py-4 text-sm font-semibold text-white transition-opacity active:opacity-80 disabled:opacity-40"
               >
                 {depositMutation.isPending ? 'Salvando...' : 'Confirmar aporte'}
@@ -174,7 +246,6 @@ function GoalCard({ goal: g, onTap, onDeposit }: { goal: Goal; onTap: () => void
         </span>
       </div>
 
-      {/* Barra de progresso */}
       <div className="h-1.5 w-full rounded-full bg-zinc-800">
         <motion.div
           className="h-1.5 rounded-full"
