@@ -85,18 +85,31 @@ export async function createInstallments(data: {
   const { amount, type, installments, date, description } = data
   const perInstallment = Math.round((amount / installments) * 100) / 100
 
-  const creates = Array.from({ length: installments }, (_, i) => {
-    const installDate = new Date(date)
-    installDate.setMonth(installDate.getMonth() + i)
-    const desc = description
-      ? `${description} (${i + 1}/${installments})`
-      : `(${i + 1}/${installments})`
-    return prisma.transaction.create({
-      data: { amount: perInstallment, type, walletId: data.walletId, categoryId: data.categoryId, description: desc, date: installDate },
-    })
-  })
+  return prisma.$transaction(async (tx) => {
+    const installDate0 = new Date(date)
+    const desc0 = description
+      ? `${description} (1/${installments})`
+      : `(1/${installments})`
 
-  return prisma.$transaction(creates)
+    const root = await tx.transaction.create({
+      data: { amount: perInstallment, type, walletId: data.walletId, categoryId: data.categoryId, description: desc0, date: installDate0 },
+    })
+
+    await Promise.all(
+      Array.from({ length: installments - 1 }, (_, i) => {
+        const installDate = new Date(date)
+        installDate.setMonth(installDate.getMonth() + i + 1)
+        const desc = description
+          ? `${description} (${i + 2}/${installments})`
+          : `(${i + 2}/${installments})`
+        return tx.transaction.create({
+          data: { amount: perInstallment, type, walletId: data.walletId, categoryId: data.categoryId, description: desc, date: installDate, parentId: root.id },
+        })
+      }),
+    )
+
+    return root
+  })
 }
 
 export async function getTransactionsByMonth(
@@ -120,11 +133,60 @@ export async function getTransactionsByMonth(
     include: {
       category: true,
       wallet: { select: { id: true, name: true, color: true } },
+      parent: { select: { recurring: true } },
+      _count: { select: { children: true } },
     },
     orderBy: { date: 'desc' },
   })
 
-  return rows.map((t) => ({ ...t, amount: t.amount.toNumber() }))
+  return rows.map((t) => {
+    const isInstallmentChild = !!t.parentId && t.parent?.recurring === false
+    const isInstallmentRoot = !t.parentId && !t.recurring && t._count.children > 0
+    return {
+      ...t,
+      amount: t.amount.toNumber(),
+      isInstallment: isInstallmentChild || isInstallmentRoot,
+    }
+  })
+}
+
+export async function deleteInstallmentGroup(
+  id: string,
+  userId: string,
+  mode: 'this' | 'this-and-future' | 'all',
+) {
+  const tx = await prisma.transaction.findFirst({
+    where: { id, wallet: { userId }, deletedAt: null },
+  })
+  if (!tx) throw new Error('Transaction not found')
+
+  const rootId = tx.parentId ?? tx.id
+  const now = new Date()
+
+  if (mode === 'this') {
+    await prisma.transaction.update({ where: { id }, data: { deletedAt: now } })
+    return
+  }
+
+  if (mode === 'all') {
+    await prisma.transaction.updateMany({
+      where: { OR: [{ id: rootId }, { parentId: rootId }], deletedAt: null },
+      data: { deletedAt: now },
+    })
+    return
+  }
+
+  // 'this-and-future': delete this and all siblings with date >= this tx's date
+  const siblings = await prisma.transaction.findMany({
+    where: { OR: [{ id: rootId }, { parentId: rootId }], deletedAt: null },
+    select: { id: true, date: true },
+  })
+  const txDate = new Date(tx.date)
+  const toDelete = siblings.filter((s) => new Date(s.date) >= txDate).map((s) => s.id)
+  await prisma.transaction.updateMany({
+    where: { id: { in: toDelete } },
+    data: { deletedAt: now },
+  })
 }
 
 export async function deleteTransaction(id: string, userId: string) {

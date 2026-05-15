@@ -6,6 +6,7 @@ import {
   createTransaction,
   createInstallments,
   deleteTransaction,
+  deleteInstallmentGroup,
   getRecentTransactions,
   getTransactionsByMonth,
   updateTransaction,
@@ -101,6 +102,16 @@ export const removeTransaction = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     await deleteTransaction(data.id, session.user.id)
+  })
+
+export const removeInstallments = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({
+    id: z.string(),
+    mode: z.enum(['this', 'this-and-future', 'all']),
+  }))
+  .handler(async ({ data }) => {
+    const session = await getSessionOrThrow()
+    await deleteInstallmentGroup(data.id, session.user.id, data.mode)
   })
 
 export const getRecentUserTransactions = createServerFn({ method: 'GET' }).handler(async () => {

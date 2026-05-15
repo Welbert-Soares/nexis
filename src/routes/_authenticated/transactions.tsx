@@ -7,7 +7,7 @@ import { Drawer } from 'vaul'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
-import { listTransactions, removeTransaction } from '#/server/services/transaction.service'
+import { listTransactions, removeTransaction, removeInstallments } from '#/server/services/transaction.service'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { TransactionSheet, type EditableTransaction } from '#/components/transactions/transaction-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
@@ -37,6 +37,8 @@ const FILTERS: { value: Filter; label: string; icon: LucideIcon; iconClass?: str
   { value: 'EXPENSE', label: 'Despesas', icon: TrendingDown, iconClass: 'text-red-400' },
 ]
 
+type InstallmentMode = 'this' | 'this-and-future' | 'all'
+
 type Tx = {
   id: string
   type: 'INCOME' | 'EXPENSE'
@@ -50,6 +52,7 @@ type Tx = {
   recurring: boolean
   interval: string | null
   parentId: string | null
+  isInstallment: boolean
 }
 
 function TransactionsPage() {
@@ -65,7 +68,7 @@ function TransactionsPage() {
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<EditableTransaction | undefined>()
   const [confirmingTx, setConfirmingTx] = useState<Tx | null>(null)
-  const [pendingDelete, setPendingDelete] = useState<Tx | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<{ tx: Tx; mode?: InstallmentMode } | null>(null)
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const queryClient = useQueryClient()
 
@@ -81,27 +84,39 @@ function TransactionsPage() {
     }
   }, [])
 
+  function invalidateAfterDelete() {
+    queryClient.invalidateQueries({ queryKey: ['transactions'] })
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    queryClient.invalidateQueries({ queryKey: ['wallets'] })
+  }
+
   const { mutate: execDelete } = useMutation({
     mutationFn: (id: string) => removeTransaction({ data: { id } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-      queryClient.invalidateQueries({ queryKey: ['wallets'] })
-    },
+    onSuccess: invalidateAfterDelete,
+  })
+
+  const { mutate: execDeleteInstallments } = useMutation({
+    mutationFn: ({ id, mode }: { id: string; mode: InstallmentMode }) =>
+      removeInstallments({ data: { id, mode } }),
+    onSuccess: invalidateAfterDelete,
   })
 
   function handleSwipeDelete(tx: Tx) {
     setConfirmingTx(tx)
   }
 
-  function handleConfirmDelete() {
+  function handleConfirmDelete(mode?: InstallmentMode) {
     if (!confirmingTx) return
     const tx = confirmingTx
     setConfirmingTx(null)
-    setPendingDelete(tx)
+    setPendingDelete({ tx, mode })
     if (undoTimer.current) clearTimeout(undoTimer.current)
     undoTimer.current = setTimeout(() => {
-      execDelete(tx.id)
+      if (mode) {
+        execDeleteInstallments({ id: tx.id, mode })
+      } else {
+        execDelete(tx.id)
+      }
       setPendingDelete(null)
     }, 5000)
   }
@@ -142,8 +157,6 @@ function TransactionsPage() {
     else setMonth((m) => m - 1)
   }
   function nextMonth() {
-    const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1
-    if (isCurrentMonth) return
     if (month === 12) { setMonth(1); setYear((y) => y + 1) }
     else setMonth((m) => m + 1)
   }
@@ -177,9 +190,8 @@ function TransactionsPage() {
       })
     : (transactions as Tx[])
 
-  const displayed = pendingDelete ? filtered.filter((t) => t.id !== pendingDelete.id) : filtered
+  const displayed = pendingDelete ? filtered.filter((t) => t.id !== pendingDelete.tx.id) : filtered
   const grouped = groupByDate(displayed)
-  const isCurrent = year === now.getFullYear() && month === now.getMonth() + 1
   const sheetOpen = action === 'new' || !!editing
 
   function exportCsv() {
@@ -229,8 +241,7 @@ function TransactionsPage() {
               </button>
               <button
                 onClick={nextMonth}
-                className={cn('p-1 transition-colors', isCurrent ? 'text-zinc-700' : 'text-zinc-500 active:text-zinc-300')}
-                disabled={isCurrent}
+                className="p-1 text-zinc-500 active:text-zinc-300 transition-colors"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -500,30 +511,72 @@ function TransactionsPage() {
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={() => setConfirmingTx(null)} />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
+            <Drawer.Title className="sr-only">Excluir transação</Drawer.Title>
             <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
-            <div className="flex flex-col items-center gap-4 px-4 py-8 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
-                <Trash2 className="h-5 w-5 text-red-400" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-white">Excluir transação?</p>
-                <p className="text-xs text-zinc-500">Você terá 5 segundos para desfazer.</p>
-              </div>
-              <div className="flex w-full gap-3">
+            {confirmingTx?.isInstallment ? (
+              <div className="flex flex-col gap-3 px-4 pb-8 pt-5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10">
+                    <Trash2 className="h-4 w-4 text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">Excluir parcela</p>
+                    <p className="text-xs text-zinc-500">{confirmingTx.description}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleConfirmDelete('this')}
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-800/50 px-4 py-3.5 text-left transition-colors active:bg-zinc-700/50"
+                >
+                  <p className="text-sm font-medium text-zinc-200">Só esta parcela</p>
+                  <p className="text-xs text-zinc-600">Remove apenas a parcela selecionada</p>
+                </button>
+                <button
+                  onClick={() => handleConfirmDelete('this-and-future')}
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-800/50 px-4 py-3.5 text-left transition-colors active:bg-zinc-700/50"
+                >
+                  <p className="text-sm font-medium text-zinc-200">Esta e as próximas</p>
+                  <p className="text-xs text-zinc-600">Remove esta parcela e as seguintes</p>
+                </button>
+                <button
+                  onClick={() => handleConfirmDelete('all')}
+                  className="w-full rounded-xl bg-red-500/10 px-4 py-3.5 text-left transition-colors active:bg-red-500/20"
+                >
+                  <p className="text-sm font-medium text-red-400">Todas as parcelas</p>
+                  <p className="text-xs text-zinc-600">Remove todas as parcelas do parcelamento</p>
+                </button>
                 <button
                   onClick={() => setConfirmingTx(null)}
-                  className="flex-1 rounded-xl border border-zinc-700 py-3 text-sm text-zinc-400"
+                  className="w-full rounded-xl border border-zinc-700 py-3 text-sm text-zinc-400"
                 >
                   Cancelar
                 </button>
-                <button
-                  onClick={handleConfirmDelete}
-                  className="flex-1 rounded-xl bg-red-500/20 py-3 text-sm font-medium text-red-400"
-                >
-                  Excluir
-                </button>
               </div>
-            </div>
+            ) : (
+              <div className="flex flex-col items-center gap-4 px-4 py-8 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
+                  <Trash2 className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-white">Excluir transação?</p>
+                  <p className="text-xs text-zinc-500">Você terá 5 segundos para desfazer.</p>
+                </div>
+                <div className="flex w-full gap-3">
+                  <button
+                    onClick={() => setConfirmingTx(null)}
+                    className="flex-1 rounded-xl border border-zinc-700 py-3 text-sm text-zinc-400"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => handleConfirmDelete()}
+                    className="flex-1 rounded-xl bg-red-500/20 py-3 text-sm font-medium text-red-400"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            )}
           </Drawer.Content>
         </Drawer.Portal>
       </Drawer.Root>
@@ -540,7 +593,13 @@ function TransactionsPage() {
             style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
           >
             <div className="flex items-center justify-between px-4 py-3">
-              <p className="text-sm text-zinc-300">Transação excluída</p>
+              <p className="text-sm text-zinc-300">
+                {pendingDelete?.mode === 'all'
+                  ? 'Parcelas excluídas'
+                  : pendingDelete?.mode === 'this-and-future'
+                  ? 'Parcelas excluídas'
+                  : 'Transação excluída'}
+              </p>
               <button onClick={handleUndo} className="text-sm font-semibold text-blue-400 active:opacity-70">
                 Desfazer
               </button>
