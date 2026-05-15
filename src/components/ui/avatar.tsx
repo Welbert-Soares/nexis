@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cn } from '#/lib/utils'
 
 interface AvatarProps {
@@ -20,6 +20,10 @@ function dicebearUrl(name: string) {
 
 export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
   const [imgSrc, setImgSrc] = useState(src || dicebearUrl(name))
+
+  useEffect(() => {
+    setImgSrc(src || dicebearUrl(name))
+  }, [src, name])
 
   return (
     <img
