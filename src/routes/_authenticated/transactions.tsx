@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Drawer } from 'vaul'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
@@ -56,11 +57,12 @@ function TransactionsPage() {
   const [filter, setFilter] = useState<Filter>('ALL')
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<EditableTransaction | undefined>()
+  const [confirmingTx, setConfirmingTx] = useState<Tx | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Tx | null>(null)
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const queryClient = useQueryClient()
 
-  const { mutate: confirmDelete } = useMutation({
+  const { mutate: execDelete } = useMutation({
     mutationFn: (id: string) => removeTransaction({ data: { id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
@@ -70,10 +72,17 @@ function TransactionsPage() {
   })
 
   function handleSwipeDelete(tx: Tx) {
-    if (undoTimer.current) clearTimeout(undoTimer.current)
+    setConfirmingTx(tx)
+  }
+
+  function handleConfirmDelete() {
+    if (!confirmingTx) return
+    const tx = confirmingTx
+    setConfirmingTx(null)
     setPendingDelete(tx)
+    if (undoTimer.current) clearTimeout(undoTimer.current)
     undoTimer.current = setTimeout(() => {
-      confirmDelete(tx.id)
+      execDelete(tx.id)
       setPendingDelete(null)
     }, 5000)
   }
@@ -246,6 +255,38 @@ function TransactionsPage() {
         </PullToRefresh>
       </div>
 
+      <Drawer.Root open={!!confirmingTx} onClose={() => setConfirmingTx(null)}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={() => setConfirmingTx(null)} />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
+            <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
+            <div className="flex flex-col items-center gap-4 px-4 py-8 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
+                <Trash2 className="h-5 w-5 text-red-400" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-white">Excluir transação?</p>
+                <p className="text-xs text-zinc-500">Você terá 5 segundos para desfazer.</p>
+              </div>
+              <div className="flex w-full gap-3">
+                <button
+                  onClick={() => setConfirmingTx(null)}
+                  className="flex-1 rounded-xl border border-zinc-700 py-3 text-sm text-zinc-400"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="flex-1 rounded-xl bg-red-500/20 py-3 text-sm font-medium text-red-400"
+                >
+                  Excluir
+                </button>
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+
       <AnimatePresence>
         {pendingDelete && (
           <motion.div
@@ -331,11 +372,10 @@ function SwipeableRow({ transaction, onTap, onDelete }: { transaction: Tx; onTap
 
     if (currentX.current < SWIPE_THRESHOLD) {
       if (rowRef.current) {
-        rowRef.current.style.transition = 'transform 0.18s ease-in'
-        rowRef.current.style.transform = 'translateX(-400px)'
+        rowRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)'
       }
-      if (bgRef.current) bgRef.current.style.opacity = '0'
-      setTimeout(onDelete, 180)
+      updateDOM(0)
+      onDelete()
     } else {
       if (rowRef.current) {
         rowRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)'
