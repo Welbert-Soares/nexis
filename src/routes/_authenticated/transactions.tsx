@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
@@ -57,6 +57,7 @@ function TransactionsPage() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [filter, setFilter] = useState<Filter>('ALL')
   const [walletFilter, setWalletFilter] = useState<string | null>(null)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<EditableTransaction | undefined>()
   const [confirmingTx, setConfirmingTx] = useState<Tx | null>(null)
@@ -201,60 +202,110 @@ function TransactionsPage() {
             </div>
           </div>
 
-          {/* Filtros — tipo + carteira em linha única rolável */}
-          <div className="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
-            {FILTERS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setFilter(f.value)}
-                className={cn(
-                  'shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-colors',
-                  filter === f.value
-                    ? 'bg-zinc-100 text-zinc-900'
-                    : 'bg-zinc-800 text-zinc-400',
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
+          {/* Filtros — colapsável */}
+          {(() => {
+            const hasActiveFilter = filter !== 'ALL' || walletFilter !== null
+            const activeWallet = wallets.find((w) => w.id === walletFilter)
+            const activeLabel = [
+              filter !== 'ALL' ? FILTERS.find((f) => f.value === filter)?.label : null,
+              activeWallet ? activeWallet.name : null,
+            ].filter(Boolean).join(' · ') || 'Filtros'
 
-            {wallets.length > 1 && (
-              <>
-                <div className="my-1 w-px shrink-0 bg-zinc-700" />
+            return (
+              <div>
+                {/* Gatilho */}
                 <button
-                  onClick={() => setWalletFilter(null)}
-                  className={cn(
-                    'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                    walletFilter === null
-                      ? 'bg-zinc-100 text-zinc-900'
-                      : 'bg-zinc-800/60 text-zinc-500',
-                  )}
+                  onClick={() => setFiltersOpen((o) => !o)}
+                  className="flex items-center gap-2"
                 >
-                  Todas
-                </button>
-                {wallets.map((w) => (
-                  <button
-                    key={w.id}
-                    onClick={() => setWalletFilter(w.id === walletFilter ? null : w.id)}
-                    className={cn(
-                      'shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                      walletFilter === w.id
-                        ? 'bg-zinc-100 text-zinc-900'
-                        : 'bg-zinc-800/60 text-zinc-500',
+                  <div className="relative">
+                    <SlidersHorizontal className={cn('h-4 w-4 transition-colors', hasActiveFilter ? 'text-white' : 'text-zinc-500')} />
+                    {hasActiveFilter && (
+                      <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-blue-400" />
                     )}
+                  </div>
+                  <span className={cn('text-xs font-medium transition-colors', hasActiveFilter ? 'text-white' : 'text-zinc-500')}>
+                    {activeLabel}
+                  </span>
+                  <motion.span
+                    animate={{ rotate: filtersOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-zinc-600"
                   >
-                    {w.color && (
-                      <span
-                        className="h-1.5 w-1.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: w.color }}
-                      />
-                    )}
-                    {w.name}
-                  </button>
-                ))}
-              </>
-            )}
-          </div>
+                    <ChevronLeft className="h-3.5 w-3.5 -rotate-90" />
+                  </motion.span>
+                </button>
+
+                {/* Chips expansíveis */}
+                <AnimatePresence initial={false}>
+                  {filtersOpen && (
+                    <motion.div
+                      key="filter-chips"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="flex gap-2 overflow-x-auto pb-0.5 pt-3 no-scrollbar">
+                        {FILTERS.map((f) => (
+                          <button
+                            key={f.value}
+                            onClick={() => setFilter(f.value)}
+                            className={cn(
+                              'shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-colors',
+                              filter === f.value
+                                ? 'bg-zinc-100 text-zinc-900'
+                                : 'bg-zinc-800 text-zinc-400',
+                            )}
+                          >
+                            {f.label}
+                          </button>
+                        ))}
+
+                        {wallets.length > 1 && (
+                          <>
+                            <div className="my-1 w-px shrink-0 bg-zinc-700" />
+                            <button
+                              onClick={() => setWalletFilter(null)}
+                              className={cn(
+                                'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                                walletFilter === null
+                                  ? 'bg-zinc-100 text-zinc-900'
+                                  : 'bg-zinc-800/60 text-zinc-500',
+                              )}
+                            >
+                              Todas
+                            </button>
+                            {wallets.map((w) => (
+                              <button
+                                key={w.id}
+                                onClick={() => setWalletFilter(w.id === walletFilter ? null : w.id)}
+                                className={cn(
+                                  'shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                                  walletFilter === w.id
+                                    ? 'bg-zinc-100 text-zinc-900'
+                                    : 'bg-zinc-800/60 text-zinc-500',
+                                )}
+                              >
+                                {w.color && (
+                                  <span
+                                    className="h-1.5 w-1.5 shrink-0 rounded-full"
+                                    style={{ backgroundColor: w.color }}
+                                  />
+                                )}
+                                {w.name}
+                              </button>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )
+          })()}
 
           {/* Busca */}
           <div className="relative">
