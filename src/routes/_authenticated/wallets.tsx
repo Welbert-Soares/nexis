@@ -49,6 +49,7 @@ function WalletsPage() {
       <div className="flex h-full flex-col pt-10">
       <PullToRefresh onRefresh={handleRefresh} className="space-y-6 px-4 flex-1">
       <motion.div
+        className="space-y-6"
         variants={stagger}
         initial="hidden"
         animate="show"
