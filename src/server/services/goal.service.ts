@@ -10,6 +10,7 @@ import {
 } from '#/server/repositories/goal.repository'
 import { sendPushToUser } from '#/server/services/push-notify.server'
 import { prisma } from '#/db'
+import { getWalletBalance } from '#/server/repositories/wallet.repository'
 
 async function getSessionOrThrow() {
   const session = await auth.api.getSession({ headers: getRequest().headers })
@@ -96,6 +97,9 @@ export const depositGoalFromWallet = createServerFn({ method: 'POST' })
     ])
     if (!goal) throw new Error('Meta não encontrada')
     if (!wallet) throw new Error('Carteira não encontrada')
+
+    const balance = await getWalletBalance(walletId)
+    if (amount > balance) throw new Error('Saldo insuficiente na carteira selecionada')
 
     const updated = await prisma.$transaction(async (tx) => {
       await tx.transaction.create({

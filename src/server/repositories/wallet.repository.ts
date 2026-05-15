@@ -1,5 +1,25 @@
 import { prisma } from '#/db'
 
+export async function getWalletBalance(walletId: string): Promise<number> {
+  const wallet = await prisma.wallet.findFirst({ where: { id: walletId }, select: { initialBalance: true } })
+  if (!wallet) throw new Error('Wallet not found')
+  return computeBalance(walletId, wallet.initialBalance.toNumber())
+}
+
+async function computeBalance(walletId: string, initialBalance: number): Promise<number> {
+  const [income, expense] = await Promise.all([
+    prisma.transaction.aggregate({
+      where: { walletId, type: 'INCOME', deletedAt: null },
+      _sum: { amount: true },
+    }),
+    prisma.transaction.aggregate({
+      where: { walletId, type: 'EXPENSE', deletedAt: null },
+      _sum: { amount: true },
+    }),
+  ])
+  return initialBalance + (income._sum.amount?.toNumber() ?? 0) - (expense._sum.amount?.toNumber() ?? 0)
+}
+
 export async function updateWallet(
   id: string,
   userId: string,
@@ -37,6 +57,9 @@ export async function transferBetweenWallets(
   if (!from) throw new Error('Carteira de origem não encontrada')
   if (!to) throw new Error('Carteira de destino não encontrada')
   if (fromWalletId === toWalletId) throw new Error('Carteiras devem ser diferentes')
+
+  const fromBalance = await computeBalance(fromWalletId, from.initialBalance.toNumber())
+  if (amount > fromBalance) throw new Error('Saldo insuficiente na carteira de origem')
 
   const now = new Date()
   return prisma.$transaction(async (tx) => {
