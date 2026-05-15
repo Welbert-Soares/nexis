@@ -29,6 +29,7 @@ export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
     <img
       src={imgSrc}
       alt={name}
+      referrerPolicy="no-referrer"
       onError={() => setImgSrc(dicebearUrl(name))}
       className={cn('rounded-full object-cover', sizes[size], className)}
     />
