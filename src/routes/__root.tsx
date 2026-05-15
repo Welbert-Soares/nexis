@@ -22,7 +22,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       { charSet: 'utf-8' },
       {
         name: 'viewport',
-        content: 'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content',
+        content: 'width=device-width, initial-scale=1, viewport-fit=cover',
       },
       { name: 'theme-color', content: '#09090b' },
       { name: 'mobile-web-app-capable', content: 'yes' },
