@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, ArrowLeftRight, type LucideIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, ArrowLeftRight, Download, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
@@ -182,6 +182,29 @@ function TransactionsPage() {
   const isCurrent = year === now.getFullYear() && month === now.getMonth() + 1
   const sheetOpen = action === 'new' || !!editing
 
+  function exportCsv() {
+    const rows = (transactions as Tx[])
+    if (rows.length === 0) return
+    const header = 'Data,Tipo,Descrição,Categoria,Carteira,Valor (R$)'
+    const lines = rows.map((t) => {
+      const date = new Date(t.date).toLocaleDateString('pt-BR')
+      const type = t.type === 'INCOME' ? 'Receita' : 'Despesa'
+      const desc = (t.description ?? '').replace(/,/g, ' ')
+      const cat = (t.category?.name ?? '').replace(/,/g, ' ')
+      const wallet = t.wallet.name.replace(/,/g, ' ')
+      const amount = (t.type === 'EXPENSE' ? -t.amount : t.amount).toFixed(2).replace('.', ',')
+      return `${date},${type},${desc},${cat},${wallet},${amount}`
+    })
+    const csv = [header, ...lines].join('\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `nexis-${year}-${String(month).padStart(2, '0')}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <>
       <div className="flex h-full flex-col pt-10">
@@ -195,13 +218,23 @@ function TransactionsPage() {
             <p className="text-sm font-medium text-white capitalize">
               {fmtMonth(year, month)}
             </p>
-            <button
-              onClick={nextMonth}
-              className={cn('p-1 transition-colors', isCurrent ? 'text-zinc-700' : 'text-zinc-500 active:text-zinc-300')}
-              disabled={isCurrent}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={exportCsv}
+                disabled={!transactions?.length}
+                className="p-1 text-zinc-600 active:text-zinc-300 transition-colors disabled:opacity-30"
+                title="Exportar CSV"
+              >
+                <Download className="h-4 w-4" />
+              </button>
+              <button
+                onClick={nextMonth}
+                className={cn('p-1 transition-colors', isCurrent ? 'text-zinc-700' : 'text-zinc-500 active:text-zinc-300')}
+                disabled={isCurrent}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           {/* Resumo */}
