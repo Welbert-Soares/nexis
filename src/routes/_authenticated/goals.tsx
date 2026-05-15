@@ -200,14 +200,7 @@ function GoalsPage() {
               </div>
 
               {/* Valor */}
-              <CurrencyInput cents={depositCents} onChange={setDepositCents} />
-
-              {/* Aviso de saldo insuficiente */}
-              {insufficientFunds && (
-                <p className="text-xs text-red-400">
-                  Saldo insuficiente — disponível {fmt(selectedWallet!.balance)}
-                </p>
-              )}
+              <CurrencyInput cents={depositCents} onChange={setDepositCents} error={insufficientFunds} />
 
               <button
                 onClick={() => depositMutation.mutate()}

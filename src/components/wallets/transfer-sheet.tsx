@@ -94,16 +94,10 @@ export function TransferSheet({ open, wallets, onClose }: Props) {
                 {/* Valor */}
                 <div className="space-y-2">
                   <p className="text-xs text-zinc-500">Valor</p>
-                  <CurrencyInput cents={cents} onChange={setCents} />
+                  <CurrencyInput cents={cents} onChange={setCents} error={insufficientFunds} />
                 </div>
 
-                {insufficientFunds && (
-                  <p className="text-xs text-red-400">
-                    Saldo insuficiente — disponível {fmt(fromWallet!.balance)}
-                  </p>
-                )}
-
-                {mutation.isError && !insufficientFunds && (
+                {mutation.isError && (
                   <p className="text-center text-xs text-red-400">
                     {mutation.error instanceof Error ? mutation.error.message : 'Erro ao transferir'}
                   </p>

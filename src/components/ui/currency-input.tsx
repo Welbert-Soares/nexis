@@ -3,9 +3,10 @@ interface CurrencyInputProps {
   onChange: (cents: number) => void
   autoFocus?: boolean
   className?: string
+  error?: boolean
 }
 
-export function CurrencyInput({ cents, onChange, autoFocus, className }: CurrencyInputProps) {
+export function CurrencyInput({ cents, onChange, autoFocus, className, error }: CurrencyInputProps) {
   const display = (cents / 100).toLocaleString('pt-BR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -19,7 +20,7 @@ export function CurrencyInput({ cents, onChange, autoFocus, className }: Currenc
 
   return (
     <div className={`relative ${className ?? ''}`}>
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-light text-zinc-500">
+      <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-light ${error ? 'text-red-400' : 'text-zinc-500'}`}>
         R$
       </span>
       <input
@@ -28,7 +29,11 @@ export function CurrencyInput({ cents, onChange, autoFocus, className }: Currenc
         value={display}
         onChange={handleChange}
         autoFocus={autoFocus}
-        className="w-full rounded-xl bg-zinc-800 py-4 pl-14 pr-4 text-2xl font-semibold text-white outline-none focus:ring-1 focus:ring-zinc-600"
+        className={`w-full rounded-xl py-4 pl-14 pr-4 text-2xl font-semibold outline-none focus:ring-1 ${
+          error
+            ? 'bg-red-500/10 text-red-400 focus:ring-red-500/50'
+            : 'bg-zinc-800 text-white focus:ring-zinc-600'
+        }`}
       />
     </div>
   )
