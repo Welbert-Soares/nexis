@@ -11,7 +11,7 @@ export type EditableGoal = {
   id: string
   name: string
   targetAmount: number
-  currentAmount: number
+  currentAmount: number  // computed, display only
   deadline: Date | null
   color: string | null
 }
@@ -38,7 +38,7 @@ export function GoalSheet({ open, goal, onClose }: Props) {
   const isEdit = !!goal
   const queryClient = useQueryClient()
   const [targetCents, setTargetCents] = useState(() => Math.round((goal?.targetAmount ?? 0) * 100))
-  const [currentCents, setCurrentCents] = useState(() => Math.round((goal?.currentAmount ?? 0) * 100))
+  const [seedCents, setSeedCents] = useState(0)
   const [color, setColor] = useState(goal?.color ?? COLORS[0])
   const [saved, setSaved] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -53,7 +53,6 @@ export function GoalSheet({ open, goal, onClose }: Props) {
   useEffect(() => {
     if (goal) {
       setTargetCents(Math.round(goal.targetAmount * 100))
-      setCurrentCents(Math.round(goal.currentAmount * 100))
       setColor(goal.color ?? COLORS[0])
       form.setFieldValue('name', goal.name)
       form.setFieldValue('deadline', goal.deadline ? toDateInput(new Date(goal.deadline)) : '')
@@ -73,14 +72,7 @@ export function GoalSheet({ open, goal, onClose }: Props) {
 
       if (isEdit) {
         return updateUserGoal({
-          data: {
-            id: goal!.id,
-            name: values.name,
-            targetAmount,
-            currentAmount: currentCents / 100,
-            deadline,
-            color,
-          },
+          data: { id: goal!.id, name: values.name, targetAmount, deadline, color },
         })
       }
 
@@ -88,7 +80,7 @@ export function GoalSheet({ open, goal, onClose }: Props) {
         data: {
           name: values.name,
           targetAmount,
-          currentAmount: currentCents / 100 || undefined,
+          seedAmount: seedCents / 100 || undefined,
           deadline,
           color,
         },
@@ -115,7 +107,7 @@ export function GoalSheet({ open, goal, onClose }: Props) {
   function handleClose() {
     form.reset()
     setTargetCents(0)
-    setCurrentCents(0)
+    setSeedCents(0)
     setColor(COLORS[0])
     setConfirmDelete(false)
     onClose()
@@ -199,13 +191,13 @@ export function GoalSheet({ open, goal, onClose }: Props) {
                   <CurrencyInput cents={targetCents} onChange={setTargetCents} />
                 </div>
 
-                {/* Já guardei */}
-                <div className="space-y-2">
-                  <p className="text-xs text-zinc-500">
-                    {isEdit ? 'Total guardado' : 'Já guardei (opcional)'}
-                  </p>
-                  <CurrencyInput cents={currentCents} onChange={setCurrentCents} />
-                </div>
+                {/* Já guardei — só na criação */}
+                {!isEdit && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-zinc-500">Já guardei (opcional)</p>
+                    <CurrencyInput cents={seedCents} onChange={setSeedCents} />
+                  </div>
+                )}
 
                 {/* Prazo */}
                 <form.Field name="deadline">

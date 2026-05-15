@@ -26,7 +26,7 @@ export const getUserGoals = createServerFn({ method: 'GET' }).handler(async () =
 const goalSchema = z.object({
   name: z.string().min(1),
   targetAmount: z.number().positive(),
-  currentAmount: z.number().min(0).optional(),
+  seedAmount: z.number().min(0).optional(),
   deadline: z.coerce.date().optional().nullable(),
   color: z.string().optional(),
 })
@@ -39,7 +39,8 @@ export const createUserGoal = createServerFn({ method: 'POST' })
     return {
       ...goal,
       targetAmount: goal.targetAmount.toNumber(),
-      currentAmount: goal.currentAmount.toNumber(),
+      seedAmount: goal.seedAmount.toNumber(),
+      currentAmount: goal.seedAmount.toNumber(),
     }
   })
 
@@ -47,7 +48,6 @@ const updateGoalSchema = z.object({
   id: z.string(),
   name: z.string().min(1).optional(),
   targetAmount: z.number().positive().optional(),
-  currentAmount: z.number().min(0).optional(),
   deadline: z.coerce.date().optional().nullable(),
   color: z.string().optional(),
 })
@@ -58,19 +58,11 @@ export const updateUserGoal = createServerFn({ method: 'POST' })
     const session = await getSessionOrThrow()
     const { id, ...rest } = data
     const goal = await updateGoal(id, session.user.id, rest)
-    const current = goal.currentAmount.toNumber()
-    const target = goal.targetAmount.toNumber()
-    if (current >= target) {
-      sendPushToUser(session.user.id, {
-        title: 'Meta atingida! 🎉',
-        body: `Você completou a meta "${goal.name}"`,
-        url: '/analytics',
-      }).catch(() => {})
-    }
     return {
       ...goal,
-      targetAmount: target,
-      currentAmount: current,
+      targetAmount: goal.targetAmount.toNumber(),
+      seedAmount: goal.seedAmount.toNumber(),
+      currentAmount: goal.seedAmount.toNumber(),
     }
   })
 
@@ -101,24 +93,17 @@ export const depositGoalFromWallet = createServerFn({ method: 'POST' })
     const balance = await getWalletBalance(walletId)
     if (amount > balance) throw new Error('Saldo insuficiente na carteira selecionada')
 
-    const updated = await prisma.$transaction(async (tx) => {
-      await tx.transaction.create({
-        data: {
-          amount,
-          type: 'EXPENSE',
-          walletId,
-          description: `Aporte → ${goal.name}`,
-          date: new Date(),
-        },
-      })
-      return tx.goal.update({
-        where: { id: goalId },
-        data: { currentAmount: { increment: amount } },
-      })
+    await prisma.transaction.create({
+      data: { amount, type: 'EXPENSE', walletId, goalId, description: `Aporte → ${goal.name}`, date: new Date() },
     })
 
-    const current = updated.currentAmount.toNumber()
-    const target = updated.targetAmount.toNumber()
+    const depositsAgg = await prisma.transaction.aggregate({
+      where: { goalId, deletedAt: null },
+      _sum: { amount: true },
+    })
+    const current = goal.seedAmount.toNumber() + (depositsAgg._sum.amount?.toNumber() ?? 0)
+    const target = goal.targetAmount.toNumber()
+
     if (current >= target) {
       sendPushToUser(session.user.id, {
         title: 'Meta atingida! 🎉',
@@ -127,5 +112,5 @@ export const depositGoalFromWallet = createServerFn({ method: 'POST' })
       }).catch(() => {})
     }
 
-    return { ...updated, targetAmount: target, currentAmount: current }
+    return { goalId, currentAmount: current, targetAmount: target }
   })

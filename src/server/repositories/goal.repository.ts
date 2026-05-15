@@ -5,10 +5,23 @@ export async function getGoalsByUser(userId: string) {
     where: { userId },
     orderBy: { createdAt: 'asc' },
   })
+
+  const goalIds = goals.map((g) => g.id)
+  const depositsAgg = goalIds.length
+    ? await prisma.transaction.groupBy({
+        by: ['goalId'],
+        where: { goalId: { in: goalIds }, deletedAt: null },
+        _sum: { amount: true },
+      })
+    : []
+
+  const depositMap = new Map(depositsAgg.map((r) => [r.goalId!, r._sum.amount?.toNumber() ?? 0]))
+
   return goals.map((g) => ({
     ...g,
     targetAmount: g.targetAmount.toNumber(),
-    currentAmount: g.currentAmount.toNumber(),
+    seedAmount: g.seedAmount.toNumber(),
+    currentAmount: g.seedAmount.toNumber() + (depositMap.get(g.id) ?? 0),
   }))
 }
 
@@ -16,7 +29,7 @@ export function createGoal(data: {
   userId: string
   name: string
   targetAmount: number
-  currentAmount?: number
+  seedAmount?: number
   deadline?: Date | null
   color?: string
 }) {
@@ -29,7 +42,6 @@ export async function updateGoal(
   data: {
     name?: string
     targetAmount?: number
-    currentAmount?: number
     deadline?: Date | null
     color?: string
   },
