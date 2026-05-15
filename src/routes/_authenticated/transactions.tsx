@@ -3,7 +3,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Drawer } from 'vaul'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
@@ -57,7 +56,32 @@ function TransactionsPage() {
   const [filter, setFilter] = useState<Filter>('ALL')
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<EditableTransaction | undefined>()
+  const [pendingDelete, setPendingDelete] = useState<Tx | null>(null)
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const queryClient = useQueryClient()
+
+  const { mutate: confirmDelete } = useMutation({
+    mutationFn: (id: string) => removeTransaction({ data: { id } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
+    },
+  })
+
+  function handleSwipeDelete(tx: Tx) {
+    if (undoTimer.current) clearTimeout(undoTimer.current)
+    setPendingDelete(tx)
+    undoTimer.current = setTimeout(() => {
+      confirmDelete(tx.id)
+      setPendingDelete(null)
+    }, 5000)
+  }
+
+  function handleUndo() {
+    if (undoTimer.current) clearTimeout(undoTimer.current)
+    setPendingDelete(null)
+  }
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['transactions', year, month, filter],
@@ -112,7 +136,8 @@ function TransactionsPage() {
       })
     : (transactions as Tx[])
 
-  const grouped = groupByDate(filtered)
+  const displayed = pendingDelete ? filtered.filter((t) => t.id !== pendingDelete.id) : filtered
+  const grouped = groupByDate(displayed)
   const isCurrent = year === now.getFullYear() && month === now.getMonth() + 1
   const sheetOpen = action === 'new' || !!editing
 
@@ -210,7 +235,7 @@ function TransactionsPage() {
                     <p className="mb-2 text-xs font-medium text-zinc-600">{label}</p>
                     {items.map((t) => (
                       <motion.div key={t.id} variants={scaleIn}>
-                        <SwipeableRow transaction={t} onTap={() => handleRowTap(t)} />
+                        <SwipeableRow transaction={t} onTap={() => handleRowTap(t)} onDelete={() => handleSwipeDelete(t)} />
                       </motion.div>
                     ))}
                   </motion.div>
@@ -220,6 +245,35 @@ function TransactionsPage() {
           </AnimatePresence>
         </PullToRefresh>
       </div>
+
+      <AnimatePresence>
+        {pendingDelete && (
+          <motion.div
+            key="undo-toast"
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="fixed bottom-24 left-4 right-4 z-50 overflow-hidden rounded-2xl bg-zinc-800 shadow-xl"
+            style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+          >
+            <div className="flex items-center justify-between px-4 py-3">
+              <p className="text-sm text-zinc-300">Transação excluída</p>
+              <button onClick={handleUndo} className="text-sm font-semibold text-blue-400 active:opacity-70">
+                Desfazer
+              </button>
+            </div>
+            <div className="h-0.5 bg-zinc-700">
+              <motion.div
+                className="h-full origin-left bg-blue-400"
+                initial={{ scaleX: 1 }}
+                animate={{ scaleX: 0 }}
+                transition={{ duration: 5, ease: 'linear' }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <TransactionSheet
         open={sheetOpen}
@@ -232,8 +286,7 @@ function TransactionsPage() {
 
 const SWIPE_THRESHOLD = -72
 
-function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => void }) {
-  const queryClient = useQueryClient()
+function SwipeableRow({ transaction, onTap, onDelete }: { transaction: Tx; onTap: () => void; onDelete: () => void }) {
   const rowRef = useRef<HTMLDivElement>(null)
   const bgRef = useRef<HTMLDivElement>(null)
   const trashRef = useRef<HTMLDivElement>(null)
@@ -241,19 +294,6 @@ function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => vo
   const startY = useRef(0)
   const currentX = useRef(0)
   const direction = useRef<'horizontal' | 'vertical' | null>(null)
-  const [visible, setVisible] = useState(true)
-  const [confirming, setConfirming] = useState(false)
-
-  const { mutate: remove, isPending } = useMutation({
-    mutationFn: () => removeTransaction({ data: { id: transaction.id } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-      queryClient.invalidateQueries({ queryKey: ['wallets'] })
-      setConfirming(false)
-      setVisible(false)
-    },
-  })
 
   function updateDOM(x: number) {
     const pct = Math.min(Math.abs(x) / 72, 1)
@@ -291,10 +331,11 @@ function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => vo
 
     if (currentX.current < SWIPE_THRESHOLD) {
       if (rowRef.current) {
-        rowRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)'
+        rowRef.current.style.transition = 'transform 0.18s ease-in'
+        rowRef.current.style.transform = 'translateX(-400px)'
       }
-      updateDOM(0)
-      setConfirming(true)
+      if (bgRef.current) bgRef.current.style.opacity = '0'
+      setTimeout(onDelete, 180)
     } else {
       if (rowRef.current) {
         rowRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)'
@@ -303,63 +344,26 @@ function SwipeableRow({ transaction, onTap }: { transaction: Tx; onTap: () => vo
     }
   }
 
-  if (!visible) return null
-
   return (
-    <>
+    <div
+      className="relative overflow-hidden rounded-xl"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       <div
-        className="relative overflow-hidden rounded-xl"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
+        ref={bgRef}
+        className="absolute inset-0 flex items-center justify-end rounded-xl bg-red-500/15 pr-4"
+        style={{ opacity: 0 }}
       >
-        <div
-          ref={bgRef}
-          className="absolute inset-0 flex items-center justify-end rounded-xl bg-red-500/15 pr-4"
-          style={{ opacity: 0 }}
-        >
-          <div ref={trashRef} style={{ transform: 'scale(0.7)' }}>
-            <Trash2 className="h-4 w-4 text-red-400" />
-          </div>
-        </div>
-        <div ref={rowRef} style={{ transform: 'translateX(0px)' }}>
-          <TransactionRow transaction={transaction} onTap={onTap} />
+        <div ref={trashRef} style={{ transform: 'scale(0.7)' }}>
+          <Trash2 className="h-4 w-4 text-red-400" />
         </div>
       </div>
-
-      <Drawer.Root open={confirming} onClose={() => setConfirming(false)}>
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={() => setConfirming(false)} />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
-            <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
-            <div className="flex flex-col items-center gap-4 px-4 py-8 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
-                <Trash2 className="h-5 w-5 text-red-400" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-white">Excluir transação?</p>
-                <p className="text-xs text-zinc-500">Esta ação não pode ser desfeita.</p>
-              </div>
-              <div className="flex w-full gap-3">
-                <button
-                  onClick={() => setConfirming(false)}
-                  className="flex-1 rounded-xl border border-zinc-700 py-3 text-sm text-zinc-400"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => remove()}
-                  disabled={isPending}
-                  className="flex-1 rounded-xl bg-red-500/20 py-3 text-sm font-medium text-red-400 disabled:opacity-50"
-                >
-                  {isPending ? 'Excluindo...' : 'Excluir'}
-                </button>
-              </div>
-            </div>
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
-    </>
+      <div ref={rowRef} style={{ transform: 'translateX(0px)' }}>
+        <TransactionRow transaction={transaction} onTap={onTap} />
+      </div>
+    </div>
   )
 }
 
