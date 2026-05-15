@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
@@ -30,10 +30,10 @@ export const Route = createFileRoute('/_authenticated/transactions')({
 
 type Filter = 'ALL' | 'INCOME' | 'EXPENSE'
 
-const FILTERS: { value: Filter; label: string }[] = [
-  { value: 'ALL', label: 'Tudo' },
-  { value: 'INCOME', label: 'Receitas' },
-  { value: 'EXPENSE', label: 'Despesas' },
+const FILTERS: { value: Filter; label: string; icon: LucideIcon; iconClass?: string }[] = [
+  { value: 'ALL', label: 'Tudo', icon: Layers },
+  { value: 'INCOME', label: 'Receitas', icon: TrendingUp, iconClass: 'text-emerald-400' },
+  { value: 'EXPENSE', label: 'Despesas', icon: TrendingDown, iconClass: 'text-red-400' },
 ]
 
 type Tx = {
@@ -58,12 +58,28 @@ function TransactionsPage() {
   const [filter, setFilter] = useState<Filter>('ALL')
   const [walletFilter, setWalletFilter] = useState<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [expandedChip, setExpandedChip] = useState<string | null>(null)
+  const chipsRef = useRef<HTMLDivElement>(null)
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<EditableTransaction | undefined>()
   const [confirmingTx, setConfirmingTx] = useState<Tx | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Tx | null>(null)
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const queryClient = useQueryClient()
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent | TouchEvent) {
+      if (chipsRef.current && !chipsRef.current.contains(e.target as Node)) {
+        setExpandedChip(null)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    document.addEventListener('touchstart', handleOutside, { passive: true })
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('touchstart', handleOutside)
+    }
+  }, [])
 
   const { mutate: execDelete } = useMutation({
     mutationFn: (id: string) => removeTransaction({ data: { id } }),
@@ -215,7 +231,7 @@ function TransactionsPage() {
               <div>
                 {/* Gatilho */}
                 <button
-                  onClick={() => setFiltersOpen((o) => !o)}
+                  onClick={() => { setFiltersOpen((o) => !o); setExpandedChip(null) }}
                   className="flex items-center gap-2"
                 >
                   <div className="relative">
@@ -247,56 +263,122 @@ function TransactionsPage() {
                       transition={{ duration: 0.22, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                      <div className="flex gap-2 overflow-x-auto pb-0.5 pt-3 no-scrollbar">
-                        {FILTERS.map((f) => (
-                          <button
-                            key={f.value}
-                            onClick={() => setFilter(f.value)}
-                            className={cn(
-                              'shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-colors',
-                              filter === f.value
-                                ? 'bg-zinc-100 text-zinc-900'
-                                : 'bg-zinc-800 text-zinc-400',
-                            )}
-                          >
-                            {f.label}
-                          </button>
-                        ))}
+                      <div ref={chipsRef} className="flex gap-2 overflow-x-auto pb-0.5 pt-3 no-scrollbar">
+                        {FILTERS.map((f) => {
+                          const isSelected = filter === f.value
+                          const chipId = `type-${f.value}`
+                          const isExpanded = expandedChip === chipId
+                          return (
+                            <motion.button
+                              layout
+                              transition={{ layout: { duration: 0.18, ease: 'easeInOut' } }}
+                              key={f.value}
+                              onClick={() => {
+                                setFilter(f.value)
+                                setExpandedChip(isExpanded ? null : chipId)
+                              }}
+                              className={cn(
+                                'shrink-0 flex items-center rounded-full py-1.5 px-2.5 transition-colors',
+                                isSelected ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800/60 text-zinc-500',
+                              )}
+                            >
+                              <f.icon className={cn('h-3.5 w-3.5 shrink-0', f.iconClass)} />
+                              <AnimatePresence>
+                                {isExpanded && (
+                                  <motion.span
+                                    key="label"
+                                    initial={{ maxWidth: 0, opacity: 0 }}
+                                    animate={{ maxWidth: 200, opacity: 1 }}
+                                    exit={{ maxWidth: 0, opacity: 0 }}
+                                    transition={{ duration: 0.18, ease: 'easeInOut' }}
+                                    className="ml-1.5 overflow-hidden whitespace-nowrap text-xs font-medium"
+                                  >
+                                    {f.label}
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </motion.button>
+                          )
+                        })}
 
                         {wallets.length > 1 && (
                           <>
                             <div className="my-1 w-px shrink-0 bg-zinc-700" />
-                            <button
-                              onClick={() => setWalletFilter(null)}
-                              className={cn(
-                                'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                                walletFilter === null
-                                  ? 'bg-zinc-100 text-zinc-900'
-                                  : 'bg-zinc-800/60 text-zinc-500',
-                              )}
-                            >
-                              Todas
-                            </button>
-                            {wallets.map((w) => (
-                              <button
-                                key={w.id}
-                                onClick={() => setWalletFilter(w.id === walletFilter ? null : w.id)}
-                                className={cn(
-                                  'shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                                  walletFilter === w.id
-                                    ? 'bg-zinc-100 text-zinc-900'
-                                    : 'bg-zinc-800/60 text-zinc-500',
-                                )}
-                              >
-                                {w.color && (
-                                  <span
-                                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                                    style={{ backgroundColor: w.color }}
+                            {(() => {
+                              const isSelected = walletFilter === null
+                              const chipId = 'wallet-all'
+                              const isExpanded = expandedChip === chipId
+                              return (
+                                <motion.button
+                                  layout
+                                  transition={{ layout: { duration: 0.18, ease: 'easeInOut' } }}
+                                  key={chipId}
+                                  onClick={() => {
+                                    setWalletFilter(null)
+                                    setExpandedChip(isExpanded ? null : chipId)
+                                  }}
+                                  className={cn(
+                                    'shrink-0 flex items-center rounded-full py-1.5 px-2.5 transition-colors',
+                                    isSelected ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800/60 text-zinc-500',
+                                  )}
+                                >
+                                  <Wallet className="h-3.5 w-3.5 shrink-0" />
+                                  <AnimatePresence>
+                                    {isExpanded && (
+                                      <motion.span
+                                        key="label"
+                                        initial={{ maxWidth: 0, opacity: 0 }}
+                                        animate={{ maxWidth: 200, opacity: 1 }}
+                                        exit={{ maxWidth: 0, opacity: 0 }}
+                                        transition={{ duration: 0.18, ease: 'easeInOut' }}
+                                        className="ml-1.5 overflow-hidden whitespace-nowrap text-xs font-medium"
+                                      >
+                                        Todas
+                                      </motion.span>
+                                    )}
+                                  </AnimatePresence>
+                                </motion.button>
+                              )
+                            })()}
+                            {wallets.map((w) => {
+                              const isSelected = walletFilter === w.id
+                              const chipId = `wallet-${w.id}`
+                              const isExpanded = expandedChip === chipId
+                              return (
+                                <motion.button
+                                  layout
+                                  transition={{ layout: { duration: 0.18, ease: 'easeInOut' } }}
+                                  key={w.id}
+                                  onClick={() => {
+                                    setWalletFilter(w.id === walletFilter ? null : w.id)
+                                    setExpandedChip(isExpanded ? null : chipId)
+                                  }}
+                                  className={cn(
+                                    'shrink-0 flex items-center rounded-full py-1.5 px-2.5 transition-colors',
+                                    isSelected ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800/60 text-zinc-500',
+                                  )}
+                                >
+                                  <Wallet
+                                    className="h-3.5 w-3.5 shrink-0"
+                                    style={w.color ? { color: w.color } : undefined}
                                   />
-                                )}
-                                {w.name}
-                              </button>
-                            ))}
+                                  <AnimatePresence>
+                                    {isExpanded && (
+                                      <motion.span
+                                        key="label"
+                                        initial={{ maxWidth: 0, opacity: 0 }}
+                                        animate={{ maxWidth: 200, opacity: 1 }}
+                                        exit={{ maxWidth: 0, opacity: 0 }}
+                                        transition={{ duration: 0.18, ease: 'easeInOut' }}
+                                        className="ml-1.5 overflow-hidden whitespace-nowrap text-xs font-medium"
+                                      >
+                                        {w.name}
+                                      </motion.span>
+                                    )}
+                                  </AnimatePresence>
+                                </motion.button>
+                              )
+                            })}
                           </>
                         )}
                       </div>
