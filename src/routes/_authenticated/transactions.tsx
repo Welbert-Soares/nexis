@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, type LucideIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
@@ -28,6 +28,11 @@ export const Route = createFileRoute('/_authenticated/transactions')({
   component: TransactionsPage,
 })
 
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag,
+  MoreHorizontal, Briefcase, Laptop, TrendingUp, TrendingDown, Wallet,
+}
+
 type Filter = 'ALL' | 'INCOME' | 'EXPENSE'
 
 const FILTERS: { value: Filter; label: string; icon: LucideIcon; iconClass?: string }[] = [
@@ -44,7 +49,7 @@ type Tx = {
   date: Date
   walletId: string
   categoryId: string | null
-  category: { name: string; color: string | null } | null
+  category: { name: string; color: string | null; icon: string | null } | null
   wallet: { id: string; name: string; color: string | null }
   recurring: boolean
   parentId: string | null
@@ -612,14 +617,23 @@ function SwipeableRow({ transaction, onTap, onDelete }: { transaction: Tx; onTap
 function TransactionRow({ transaction: t, onTap }: { transaction: Tx; onTap: () => void }) {
   const isExpense = t.type === 'EXPENSE'
   const label = t.description ?? t.category?.name ?? 'Sem descrição'
-  const dot = t.category?.color ?? t.wallet.color ?? '#71717a'
+  const color = t.category?.color ?? t.wallet.color ?? '#71717a'
+  const CategoryIcon = t.category?.icon ? CATEGORY_ICONS[t.category.icon] : null
 
   return (
     <button
       onClick={onTap}
       className="flex w-full items-center gap-3 rounded-xl px-1 py-2.5 active:bg-zinc-800/50 transition-colors"
     >
-      <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: dot }} />
+      <div
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+        style={{ backgroundColor: `${color}20` }}
+      >
+        {CategoryIcon
+          ? <CategoryIcon className="h-4 w-4" style={{ color }} />
+          : <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+        }
+      </div>
       <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center gap-1.5 min-w-0">
           <p className="truncate text-sm text-white">{label}</p>
