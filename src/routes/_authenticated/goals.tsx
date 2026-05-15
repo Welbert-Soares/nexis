@@ -114,7 +114,7 @@ function GoalsPage() {
 
   return (
     <>
-      <div className="flex h-full flex-col pt-10">
+      <div className="relative flex h-full flex-col pt-10">
       <PullToRefresh onRefresh={handleRefresh} className="space-y-6 px-4 flex-1">
       <motion.div variants={stagger} initial="hidden" animate="show">
         {/* Header */}
@@ -138,7 +138,9 @@ function GoalsPage() {
         {isLoading ? (
           <GoalsSkeleton />
         ) : goals.length === 0 ? (
-          <EmptyState onAdd={() => setSheetOpen(true)} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <EmptyState onAdd={() => setSheetOpen(true)} />
+          </div>
         ) : (
           <motion.div variants={stagger} className="space-y-3 pb-4">
             {(goals as Goal[]).map((g) => (
