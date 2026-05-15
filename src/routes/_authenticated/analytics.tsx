@@ -178,32 +178,10 @@ function SummaryCard({ label, value, color, loading }: { label: string; value: n
 type TrendItem = { month: string; income: number; expenses: number }
 
 function MonthlyTrend({ trend }: { trend: TrendItem[] }) {
-  const W = 300
-  const H = 96
   const maxVal = Math.max(...trend.flatMap((t) => [t.income, t.expenses]), 1)
-  const pad = 8
-
-  function points(key: 'income' | 'expenses') {
-    return trend.map((t, i) => {
-      const x = pad + (i / (trend.length - 1)) * (W - pad * 2)
-      const y = H - pad - (t[key] / maxVal) * (H - pad * 2)
-      return `${x},${y}`
-    }).join(' ')
-  }
-
-  function area(key: 'income' | 'expenses') {
-    const pts = trend.map((t, i) => ({
-      x: pad + (i / (trend.length - 1)) * (W - pad * 2),
-      y: H - pad - (t[key] / maxVal) * (H - pad * 2),
-    }))
-    const linePoints = pts.map((p) => `${p.x},${p.y}`).join(' ')
-    const first = pts[0]
-    const last = pts[pts.length - 1]
-    return `M${first.x},${H - pad} L${linePoints} L${last.x},${H - pad} Z`
-  }
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-4">
       <div className="flex gap-4">
         <div className="flex items-center gap-1.5">
           <div className="h-2 w-2 rounded-full bg-emerald-400" />
@@ -214,31 +192,27 @@ function MonthlyTrend({ trend }: { trend: TrendItem[] }) {
           <span className="text-xs text-zinc-500">Despesas</span>
         </div>
       </div>
-
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }}>
-        <defs>
-          <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#34d399" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f87171" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#f87171" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={area('income')} fill="url(#incomeGrad)" />
-        <path d={area('expenses')} fill="url(#expenseGrad)" />
-        <polyline points={points('income')} fill="none" stroke="#34d399" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-        <polyline points={points('expenses')} fill="none" stroke="#f87171" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-        {trend.map((t, i) => {
-          const x = pad + (i / (trend.length - 1)) * (W - pad * 2)
-          return (
-            <text key={t.month} x={x} y={H - 1} textAnchor="middle" fontSize="8" fill="#52525b">
-              {fmtMonthShort(t.month)}
-            </text>
-          )
-        })}
-      </svg>
+      <div className="flex items-end justify-between gap-1.5 h-28">
+        {trend.map((t) => (
+          <div key={t.month} className="flex flex-1 flex-col items-center gap-1">
+            <div className="flex w-full items-end gap-0.5 justify-center" style={{ height: 88 }}>
+              <motion.div
+                className="w-[45%] rounded-t bg-emerald-400/70"
+                initial={{ height: 0 }}
+                animate={{ height: `${(t.income / maxVal) * 88}px` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              />
+              <motion.div
+                className="w-[45%] rounded-t bg-red-400/70"
+                initial={{ height: 0 }}
+                animate={{ height: `${(t.expenses / maxVal) * 88}px` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              />
+            </div>
+            <span className="text-[10px] text-zinc-600">{fmtMonthShort(t.month)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
