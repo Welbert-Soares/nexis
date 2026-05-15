@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
-import { createFileRoute, Outlet, redirect, useLocation } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'framer-motion'
 import { BottomNav } from '#/components/layout/bottom-nav'
 import { ErrorBoundary } from '#/components/ui/error-boundary'
 import { OfflineBanner } from '#/components/ui/offline-banner'
@@ -23,7 +22,6 @@ export const Route = createFileRoute('/_authenticated')({
 
 function AuthenticatedLayout() {
   const queryClient = useQueryClient()
-  const location = useLocation()
 
   useEffect(() => {
     triggerRecurring().then((count) => {
@@ -42,18 +40,7 @@ function AuthenticatedLayout() {
       <OfflineBanner />
       <main className="min-h-0 flex-1 overflow-hidden">
         <ErrorBoundary>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="h-full"
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <Outlet />
         </ErrorBoundary>
       </main>
       <BottomNav />
