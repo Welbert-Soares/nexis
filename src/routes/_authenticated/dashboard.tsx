@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { TrendingDown, TrendingUp, Wallet, ArrowRight } from 'lucide-react'
+import { TrendingDown, TrendingUp, Wallet, ArrowRight, UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag, MoreHorizontal, Briefcase, Laptop, type LucideIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getDashboard } from '#/server/services/dashboard.service'
 import { cn } from '#/lib/utils'
@@ -9,6 +9,11 @@ import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { ProfileSheet } from '#/components/profile/profile-sheet'
 import { Avatar } from '#/components/ui/avatar'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
+
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  UtensilsCrossed, Car, Home, Heart, BookOpen, Smile, ShoppingBag,
+  MoreHorizontal, Briefcase, Laptop, TrendingUp, TrendingDown, Wallet,
+}
 
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
@@ -160,21 +165,27 @@ type Transaction = {
   amount: number
   description: string | null
   date: Date
-  category: { name: string; color: string | null } | null
+  category: { name: string; color: string | null; icon: string | null } | null
   wallet: { name: string; color: string | null }
 }
 
 function TransactionRow({ transaction: t }: { transaction: Transaction }) {
   const isExpense = t.type === 'EXPENSE'
   const label = t.description ?? t.category?.name ?? 'Sem descrição'
-  const dot = t.category?.color ?? t.wallet.color ?? '#71717a'
+  const color = t.category?.color ?? t.wallet.color ?? '#71717a'
+  const CategoryIcon = t.category?.icon ? CATEGORY_ICONS[t.category.icon] : null
 
   return (
     <div className="flex items-center gap-3 rounded-xl px-1 py-2.5">
       <div
-        className="h-2 w-2 shrink-0 rounded-full"
-        style={{ backgroundColor: dot }}
-      />
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+        style={{ backgroundColor: `${color}20` }}
+      >
+        {CategoryIcon
+          ? <CategoryIcon className="h-4 w-4" style={{ color }} />
+          : <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+        }
+      </div>
       <div className="flex-1 min-w-0">
         <p className="truncate text-sm text-white">{label}</p>
         <p className="text-xs text-zinc-600">
