@@ -302,7 +302,7 @@ function DonutChart({ items }: { items: CategoryItem[] }) {
             transition={{ duration: 0.28, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="border-t border-zinc-800 px-4 py-3 space-y-2.5">
+            <div className="px-4 pb-3 space-y-2.5">
               {items.map((item) => (
                 <div key={item.id} className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
