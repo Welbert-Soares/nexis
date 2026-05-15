@@ -72,8 +72,10 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
   const [categorySheetOpen, setCategorySheetOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<EditableCategory | undefined>()
   const [recurring, setRecurring] = useState(transaction?.recurring ?? false)
+  const [recurringOpen, setRecurringOpen] = useState(false)
   const [interval, setInterval] = useState<'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'YEARLY'>(transaction?.interval ?? 'MONTHLY')
   const [parceling, setParceling] = useState(false)
+  const [parcelingOpen, setParcelingOpen] = useState(false)
   const [installments, setInstallments] = useState(2)
   const [expandedCatId, setExpandedCatId] = useState<string | null>(null)
   const [expandedWalletId, setExpandedWalletId] = useState<string | null>(null)
@@ -130,6 +132,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
       form.setFieldValue('description', transaction.description ?? '')
       form.setFieldValue('date', toDateInput(new Date(transaction.date)))
       setRecurring(transaction.recurring ?? false)
+      setRecurringOpen(false)
       setInterval(transaction.interval ?? 'MONTHLY')
     }
   }, [transaction?.id])
@@ -205,7 +208,9 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
     setExpandedCatId(null)
     setExpandedWalletId(null)
     setRecurring(false)
+    setRecurringOpen(false)
     setParceling(false)
+    setParcelingOpen(false)
     setInstallments(2)
     onClose?.()
     navigate({ to: '/transactions' })
@@ -460,12 +465,19 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                 </form.Field>
 
                 {/* Recorrência / Parcelas */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex gap-2">
                     {/* Repetir */}
                     <button
                       type="button"
-                      onClick={() => { setRecurring((r) => !r); setParceling(false) }}
+                      onClick={() => {
+                        if (!recurring) {
+                          setRecurring(true); setRecurringOpen(true)
+                          setParceling(false); setParcelingOpen(false)
+                        } else {
+                          setRecurring(false); setRecurringOpen(false)
+                        }
+                      }}
                       className={cn(
                         'flex flex-1 items-center justify-between rounded-xl px-4 py-3 transition-colors',
                         recurring ? 'bg-blue-400/10' : 'bg-zinc-800',
@@ -474,6 +486,9 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                       <div className="flex items-center gap-2">
                         <Repeat2 className={cn('h-4 w-4', recurring ? 'text-blue-400' : 'text-zinc-500')} />
                         <span className={cn('text-sm', recurring ? 'text-blue-300' : 'text-zinc-300')}>Repetir</span>
+                        {recurring && !recurringOpen && (
+                          <span className="text-xs text-blue-400/70">· {INTERVALS.find((i) => i.value === interval)?.label}</span>
+                        )}
                       </div>
                       <div className={cn('h-5 w-9 rounded-full transition-colors', recurring ? 'bg-blue-400' : 'bg-zinc-700')}>
                         <div className={cn('m-0.5 h-4 w-4 rounded-full bg-white transition-transform', recurring ? 'translate-x-4' : 'translate-x-0')} />
@@ -484,7 +499,14 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                     {!isEdit && type === 'EXPENSE' && (
                       <button
                         type="button"
-                        onClick={() => { setParceling((p) => !p); setRecurring(false) }}
+                        onClick={() => {
+                          if (!parceling) {
+                            setParceling(true); setParcelingOpen(true)
+                            setRecurring(false); setRecurringOpen(false)
+                          } else {
+                            setParceling(false); setParcelingOpen(false)
+                          }
+                        }}
                         className={cn(
                           'flex flex-1 items-center justify-between rounded-xl px-4 py-3 transition-colors',
                           parceling ? 'bg-purple-400/10' : 'bg-zinc-800',
@@ -493,6 +515,9 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                         <div className="flex items-center gap-2">
                           <Layers className={cn('h-4 w-4', parceling ? 'text-purple-400' : 'text-zinc-500')} />
                           <span className={cn('text-sm', parceling ? 'text-purple-300' : 'text-zinc-300')}>Parcelar</span>
+                          {parceling && !parcelingOpen && (
+                            <span className="text-xs text-purple-400/70">· {installments}x</span>
+                          )}
                         </div>
                         <div className={cn('h-5 w-9 rounded-full transition-colors', parceling ? 'bg-purple-400' : 'bg-zinc-700')}>
                           <div className={cn('m-0.5 h-4 w-4 rounded-full bg-white transition-transform', parceling ? 'translate-x-4' : 'translate-x-0')} />
@@ -501,52 +526,74 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                     )}
                   </div>
 
-                    {/* Intervalo de recorrência */}
-                    {recurring && (
-                      <div className="flex gap-2">
-                        {INTERVALS.map((i) => (
-                          <button
-                            key={i.value}
-                            type="button"
-                            onClick={() => setInterval(i.value)}
-                            className={cn(
-                              'flex-1 rounded-full py-1.5 text-xs font-medium transition-colors',
-                              interval === i.value ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800 text-zinc-400',
-                            )}
-                          >
-                            {i.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Contador de parcelas */}
-                    {parceling && (
-                      <div className="flex items-center gap-4 rounded-xl bg-zinc-800/60 px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={() => setInstallments((n) => Math.max(2, n - 1))}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-700 text-white active:bg-zinc-600 transition-colors text-lg leading-none"
-                        >
-                          −
-                        </button>
-                        <div className="flex-1 text-center">
-                          <p className="text-2xl font-bold tabular-nums text-white">{installments}x</p>
-                          {cents > 0 && (
-                            <p className="text-xs text-zinc-500">
-                              de {(cents / 100 / installments).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                            </p>
-                          )}
+                  {/* Intervalo de recorrência */}
+                  <AnimatePresence initial={false}>
+                    {recurring && recurringOpen && (
+                      <motion.div
+                        key="recurring-panel"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex gap-2 pt-1">
+                          {INTERVALS.map((i) => (
+                            <button
+                              key={i.value}
+                              type="button"
+                              onClick={() => { setInterval(i.value); setRecurringOpen(false) }}
+                              className={cn(
+                                'flex-1 rounded-full py-1.5 text-xs font-medium transition-colors',
+                                interval === i.value ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800 text-zinc-400',
+                              )}
+                            >
+                              {i.label}
+                            </button>
+                          ))}
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setInstallments((n) => Math.min(24, n + 1))}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-700 text-white active:bg-zinc-600 transition-colors text-lg leading-none"
-                        >
-                          +
-                        </button>
-                      </div>
+                      </motion.div>
                     )}
+                  </AnimatePresence>
+
+                  {/* Contador de parcelas */}
+                  <AnimatePresence initial={false}>
+                    {parceling && parcelingOpen && (
+                      <motion.div
+                        key="parceling-panel"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex items-center gap-4 rounded-xl bg-zinc-800/60 px-4 py-3 mt-1">
+                          <button
+                            type="button"
+                            onClick={() => setInstallments((n) => Math.max(2, n - 1))}
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-700 text-white active:bg-zinc-600 transition-colors text-lg leading-none"
+                          >
+                            −
+                          </button>
+                          <div className="flex-1 text-center">
+                            <p className="text-2xl font-bold tabular-nums text-white">{installments}x</p>
+                            {cents > 0 && (
+                              <p className="text-xs text-zinc-500">
+                                de {(cents / 100 / installments).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setInstallments((n) => Math.min(24, n + 1))}
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-700 text-white active:bg-zinc-600 transition-colors text-lg leading-none"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {saveMutation.isError && (
