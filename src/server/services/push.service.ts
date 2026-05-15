@@ -1,4 +1,3 @@
-import webpush from 'web-push'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { z } from 'zod'
@@ -9,16 +8,20 @@ import {
   getSubscriptionsByUser,
 } from '#/server/repositories/push.repository'
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!,
-)
-
 async function getSessionOrThrow() {
   const session = await auth.api.getSession({ headers: getRequest().headers })
   if (!session) throw new Error('Unauthorized')
   return session
+}
+
+async function getWebPush() {
+  const webpush = (await import('web-push')).default
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT!,
+    process.env.VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!,
+  )
+  return webpush
 }
 
 export const subscribeToNotifications = createServerFn({ method: 'POST' })
@@ -42,12 +45,13 @@ export async function sendPushToUser(
   userId: string,
   payload: { title: string; body: string; url?: string },
 ) {
+  const webpush = await getWebPush()
   const subscriptions = await getSubscriptionsByUser(userId)
   await Promise.allSettled(
     subscriptions.map(async (sub) => {
       try {
         await webpush.sendNotification(
-          JSON.parse(sub.subscription) as webpush.PushSubscription,
+          JSON.parse(sub.subscription) as Parameters<typeof webpush.sendNotification>[0],
           JSON.stringify(payload),
         )
       } catch (err: unknown) {
