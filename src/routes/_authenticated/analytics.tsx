@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, ChevronDown } from 'lucide-react'
+import { Plus, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getAnalytics } from '#/server/services/analytics.service'
 import { getUserGoals } from '#/server/services/goal.service'
@@ -34,6 +34,8 @@ function AnalyticsPage() {
   const [editing, setEditing] = useState<EditableGoal | undefined>()
   const [budgetSheetOpen, setBudgetSheetOpen] = useState(false)
   const [editingBudget, setEditingBudget] = useState<EditableBudget | undefined>()
+  const [budgetMonth, setBudgetMonth] = useState(CURRENT_MONTH)
+  const [budgetYear, setBudgetYear] = useState(CURRENT_YEAR)
 
   const { data, isLoading } = useQuery({
     queryKey: ['analytics'],
@@ -46,9 +48,23 @@ function AnalyticsPage() {
   })
 
   const { data: budgets = [], isLoading: budgetsLoading } = useQuery({
-    queryKey: ['budgets', CURRENT_MONTH, CURRENT_YEAR],
-    queryFn: () => getBudgets({ data: { month: CURRENT_MONTH, year: CURRENT_YEAR } }),
+    queryKey: ['budgets', budgetMonth, budgetYear],
+    queryFn: () => getBudgets({ data: { month: budgetMonth, year: budgetYear } }),
   })
+
+  function prevBudgetMonth() {
+    if (budgetMonth === 1) { setBudgetMonth(12); setBudgetYear((y) => y - 1) }
+    else setBudgetMonth((m) => m - 1)
+  }
+
+  function nextBudgetMonth() {
+    const isCurrentMonth = budgetMonth === CURRENT_MONTH && budgetYear === CURRENT_YEAR
+    if (isCurrentMonth) return
+    if (budgetMonth === 12) { setBudgetMonth(1); setBudgetYear((y) => y + 1) }
+    else setBudgetMonth((m) => m + 1)
+  }
+
+  const isCurrentBudgetMonth = budgetMonth === CURRENT_MONTH && budgetYear === CURRENT_YEAR
 
   async function handleRefresh() {
     await Promise.all([
@@ -125,12 +141,25 @@ function AnalyticsPage() {
             <motion.section variants={fadeUp} className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">Orçamentos</h2>
-                <button
-                  onClick={() => { setEditingBudget(undefined); setBudgetSheetOpen(true) }}
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 active:bg-zinc-700 transition-colors"
-                >
-                  <Plus className="h-3.5 w-3.5 text-zinc-400" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button onClick={prevBudgetMonth} className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 active:bg-zinc-700 transition-colors">
+                    <ChevronLeft className="h-3.5 w-3.5 text-zinc-400" />
+                  </button>
+                  <span className="min-w-[80px] text-center text-xs text-zinc-500">
+                    {new Date(budgetYear, budgetMonth - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '')}
+                  </span>
+                  <button onClick={nextBudgetMonth} disabled={isCurrentBudgetMonth} className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 active:bg-zinc-700 transition-colors disabled:opacity-30">
+                    <ChevronRight className="h-3.5 w-3.5 text-zinc-400" />
+                  </button>
+                  {isCurrentBudgetMonth && (
+                    <button
+                      onClick={() => { setEditingBudget(undefined); setBudgetSheetOpen(true) }}
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 active:bg-zinc-700 transition-colors"
+                    >
+                      <Plus className="h-3.5 w-3.5 text-zinc-400" />
+                    </button>
+                  )}
+                </div>
               </div>
               {budgets.length > 0
                 ? <BudgetsList budgets={budgets} onTap={(b) => { setEditingBudget(b); setBudgetSheetOpen(true) }} />
@@ -154,8 +183,8 @@ function AnalyticsPage() {
       <BudgetSheet
         open={budgetSheetOpen}
         budget={editingBudget}
-        month={CURRENT_MONTH}
-        year={CURRENT_YEAR}
+        month={budgetMonth}
+        year={budgetYear}
         onClose={() => { setBudgetSheetOpen(false); setEditingBudget(undefined) }}
       />
     </div>
