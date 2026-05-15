@@ -201,14 +201,14 @@ function TransactionsPage() {
             </div>
           </div>
 
-          {/* Filtros de tipo */}
-          <div className="flex gap-2">
+          {/* Filtros — tipo + carteira em linha única rolável */}
+          <div className="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
             {FILTERS.map((f) => (
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
                 className={cn(
-                  'rounded-full px-4 py-1.5 text-xs font-medium transition-colors',
+                  'shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-colors',
                   filter === f.value
                     ? 'bg-zinc-100 text-zinc-900'
                     : 'bg-zinc-800 text-zinc-400',
@@ -217,44 +217,44 @@ function TransactionsPage() {
                 {f.label}
               </button>
             ))}
-          </div>
 
-          {/* Filtro por carteira */}
-          {wallets.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
-              <button
-                onClick={() => setWalletFilter(null)}
-                className={cn(
-                  'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                  walletFilter === null
-                    ? 'bg-zinc-100 text-zinc-900'
-                    : 'bg-zinc-800/60 text-zinc-500',
-                )}
-              >
-                Todas
-              </button>
-              {wallets.map((w) => (
+            {wallets.length > 1 && (
+              <>
+                <div className="my-1 w-px shrink-0 bg-zinc-700" />
                 <button
-                  key={w.id}
-                  onClick={() => setWalletFilter(w.id === walletFilter ? null : w.id)}
+                  onClick={() => setWalletFilter(null)}
                   className={cn(
-                    'shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                    walletFilter === w.id
+                    'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                    walletFilter === null
                       ? 'bg-zinc-100 text-zinc-900'
                       : 'bg-zinc-800/60 text-zinc-500',
                   )}
                 >
-                  {w.color && (
-                    <span
-                      className="h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: w.color }}
-                    />
-                  )}
-                  {w.name}
+                  Todas
                 </button>
-              ))}
-            </div>
-          )}
+                {wallets.map((w) => (
+                  <button
+                    key={w.id}
+                    onClick={() => setWalletFilter(w.id === walletFilter ? null : w.id)}
+                    className={cn(
+                      'shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                      walletFilter === w.id
+                        ? 'bg-zinc-100 text-zinc-900'
+                        : 'bg-zinc-800/60 text-zinc-500',
+                    )}
+                  >
+                    {w.color && (
+                      <span
+                        className="h-1.5 w-1.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: w.color }}
+                      />
+                    )}
+                    {w.name}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
 
           {/* Busca */}
           <div className="relative">
