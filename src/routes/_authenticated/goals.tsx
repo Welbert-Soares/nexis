@@ -232,50 +232,51 @@ function GoalCard({ goal: g, onTap, onDeposit }: { goal: Goal; onTap: () => void
   const color = g.color ?? '#3b82f6'
 
   return (
-    <button
-      onClick={onTap}
-      className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 text-left space-y-3 active:bg-zinc-800/50 transition-colors"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-          <p className="truncate text-sm font-medium text-white">{g.name}</p>
+    <div className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+      {/* Área clicável de edição */}
+      <button onClick={onTap} className="w-full p-4 text-left space-y-3 active:bg-zinc-800/50 transition-colors">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+            <p className="truncate text-sm font-medium text-white">{g.name}</p>
+          </div>
+          <span className={cn('shrink-0 text-xs font-semibold tabular-nums', done ? 'text-emerald-400' : 'text-zinc-400')}>
+            {pct}%
+          </span>
         </div>
-        <span className={cn('shrink-0 text-xs font-semibold tabular-nums', done ? 'text-emerald-400' : 'text-zinc-400')}>
-          {pct}%
-        </span>
-      </div>
 
-      <div className="h-1.5 w-full rounded-full bg-zinc-800">
-        <motion.div
-          className="h-1.5 rounded-full"
-          style={{ backgroundColor: color }}
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-        />
-      </div>
+        <div className="h-1.5 w-full rounded-full bg-zinc-800">
+          <motion.div
+            className="h-1.5 rounded-full"
+            style={{ backgroundColor: color }}
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
+          />
+        </div>
 
-      <div className="flex items-center justify-between">
-        <p className="tabular-nums text-xs text-zinc-400">
-          {fmt(g.currentAmount)}
-          <span className="text-zinc-600"> / {fmt(g.targetAmount)}</span>
-        </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between">
+          <p className="tabular-nums text-xs text-zinc-400">
+            {fmt(g.currentAmount)}
+            <span className="text-zinc-600"> / {fmt(g.targetAmount)}</span>
+          </p>
           {g.deadline && (
             <p className="text-xs text-zinc-600">{fmtDeadline(new Date(g.deadline))}</p>
           )}
-          {!done && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onDeposit() }}
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 active:bg-emerald-500/30 transition-colors"
-            >
-              <PiggyBank className="h-3.5 w-3.5 text-emerald-400" strokeWidth={1.75} />
-            </button>
-          )}
         </div>
-      </div>
-    </button>
+      </button>
+
+      {/* Botão de aporte */}
+      {!done && (
+        <button
+          onClick={onDeposit}
+          className="flex w-full items-center justify-center gap-2 border-t border-zinc-800 py-3 text-xs font-medium text-emerald-400 active:bg-emerald-500/10 transition-colors"
+        >
+          <PiggyBank className="h-3.5 w-3.5" strokeWidth={1.75} />
+          Aportar
+        </button>
+      )}
+    </div>
   )
 }
 
