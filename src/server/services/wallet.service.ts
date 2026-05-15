@@ -15,12 +15,19 @@ export const getUserWallets = createServerFn({ method: 'GET' }).handler(async ()
   return getWalletsByUser(session.user.id)
 })
 
+const creditFields = {
+  creditLimit: z.number().positive().optional().nullable(),
+  closingDay: z.number().int().min(1).max(28).optional().nullable(),
+  dueDay: z.number().int().min(1).max(28).optional().nullable(),
+}
+
 const createWalletSchema = z.object({
   name: z.string().min(1),
   type: z.enum(['CHECKING', 'SAVINGS', 'CASH', 'INVESTMENT', 'CREDIT']),
   color: z.string().optional(),
   icon: z.string().optional(),
   balance: z.number().min(0).optional(),
+  ...creditFields,
 })
 
 export const createUserWallet = createServerFn({ method: 'POST' })
@@ -28,7 +35,7 @@ export const createUserWallet = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const wallet = await createWallet({ userId: session.user.id, ...data })
-    return { ...wallet, balance: wallet.balance.toNumber() }
+    return { ...wallet, balance: wallet.balance.toNumber(), creditLimit: wallet.creditLimit?.toNumber() ?? null }
   })
 
 const editWalletSchema = z.object({
@@ -37,6 +44,7 @@ const editWalletSchema = z.object({
   type: z.enum(['CHECKING', 'SAVINGS', 'CASH', 'INVESTMENT', 'CREDIT']).optional(),
   color: z.string().optional(),
   icon: z.string().nullable().optional(),
+  ...creditFields,
 })
 
 export const editUserWallet = createServerFn({ method: 'POST' })
@@ -45,7 +53,7 @@ export const editUserWallet = createServerFn({ method: 'POST' })
     const session = await getSessionOrThrow()
     const { id, ...rest } = data
     const wallet = await updateWallet(id, session.user.id, rest)
-    return { ...wallet, balance: wallet.balance.toNumber() }
+    return { ...wallet, balance: wallet.balance.toNumber(), creditLimit: wallet.creditLimit?.toNumber() ?? null }
   })
 
 export const deleteUserWallet = createServerFn({ method: 'POST' })

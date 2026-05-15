@@ -36,6 +36,9 @@ export type EditableWallet = {
   type: WalletType
   color: string | null
   icon?: string | null
+  creditLimit?: number | null
+  closingDay?: number | null
+  dueDay?: number | null
 }
 
 interface Props {
@@ -51,6 +54,9 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
   const [icon, setIcon] = useState<string | null>(wallet?.icon ?? null)
   const [iconsExpanded, setIconsExpanded] = useState(false)
   const [cents, setCents] = useState(0)
+  const [creditLimitCents, setCreditLimitCents] = useState(Math.round((wallet?.creditLimit ?? 0) * 100))
+  const [closingDay, setClosingDay] = useState<string>(wallet?.closingDay?.toString() ?? '')
+  const [dueDay, setDueDay] = useState<string>(wallet?.dueDay?.toString() ?? '')
   const [saved, setSaved] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const iconsRef = useRef<HTMLDivElement>(null)
@@ -79,6 +85,9 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
       setColor(wallet?.color ?? COLORS[0])
       setIcon(wallet?.icon ?? null)
       setCents(0)
+      setCreditLimitCents(Math.round((wallet?.creditLimit ?? 0) * 100))
+      setClosingDay(wallet?.closingDay?.toString() ?? '')
+      setDueDay(wallet?.dueDay?.toString() ?? '')
       setSaved(false)
       setConfirmDelete(false)
       setIconsExpanded(false)
@@ -90,15 +99,21 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
     queryClient.invalidateQueries({ queryKey: ['dashboard'] })
   }
 
+  const creditData = (type: WalletType) => type === 'CREDIT' ? {
+    creditLimit: creditLimitCents > 0 ? creditLimitCents / 100 : null,
+    closingDay: closingDay ? parseInt(closingDay) : null,
+    dueDay: dueDay ? parseInt(dueDay) : null,
+  } : { creditLimit: null, closingDay: null, dueDay: null }
+
   const saveMutation = useMutation({
     mutationFn: (values: { name: string; type: WalletType }) => {
       if (isEdit) {
         return editUserWallet({
-          data: { id: wallet!.id, name: values.name, type: values.type, color, icon },
+          data: { id: wallet!.id, name: values.name, type: values.type, color, icon, ...creditData(values.type) },
         })
       }
       return createUserWallet({
-        data: { name: values.name, type: values.type, color, icon: icon ?? undefined, balance: cents / 100 },
+        data: { name: values.name, type: values.type, color, icon: icon ?? undefined, balance: cents / 100, ...creditData(values.type) },
       })
     },
     onSuccess: () => {
@@ -237,6 +252,45 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
                     )}
                   </form.Field>
                 </div>
+
+                {/* Campos de crédito */}
+                <form.Subscribe selector={(s) => s.values.type}>
+                  {(type) => type === 'CREDIT' && (
+                    <div className="space-y-3 rounded-xl bg-zinc-800/50 p-4">
+                      <p className="text-xs font-medium text-zinc-400">Configurações do cartão</p>
+                      <div className="space-y-1.5">
+                        <p className="text-xs text-zinc-500">Limite</p>
+                        <CurrencyInput cents={creditLimitCents} onChange={setCreditLimitCents} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-zinc-500">Fechamento (dia)</p>
+                          <input
+                            type="number"
+                            min={1}
+                            max={28}
+                            placeholder="ex: 5"
+                            value={closingDay}
+                            onChange={(e) => setClosingDay(e.target.value)}
+                            className="w-full rounded-xl bg-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none focus:ring-1 focus:ring-zinc-600"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-zinc-500">Vencimento (dia)</p>
+                          <input
+                            type="number"
+                            min={1}
+                            max={28}
+                            placeholder="ex: 15"
+                            value={dueDay}
+                            onChange={(e) => setDueDay(e.target.value)}
+                            className="w-full rounded-xl bg-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none focus:ring-1 focus:ring-zinc-600"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </form.Subscribe>
 
                 {/* Ícone */}
                 <div className="space-y-2">

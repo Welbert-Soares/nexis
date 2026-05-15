@@ -1,13 +1,5 @@
 import { prisma } from '#/db'
 
-export async function getWalletsByUser(userId: string) {
-  const wallets = await prisma.wallet.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'asc' },
-  })
-  return wallets.map((w) => ({ ...w, balance: w.balance.toNumber() }))
-}
-
 export async function updateWallet(
   id: string,
   userId: string,
@@ -16,6 +8,9 @@ export async function updateWallet(
     type?: 'CHECKING' | 'SAVINGS' | 'CASH' | 'INVESTMENT' | 'CREDIT'
     color?: string
     icon?: string | null
+    creditLimit?: number | null
+    closingDay?: number | null
+    dueDay?: number | null
   },
 ) {
   const wallet = await prisma.wallet.findFirst({ where: { id, userId } })
@@ -76,6 +71,21 @@ export function createWallet(data: {
   color?: string
   icon?: string
   balance?: number
+  creditLimit?: number | null
+  closingDay?: number | null
+  dueDay?: number | null
 }) {
   return prisma.wallet.create({ data })
+}
+
+export async function getWalletsByUser(userId: string) {
+  const wallets = await prisma.wallet.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'asc' },
+  })
+  return wallets.map((w) => ({
+    ...w,
+    balance: w.balance.toNumber(),
+    creditLimit: w.creditLimit?.toNumber() ?? null,
+  }))
 }

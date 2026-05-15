@@ -28,10 +28,16 @@ export type AggregateWallet = {
 
 export type WalletAvgAggregateOutputType = {
   balance: runtime.Decimal | null
+  creditLimit: runtime.Decimal | null
+  closingDay: number | null
+  dueDay: number | null
 }
 
 export type WalletSumAggregateOutputType = {
   balance: runtime.Decimal | null
+  creditLimit: runtime.Decimal | null
+  closingDay: number | null
+  dueDay: number | null
 }
 
 export type WalletMinAggregateOutputType = {
@@ -42,6 +48,9 @@ export type WalletMinAggregateOutputType = {
   currency: string | null
   color: string | null
   icon: string | null
+  creditLimit: runtime.Decimal | null
+  closingDay: number | null
+  dueDay: number | null
   userId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -55,6 +64,9 @@ export type WalletMaxAggregateOutputType = {
   currency: string | null
   color: string | null
   icon: string | null
+  creditLimit: runtime.Decimal | null
+  closingDay: number | null
+  dueDay: number | null
   userId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -68,6 +80,9 @@ export type WalletCountAggregateOutputType = {
   currency: number
   color: number
   icon: number
+  creditLimit: number
+  closingDay: number
+  dueDay: number
   userId: number
   createdAt: number
   updatedAt: number
@@ -77,10 +92,16 @@ export type WalletCountAggregateOutputType = {
 
 export type WalletAvgAggregateInputType = {
   balance?: true
+  creditLimit?: true
+  closingDay?: true
+  dueDay?: true
 }
 
 export type WalletSumAggregateInputType = {
   balance?: true
+  creditLimit?: true
+  closingDay?: true
+  dueDay?: true
 }
 
 export type WalletMinAggregateInputType = {
@@ -91,6 +112,9 @@ export type WalletMinAggregateInputType = {
   currency?: true
   color?: true
   icon?: true
+  creditLimit?: true
+  closingDay?: true
+  dueDay?: true
   userId?: true
   createdAt?: true
   updatedAt?: true
@@ -104,6 +128,9 @@ export type WalletMaxAggregateInputType = {
   currency?: true
   color?: true
   icon?: true
+  creditLimit?: true
+  closingDay?: true
+  dueDay?: true
   userId?: true
   createdAt?: true
   updatedAt?: true
@@ -117,6 +144,9 @@ export type WalletCountAggregateInputType = {
   currency?: true
   color?: true
   icon?: true
+  creditLimit?: true
+  closingDay?: true
+  dueDay?: true
   userId?: true
   createdAt?: true
   updatedAt?: true
@@ -217,6 +247,9 @@ export type WalletGroupByOutputType = {
   currency: string
   color: string | null
   icon: string | null
+  creditLimit: runtime.Decimal | null
+  closingDay: number | null
+  dueDay: number | null
   userId: string
   createdAt: Date
   updatedAt: Date
@@ -253,6 +286,9 @@ export type WalletWhereInput = {
   currency?: Prisma.StringFilter<"Wallet"> | string
   color?: Prisma.StringNullableFilter<"Wallet"> | string | null
   icon?: Prisma.StringNullableFilter<"Wallet"> | string | null
+  creditLimit?: Prisma.DecimalNullableFilter<"Wallet"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.IntNullableFilter<"Wallet"> | number | null
+  dueDay?: Prisma.IntNullableFilter<"Wallet"> | number | null
   userId?: Prisma.StringFilter<"Wallet"> | string
   createdAt?: Prisma.DateTimeFilter<"Wallet"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Wallet"> | Date | string
@@ -268,6 +304,9 @@ export type WalletOrderByWithRelationInput = {
   currency?: Prisma.SortOrder
   color?: Prisma.SortOrderInput | Prisma.SortOrder
   icon?: Prisma.SortOrderInput | Prisma.SortOrder
+  creditLimit?: Prisma.SortOrderInput | Prisma.SortOrder
+  closingDay?: Prisma.SortOrderInput | Prisma.SortOrder
+  dueDay?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -286,6 +325,9 @@ export type WalletWhereUniqueInput = Prisma.AtLeast<{
   currency?: Prisma.StringFilter<"Wallet"> | string
   color?: Prisma.StringNullableFilter<"Wallet"> | string | null
   icon?: Prisma.StringNullableFilter<"Wallet"> | string | null
+  creditLimit?: Prisma.DecimalNullableFilter<"Wallet"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.IntNullableFilter<"Wallet"> | number | null
+  dueDay?: Prisma.IntNullableFilter<"Wallet"> | number | null
   userId?: Prisma.StringFilter<"Wallet"> | string
   createdAt?: Prisma.DateTimeFilter<"Wallet"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Wallet"> | Date | string
@@ -301,6 +343,9 @@ export type WalletOrderByWithAggregationInput = {
   currency?: Prisma.SortOrder
   color?: Prisma.SortOrderInput | Prisma.SortOrder
   icon?: Prisma.SortOrderInput | Prisma.SortOrder
+  creditLimit?: Prisma.SortOrderInput | Prisma.SortOrder
+  closingDay?: Prisma.SortOrderInput | Prisma.SortOrder
+  dueDay?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -322,6 +367,9 @@ export type WalletScalarWhereWithAggregatesInput = {
   currency?: Prisma.StringWithAggregatesFilter<"Wallet"> | string
   color?: Prisma.StringNullableWithAggregatesFilter<"Wallet"> | string | null
   icon?: Prisma.StringNullableWithAggregatesFilter<"Wallet"> | string | null
+  creditLimit?: Prisma.DecimalNullableWithAggregatesFilter<"Wallet"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.IntNullableWithAggregatesFilter<"Wallet"> | number | null
+  dueDay?: Prisma.IntNullableWithAggregatesFilter<"Wallet"> | number | null
   userId?: Prisma.StringWithAggregatesFilter<"Wallet"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Wallet"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Wallet"> | Date | string
@@ -335,6 +383,9 @@ export type WalletCreateInput = {
   currency?: string
   color?: string | null
   icon?: string | null
+  creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: number | null
+  dueDay?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutWalletsInput
@@ -349,6 +400,9 @@ export type WalletUncheckedCreateInput = {
   currency?: string
   color?: string | null
   icon?: string | null
+  creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: number | null
+  dueDay?: number | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -363,6 +417,9 @@ export type WalletUpdateInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutWalletsNestedInput
@@ -377,6 +434,9 @@ export type WalletUncheckedUpdateInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -391,6 +451,9 @@ export type WalletCreateManyInput = {
   currency?: string
   color?: string | null
   icon?: string | null
+  creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: number | null
+  dueDay?: number | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -404,6 +467,9 @@ export type WalletUpdateManyMutationInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -416,6 +482,9 @@ export type WalletUncheckedUpdateManyInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -439,6 +508,9 @@ export type WalletCountOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   color?: Prisma.SortOrder
   icon?: Prisma.SortOrder
+  creditLimit?: Prisma.SortOrder
+  closingDay?: Prisma.SortOrder
+  dueDay?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -446,6 +518,9 @@ export type WalletCountOrderByAggregateInput = {
 
 export type WalletAvgOrderByAggregateInput = {
   balance?: Prisma.SortOrder
+  creditLimit?: Prisma.SortOrder
+  closingDay?: Prisma.SortOrder
+  dueDay?: Prisma.SortOrder
 }
 
 export type WalletMaxOrderByAggregateInput = {
@@ -456,6 +531,9 @@ export type WalletMaxOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   color?: Prisma.SortOrder
   icon?: Prisma.SortOrder
+  creditLimit?: Prisma.SortOrder
+  closingDay?: Prisma.SortOrder
+  dueDay?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -469,6 +547,9 @@ export type WalletMinOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   color?: Prisma.SortOrder
   icon?: Prisma.SortOrder
+  creditLimit?: Prisma.SortOrder
+  closingDay?: Prisma.SortOrder
+  dueDay?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -476,6 +557,9 @@ export type WalletMinOrderByAggregateInput = {
 
 export type WalletSumOrderByAggregateInput = {
   balance?: Prisma.SortOrder
+  creditLimit?: Prisma.SortOrder
+  closingDay?: Prisma.SortOrder
+  dueDay?: Prisma.SortOrder
 }
 
 export type WalletScalarRelationFilter = {
@@ -537,6 +621,22 @@ export type DecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
+export type NullableDecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type WalletCreateNestedOneWithoutTransactionsInput = {
   create?: Prisma.XOR<Prisma.WalletCreateWithoutTransactionsInput, Prisma.WalletUncheckedCreateWithoutTransactionsInput>
   connectOrCreate?: Prisma.WalletCreateOrConnectWithoutTransactionsInput
@@ -559,6 +659,9 @@ export type WalletCreateWithoutUserInput = {
   currency?: string
   color?: string | null
   icon?: string | null
+  creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: number | null
+  dueDay?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   transactions?: Prisma.TransactionCreateNestedManyWithoutWalletInput
@@ -572,6 +675,9 @@ export type WalletUncheckedCreateWithoutUserInput = {
   currency?: string
   color?: string | null
   icon?: string | null
+  creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: number | null
+  dueDay?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutWalletInput
@@ -614,6 +720,9 @@ export type WalletScalarWhereInput = {
   currency?: Prisma.StringFilter<"Wallet"> | string
   color?: Prisma.StringNullableFilter<"Wallet"> | string | null
   icon?: Prisma.StringNullableFilter<"Wallet"> | string | null
+  creditLimit?: Prisma.DecimalNullableFilter<"Wallet"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.IntNullableFilter<"Wallet"> | number | null
+  dueDay?: Prisma.IntNullableFilter<"Wallet"> | number | null
   userId?: Prisma.StringFilter<"Wallet"> | string
   createdAt?: Prisma.DateTimeFilter<"Wallet"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Wallet"> | Date | string
@@ -627,6 +736,9 @@ export type WalletCreateWithoutTransactionsInput = {
   currency?: string
   color?: string | null
   icon?: string | null
+  creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: number | null
+  dueDay?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutWalletsInput
@@ -640,6 +752,9 @@ export type WalletUncheckedCreateWithoutTransactionsInput = {
   currency?: string
   color?: string | null
   icon?: string | null
+  creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: number | null
+  dueDay?: number | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -669,6 +784,9 @@ export type WalletUpdateWithoutTransactionsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutWalletsNestedInput
@@ -682,6 +800,9 @@ export type WalletUncheckedUpdateWithoutTransactionsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -695,6 +816,9 @@ export type WalletCreateManyUserInput = {
   currency?: string
   color?: string | null
   icon?: string | null
+  creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: number | null
+  dueDay?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -707,6 +831,9 @@ export type WalletUpdateWithoutUserInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   transactions?: Prisma.TransactionUpdateManyWithoutWalletNestedInput
@@ -720,6 +847,9 @@ export type WalletUncheckedUpdateWithoutUserInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   transactions?: Prisma.TransactionUncheckedUpdateManyWithoutWalletNestedInput
@@ -733,6 +863,9 @@ export type WalletUncheckedUpdateManyWithoutUserInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  closingDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -776,6 +909,9 @@ export type WalletSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   currency?: boolean
   color?: boolean
   icon?: boolean
+  creditLimit?: boolean
+  closingDay?: boolean
+  dueDay?: boolean
   userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -792,6 +928,9 @@ export type WalletSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   currency?: boolean
   color?: boolean
   icon?: boolean
+  creditLimit?: boolean
+  closingDay?: boolean
+  dueDay?: boolean
   userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -806,6 +945,9 @@ export type WalletSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   currency?: boolean
   color?: boolean
   icon?: boolean
+  creditLimit?: boolean
+  closingDay?: boolean
+  dueDay?: boolean
   userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -820,12 +962,15 @@ export type WalletSelectScalar = {
   currency?: boolean
   color?: boolean
   icon?: boolean
+  creditLimit?: boolean
+  closingDay?: boolean
+  dueDay?: boolean
   userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WalletOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "balance" | "currency" | "color" | "icon" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["wallet"]>
+export type WalletOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "balance" | "currency" | "color" | "icon" | "creditLimit" | "closingDay" | "dueDay" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["wallet"]>
 export type WalletInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   transactions?: boolean | Prisma.Wallet$transactionsArgs<ExtArgs>
@@ -852,6 +997,9 @@ export type $WalletPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     currency: string
     color: string | null
     icon: string | null
+    creditLimit: runtime.Decimal | null
+    closingDay: number | null
+    dueDay: number | null
     userId: string
     createdAt: Date
     updatedAt: Date
@@ -1287,6 +1435,9 @@ export interface WalletFieldRefs {
   readonly currency: Prisma.FieldRef<"Wallet", 'String'>
   readonly color: Prisma.FieldRef<"Wallet", 'String'>
   readonly icon: Prisma.FieldRef<"Wallet", 'String'>
+  readonly creditLimit: Prisma.FieldRef<"Wallet", 'Decimal'>
+  readonly closingDay: Prisma.FieldRef<"Wallet", 'Int'>
+  readonly dueDay: Prisma.FieldRef<"Wallet", 'Int'>
   readonly userId: Prisma.FieldRef<"Wallet", 'String'>
   readonly createdAt: Prisma.FieldRef<"Wallet", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Wallet", 'DateTime'>

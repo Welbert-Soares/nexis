@@ -145,6 +145,9 @@ export const WalletScalarFieldEnum = {
   currency: 'currency',
   color: 'color',
   icon: 'icon',
+  creditLimit: 'creditLimit',
+  closingDay: 'closingDay',
+  dueDay: 'dueDay',
   userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

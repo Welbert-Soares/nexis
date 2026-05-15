@@ -237,6 +237,6 @@ export async function getRecentTransactions(userId: string, limit = 10) {
   return rows.map((t) => ({
     ...t,
     amount: t.amount.toNumber(),
-    wallet: { ...t.wallet, balance: t.wallet.balance.toNumber() },
+    wallet: { ...t.wallet, balance: t.wallet.balance.toNumber(), creditLimit: t.wallet.creditLimit?.toNumber() ?? null },
   }))
 }

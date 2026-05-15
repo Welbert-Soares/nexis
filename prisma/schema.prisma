@@ -76,6 +76,9 @@ model Wallet {
   currency     String        @default("BRL")
   color        String?
   icon         String?
+  creditLimit  Decimal?      @db.Decimal(12, 2)
+  closingDay   Int?
+  dueDay       Int?
   userId       String
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]

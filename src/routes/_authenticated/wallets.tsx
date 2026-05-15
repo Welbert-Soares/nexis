@@ -96,7 +96,7 @@ function WalletsPage() {
                   key={wallet.id}
                   variants={fadeUp}
                   onClick={() => {
-                    setEditing({ id: wallet.id, name: wallet.name, type: wallet.type as WalletType, color: wallet.color, icon: wallet.icon })
+                    setEditing({ id: wallet.id, name: wallet.name, type: wallet.type as WalletType, color: wallet.color, icon: wallet.icon, creditLimit: wallet.creditLimit, closingDay: wallet.closingDay, dueDay: wallet.dueDay })
                     setSheetOpen(true)
                   }}
                   className="flex w-full items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 active:bg-zinc-800/50 transition-colors"
@@ -116,16 +116,24 @@ function WalletsPage() {
                     <p className="text-xs text-zinc-500">{meta.label}</p>
                   </div>
                   <div className="text-right">
-                    {wallet.type === 'CREDIT' ? (
-                      <>
-                        <p className={cn('tabular-nums text-sm font-semibold', wallet.balance < 0 ? 'text-red-400' : 'text-white')}>
-                          {formatCurrency(Math.abs(wallet.balance))}
-                        </p>
-                        <p className="text-[10px] text-zinc-600">
-                          {wallet.balance < 0 ? 'fatura' : 'disponível'}
-                        </p>
-                      </>
-                    ) : (
+                    {wallet.type === 'CREDIT' ? (() => {
+                      const invoice = Math.abs(Math.min(wallet.balance, 0))
+                      const limit = wallet.creditLimit ?? 0
+                      const available = limit > 0 ? limit - invoice : null
+                      const pct = limit > 0 ? invoice / limit : 0
+                      return (
+                        <>
+                          <p className={cn('tabular-nums text-sm font-semibold', invoice > 0 ? 'text-red-400' : 'text-white')}>
+                            {formatCurrency(invoice)}
+                          </p>
+                          <p className="text-[10px] text-zinc-600">
+                            {available !== null
+                              ? `de ${formatCurrency(limit)} · ${Math.round(pct * 100)}%`
+                              : 'fatura atual'}
+                          </p>
+                        </>
+                      )
+                    })() : (
                       <p className={cn('tabular-nums text-sm font-semibold', wallet.balance >= 0 ? 'text-white' : 'text-red-400')}>
                         {formatCurrency(wallet.balance)}
                       </p>
