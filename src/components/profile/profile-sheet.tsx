@@ -126,11 +126,11 @@ export function ProfileSheet({ open, onClose, user }: Props) {
       <Drawer.Root open={open} onClose={onClose}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={onClose} />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 top-4 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col max-h-[calc(100dvh-16px)] overflow-hidden rounded-t-2xl bg-zinc-900 outline-none">
             <Drawer.Title className="sr-only">Perfil</Drawer.Title>
             <div className="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-zinc-700" />
 
-            <div className="flex-1 overflow-y-auto px-4 pb-10 pt-6 space-y-6">
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-10 pt-6 space-y-6">
               {/* Avatar + info */}
               <div className="flex items-center gap-4">
                 <Avatar name={user.name} src={user.image} size="lg" />
@@ -341,7 +341,7 @@ export function ProfileSheet({ open, onClose, user }: Props) {
       <Drawer.Root open={!!confirmingDelete} onClose={() => setConfirmingDelete(null)}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-50 bg-black/50" onClick={() => setConfirmingDelete(null)} />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 top-4 z-[60] flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[60] flex flex-col max-h-[calc(100dvh-16px)] overflow-hidden rounded-t-2xl bg-zinc-900 outline-none">
             <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
             <div className="flex flex-col items-center gap-4 px-4 py-8 text-center">
               {confirmingDelete && (() => {
