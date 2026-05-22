@@ -251,10 +251,10 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
     <Drawer.Root open={open} onClose={handleClose}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={handleClose} />
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
+        <Drawer.Content className="fixed bottom-0 left-0 right-0 top-4 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
           <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
 
-          <div className="overflow-y-auto overflow-x-hidden px-4 pb-8 pt-4">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-8 pt-4">
             <div className="mb-5 flex items-center justify-between">
               <Drawer.Title className="text-base font-semibold text-white">
                 {isEdit ? 'Editar transação' : 'Nova transação'}

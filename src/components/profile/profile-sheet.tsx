@@ -126,7 +126,7 @@ export function ProfileSheet({ open, onClose, user }: Props) {
       <Drawer.Root open={open} onClose={onClose}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={onClose} />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex max-h-[90dvh] flex-col rounded-t-2xl bg-zinc-900 outline-none">
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 top-4 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
             <Drawer.Title className="sr-only">Perfil</Drawer.Title>
             <div className="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-zinc-700" />
 
@@ -341,7 +341,7 @@ export function ProfileSheet({ open, onClose, user }: Props) {
       <Drawer.Root open={!!confirmingDelete} onClose={() => setConfirmingDelete(null)}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-50 bg-black/50" onClick={() => setConfirmingDelete(null)} />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[60] flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 top-4 z-[60] flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
             <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-zinc-700" />
             <div className="flex flex-col items-center gap-4 px-4 py-8 text-center">
               {confirmingDelete && (() => {
