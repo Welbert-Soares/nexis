@@ -411,8 +411,8 @@ Sem teste E2E / Detox nesta fatia.
 
 ---
 
-## Confirmar antes de implementar
+## Confirmado
 
-1. Path do repo: `C:\Users\welbert.barbosa\Documents\study\nexis-mobile` ✅/✏️
-2. Scheme do app: `nexismobile` ✅/✏️
-3. URL de produção da Vercel do `nexis` (→ `EXPO_PUBLIC_API_URL` + `baseURL` do auth): `__________`
+1. Path do repo: `C:\Users\welbert.barbosa\Documents\study\nexis-mobile` ✅
+2. Scheme do app: `nexismobile` ✅
+3. URL de produção do `nexis` (→ `EXPO_PUBLIC_API_URL` + `baseURL` do auth): **`https://nexis-virid.vercel.app`** ✅
