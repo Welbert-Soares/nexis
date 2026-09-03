@@ -15,7 +15,11 @@ Estado atual relevante no repo:
 - **Push:** infra de subscription completa — `src/hooks/use-push-notifications.ts`, `src/server/services/push.service.ts` (VAPID, subscribe/unsubscribe), componente `NotificationPermission`. Falta só o disparo server-side. **Fora do escopo deste design.**
 - **Manifest:** `public/manifest.json` mínimo — reaproveita um único `logo-nexis-fundo.webp` em dois `sizes` com `purpose: "any maskable"` (anti-pattern).
 - **`<head>`:** `src/routes/__root.tsx` já tem `theme-color`, `mobile-web-app-capable`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style: black`, `apple-mobile-web-app-title`, `viewport-fit=cover`. `apple-touch-icon` aponta para `/logo-nexis-fundo.webp` (iOS ignora WebP em touch icon).
-- **Skeletons:** já existem nas 5 telas (`TransactionsSkeleton`, `AnalyticsSkeleton`, `WalletsSkeleton`, `GoalsSkeleton`, `ListSkeleton` + classe CSS `shimmer`), implementados ad-hoc como funções locais e `<div className="shimmer">` duplicados. Todas as telas usam `useQuery` + `isLoading` (não `useSuspenseQuery`).
+- **Skeletons:** já existem nas 5 telas (`TransactionsSkeleton`, `AnalyticsSkeleton`, `WalletsSkeleton`, `GoalsSkeleton`, `ListSkeleton` + `@utility shimmer` em `src/styles.css`), implementados ad-hoc como funções locais e `<div className="shimmer">` duplicados. Todas as telas usam `useQuery` + `isLoading` (não `useSuspenseQuery`).
+- **Install prompt:** `src/hooks/use-install-prompt.ts` já existe e cobre `beforeinstallprompt`, `appinstalled`, `isStandalone`, `isIOS`, `dismiss` (chave `localStorage` `pwa-install-dismissed`). O convite é renderizado por `src/components/ui/app-toasts.tsx` (montado em `_authenticated.tsx`, fila com `INITIAL_DELAY` de 2.5s). `src/components/ui/install-prompt.tsx` é uma quase-duplicata **não montada em lugar nenhum** (código morto). `src/components/profile/profile-sheet.tsx:121` já tem a linha "Instalar". **Falta:** um gate de "só a partir da 3ª sessão" para o convite automático.
+- **Haptics:** `src/hooks/use-haptic.ts` já existe (`tap`=8ms, `success`=[10,40,10], `error`=[30,20,30], `heavy`=25ms; usa `navigator.vibrate` direto, já é Android-only). Fiado em `bottom-nav.tsx` (FAB), `install-prompt.tsx`, `app-toasts.tsx`. **Falta:** `success` no sucesso de salvar transação e `error` na confirmação de excluir.
+- **Infra de teste:** **não configurada.** Não há `vitest.config.ts`, arquivo de setup, nem nenhum `*.test.*`. `jsdom`, `@testing-library/react`, `@testing-library/dom` e `@vitejs/plugin-react` estão em `devDependencies`. `npm run test` = `vitest run`.
+- **Shortcut do FAB:** `bottom-nav.tsx` abre criação via `<Link to="/transactions" search={{ action: 'new' }}>` → a URL de shortcut do manifest é `/transactions?action=new`.
 - **Router:** `src/router.tsx` — `createTanStackRouter` com `scrollRestoration`, `defaultPreload: 'intent'`. Sem `defaultViewTransition`.
 - **Layout:** `src/routes/_authenticated.tsx` é `fixed inset-0 flex flex-col`, com overlays montados (`OfflineBanner`, `BudgetAlertsBanner`, `NotificationPermission`, `NavigationOverlay`, `AppToasts`).
 
@@ -40,7 +44,7 @@ Ao instalar o Nexis na home (iOS e Android), o app deve ter ícone nítido e cor
 
 ## Frentes de trabalho
 
-As oito frentes são independentes entre si e podem ser implementadas/testadas em qualquer ordem.
+As oito frentes são independentes entre si e podem ser implementadas/testadas em qualquer ordem, **depois** da infra de teste (ver "Testes"). Frentes 5 e 6 já estão ~80% prontas no repo — o trabalho é fechar lacunas, não construir do zero.
 
 ### 1. Limpeza do service worker
 
@@ -109,35 +113,27 @@ No objeto retornado por `head()`:
   - `apple-mobile-web-app-status-bar-style`: **`black` → `black-translucent`**. Mudança visível: a status bar passa a sobrepor o conteúdo. O layout já usa `viewport-fit=cover` e `env(safe-area-inset-top)` no `fixed inset-0`, então o efeito é o esperado (sem faixa preta sólida). Se em teste real ficar ruim, reverter para `black` é 1 linha.
   - Demais metas mantidas.
 
-### 5. Prompt de instalação
+### 5. Prompt de instalação — gate de sessão + limpar duplicata
 
-- **`src/hooks/use-install-prompt.ts`** (novo):
-  - Estado: `{ canInstall, isIOS, isStandalone, promptInstall, dismiss, dismissed }`.
-  - Captura `beforeinstallprompt` (previne default, guarda o evento) — Chrome/Android.
-  - Escuta `appinstalled` → marca instalado em `localStorage`.
-  - `isStandalone` = `matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true`.
-  - `isIOS` = teste de UA (`/iphone|ipad|ipod/i`) e não-standalone.
-  - Contador de sessões: incrementa uma chave `nexis:pwa:session-count` no `localStorage` uma vez por carga de app (guardar em `sessionStorage` que já contou nesta sessão).
-  - `shouldShow` = `!isStandalone && !dismissed && !installed && sessionCount >= 3 && (canInstall || isIOS)`.
-  - Persistência de `dismissed`: chave booleana `nexis:pwa:install-dismissed` no `localStorage`. Dismiss é **permanente** (só volta a aparecer se o usuário limpar dados do site). A linha em Perfil continua sendo o caminho para instalar depois de dispensar.
-  - Todo acesso a `localStorage`/`matchMedia` em `try/catch` e guardado por `typeof window`.
-- **`src/components/ui/install-prompt-card.tsx`** (novo):
-  - Bottom sheet no padrão `vaul` do app, dismissível.
-  - **Android** (`canInstall`): copy curta + botão "Instalar" que chama `promptInstall()`.
-  - **iOS** (`isIOS`): passo a passo ilustrado — ícone de Compartilhar → "Adicionar à Tela de Início" → "Adicionar". Sem botão de ação (iOS não expõe API).
-  - Botão/gesto de dispensar chama `dismiss()`.
-- **Montagem:** incluir `<InstallPromptCard />` na lista de overlays de `src/routes/_authenticated.tsx`. O componente decide sozinho se renderiza (via `shouldShow`).
-- **`src/components/profile/profile-sheet.tsx`:** adicionar uma linha "Instalar o app" visível quando `(canInstall || isIOS) && !isStandalone`. Android → `promptInstall()`. iOS → abre o `InstallPromptCard` em modo instrução (estado compartilhado simples — ex. um `useState` no profile sheet ou um pequeno store/context).
+O grosso já existe (`use-install-prompt.ts` + `app-toasts.tsx` + linha em Perfil). Duas mudanças pontuais:
 
-### 6. Haptics — `src/lib/haptics.ts` (Android-only)
+- **`src/hooks/use-install-prompt.ts`** — adicionar contagem de sessões:
+  - Incrementar `localStorage` `pwa-session-count` **uma vez por carga de app**; guardar em `sessionStorage` `pwa-session-counted` que esta sessão já contou (evita recontagem a cada re-render / re-mount do hook). Todo acesso em `try/catch`, guardado por `typeof window`.
+  - Expor dois booleanos:
+    - `showPrompt` (atual, inalterado) = `!installed && !dismissed && (!!promptEvent || isIOS)` — usado pela **linha em Perfil** (aparece assim que instalável).
+    - **`showAutoPrompt`** (novo) = `showPrompt && sessionCount >= 3` — usado pelo **convite automático** em `app-toasts.tsx`.
+  - `dismiss` continua permanente (chave `pwa-install-dismissed`).
+- **`src/components/ui/app-toasts.tsx`** — trocar `showInstall` (hoje `showPrompt`) por `showAutoPrompt` na montagem da fila (`if (showAutoPrompt) queue.push('install')` e nas duas guardas de render `current === 'install' && showAutoPrompt`). Nada mais muda no arquivo.
+- **`src/components/ui/install-prompt.tsx`** — **deletar** (código morto, não montado, duplica o branch de install do `app-toasts.tsx`).
+- **`src/components/profile/profile-sheet.tsx`** — sem mudança (já usa `showPrompt`/`install`).
 
-- `export function haptic(kind: 'tap' | 'success' | 'warning'): void`
-  - Padrões: `tap` → `10`; `success` → `[10, 40, 20]`; `warning` → `[20, 60, 20]`.
-  - Implementação: `if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(pattern)`. No-op em iOS/desktop (iOS Safari não implementa Vibration API, nem em standalone).
-- Fios:
-  - `src/components/layout/bottom-nav.tsx` — `haptic('tap')` no clique do FAB (+).
-  - `src/components/transactions/transaction-sheet.tsx` — `haptic('success')` no `onSuccess` da mutation de criar/editar.
-  - Confirmação de excluir transação — `haptic('warning')` ao confirmar a exclusão (localizar o ponto na implementação; provavelmente em `transactions.tsx` ou no sheet).
+### 6. Haptics — fiar os 2 pontos que faltam
+
+`src/hooks/use-haptic.ts` já existe e já está no FAB (`bottom-nav.tsx`). Só faltam:
+
+- **`src/components/transactions/transaction-sheet.tsx`** — importar `useHaptic`, chamar `haptic.success()` no início do `onSuccess` de `saveMutation` (linha ~199).
+- **`src/routes/_authenticated/transactions.tsx`** — chamar `haptic.error()` no handler que confirma a exclusão (o efeito disparado quando `confirmingTx` é confirmado, ~linha 109) e no `deleteMutation.onSuccess` de `transaction-sheet.tsx` (linha ~211) usar `haptic.success()`. Importar `useHaptic` onde faltar.
+- Auditar rapidamente outros gestos destrutivos/confirmatórios (excluir carteira, excluir meta) e aplicar o mesmo padrão se o toque estiver faltando — sem inventar novos padrões além dos 4 que o hook já expõe.
 
 ### 7. Skeletons — consolidar
 
@@ -162,26 +158,29 @@ No objeto retornado por `head()`:
 | Unidade | O que faz | Interface | Depende de |
 |---|---|---|---|
 | `scripts/generate-pwa-assets.mjs` | Gera ícones e splash a partir de 1 fonte | CLI (`npm run gen:pwa-assets`) | `sharp`, `public/logo-nexis-fundo.webp` |
-| `src/lib/haptics.ts` | Feedback tátil best-effort | `haptic(kind)` | Vibration API (opcional) |
-| `src/hooks/use-install-prompt.ts` | Estado de instalabilidade | hook → objeto de estado + ações | `beforeinstallprompt`, `matchMedia`, `localStorage` |
-| `src/components/ui/install-prompt-card.tsx` | UI do convite | monta-se sozinho; lê o hook | `use-install-prompt`, `vaul` |
-| `src/components/ui/skeleton.tsx` | Primitivo de loading | `<Skeleton className>` | classe CSS `shimmer` |
+| `src/hooks/use-haptic.ts` (existe) | Feedback tátil best-effort | `useHaptic()` → `{ tap, success, error, heavy }` | Vibration API (opcional) |
+| `src/hooks/use-install-prompt.ts` (existe, +gate) | Estado de instalabilidade | hook → `{ showPrompt, showAutoPrompt, isIOS, install, dismiss }` | `beforeinstallprompt`, `matchMedia`, `localStorage` |
+| `src/components/ui/skeleton.tsx` (novo) | Primitivo de loading | `<Skeleton className>` | `@utility shimmer` |
 | `public/manifest.json`, `<head>` | Metadados de instalação | estático | assets de `public/icons` e `public/splash` |
 | `public/sw.js` | Transporte de push | eventos SW | — |
 | `defaultViewTransition` + CSS | Transição de rota | config do router | View Transitions API (opcional) |
 
-Nenhuma unidade depende do estado interno de outra. As frentes 5 e 7 tocam `_authenticated.tsx` e as rotas; as demais são aditivas.
+Nenhuma unidade depende do estado interno de outra. As frentes 5, 6 e 7 tocam arquivos existentes (`app-toasts.tsx`, rotas, sheets); as demais são aditivas.
 
 ---
 
 ## Testes
 
+### Infra de teste (pré-requisito — Task 1 do plano)
+
+Criar `vitest.config.ts` (via `defineConfig` de `vitest/config` + `@vitejs/plugin-react`): `environment: 'jsdom'`, `globals: true`, `setupFiles: ['./src/test/setup.ts']`, `include: ['src/**/*.test.{ts,tsx}']`. `src/test/setup.ts` mínimo (por ora vazio ou com `cleanup` do `@testing-library/react`). Sem novas dependências de teste além das já instaladas (`jsdom`, `@testing-library/react`, `@testing-library/dom`, `@vitejs/plugin-react`) — asserções via `expect` nativo do vitest, sem `@testing-library/jest-dom`.
+
 ### Automatizados (vitest — `npm run test`)
 
-- `src/lib/haptics.test.ts` — mock de `navigator.vibrate`; verifica padrão chamado por `kind`; no-op quando a API não existe.
-- `src/hooks/use-install-prompt.test.ts` — com `localStorage`/`matchMedia` mockados: não mostra antes da 3ª sessão; não mostra em standalone; não mostra após dismiss; mostra no caminho iOS sem `beforeinstallprompt`.
-- `manifest.test.ts` — lê `public/manifest.json`: JSON válido; campos obrigatórios presentes; todo `icons[].src` e `shortcuts[].url` existem em `public/`; há exatamente uma entrada `maskable` e ao menos uma `any`.
-- `scripts/generate-pwa-assets.test.ts` (ou parte do teste de manifest) — roda o script num tmpdir e afirma que os arquivos saem com as dimensões esperadas (lê o header PNG).
+- `src/hooks/use-haptic.test.ts` — mock de `navigator.vibrate`; verifica o array chamado por método (`tap`→`8`, `success`→`[10,40,10]`, `error`→`[30,20,30]`, `heavy`→`25`); não lança quando `vibrate` ausente.
+- `src/hooks/use-install-prompt.test.ts` — com `localStorage`/`sessionStorage`/`matchMedia` mockados (`renderHook`): `showAutoPrompt` é `false` antes da 3ª sessão e `true` na 3ª (simulando 3 montagens com `sessionStorage` limpo entre elas); `showPrompt` independe da contagem; `dismiss()` zera ambos; standalone força `installed`.
+- `manifest.test.ts` (em `src/test/`) — lê `public/manifest.json`: JSON válido; campos obrigatórios (`id`, `name`, `start_url`, `display`, `icons`); todo `icons[].src` e `shortcuts[].url` (parte de path) resolve para um arquivo em `public/`; exatamente uma entrada `purpose: "maskable"` e ≥1 `purpose: "any"`.
+- `src/test/generate-pwa-assets.test.ts` — roda `generate-pwa-assets.mjs` apontando a saída para um tmpdir; afirma que cada arquivo esperado existe e tem as dimensões certas (lê os 24 primeiros bytes do PNG: `width` em BE nos bytes 16–19, `height` em 20–23).
 
 ### Manual (checklist — executar antes de considerar concluído)
 
@@ -207,7 +206,7 @@ Nenhuma unidade depende do estado interno de outra. As frentes 5 e 7 tocam `_aut
 ## Riscos / pontos de atenção
 
 - **`black-translucent`** é a única mudança visível de comportamento. Mitigação: reversível em 1 linha; validar no checklist manual em device real.
-- **`shortcuts` URLs** dependem de como `/transactions` abre o sheet de criação hoje. Verificar o search param real na implementação antes de fixar o manifest.
+- **`shortcuts` URLs**: confirmado que `/transactions` abre a criação com `?action=new` (`bottom-nav.tsx` usa `search={{ action: 'new' }}`). "Nova receita" pode não ter param de tipo — se `/transactions` não aceitar `type`, usar só `?action=new` para os dois ou omitir o segundo shortcut.
 - **`screenshots`** exigem captura de imagens reais. Se bloquear, omitir e seguir.
 - **WebP → PNG via sharp**: a fonte é lossy; validar visualmente o `icon-512.png` resultante. 1185px de origem é suficiente para 512 sem upscale.
 - **View Transitions no TanStack Start (SSR)**: confirmar que `defaultViewTransition` não conflita com `scrollRestoration`. Degradação é automática, mas testar em Chrome e em Safari < 18.
