@@ -1,10 +1,14 @@
-const canVibrate = typeof navigator !== 'undefined' && 'vibrate' in navigator
+function vibrate(pattern: number | number[]) {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(pattern)
+  }
+}
 
 export function useHaptic() {
   return {
-    tap: () => canVibrate && navigator.vibrate(8),
-    success: () => canVibrate && navigator.vibrate([10, 40, 10]),
-    error: () => canVibrate && navigator.vibrate([30, 20, 30]),
-    heavy: () => canVibrate && navigator.vibrate(25),
+    tap: () => vibrate(8),
+    success: () => vibrate([10, 40, 10]),
+    error: () => vibrate([30, 20, 30]),
+    heavy: () => vibrate(25),
   }
 }

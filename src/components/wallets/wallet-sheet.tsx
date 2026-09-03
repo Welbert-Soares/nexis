@@ -5,6 +5,7 @@ import { Drawer } from 'vaul'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Trash2 } from 'lucide-react'
 import { cn } from '#/lib/utils'
+import { useHaptic } from '#/hooks/use-haptic'
 import { CATEGORY_ICONS } from '#/lib/category-icons'
 import { createUserWallet, editUserWallet, deleteUserWallet } from '#/server/services/wallet.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
@@ -50,6 +51,7 @@ interface Props {
 export function WalletSheet({ open, wallet, onClose }: Props) {
   const isEdit = !!wallet
   const queryClient = useQueryClient()
+  const haptic = useHaptic()
   const [color, setColor] = useState(wallet?.color ?? COLORS[0])
   const [icon, setIcon] = useState<string | null>(wallet?.icon ?? null)
   const [iconsExpanded, setIconsExpanded] = useState(false)
@@ -125,7 +127,7 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteUserWallet({ data: { id: wallet!.id } }),
-    onSuccess: () => { invalidate(); handleClose() },
+    onSuccess: () => { haptic.success(); invalidate(); handleClose() },
   })
 
   function handleClose() {
@@ -183,7 +185,7 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
                     Cancelar
                   </button>
                   <button
-                    onClick={() => deleteMutation.mutate()}
+                    onClick={() => { haptic.error(); deleteMutation.mutate() }}
                     disabled={deleteMutation.isPending}
                     className="flex-1 rounded-xl bg-red-500/20 py-3 text-sm font-medium text-red-400 disabled:opacity-50"
                   >

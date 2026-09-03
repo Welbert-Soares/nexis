@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
+import { useHaptic } from '#/hooks/use-haptic'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { listTransactions, removeTransaction, removeInstallments, getTransactionMaxDate } from '#/server/services/transaction.service'
 import { getUserWallets } from '#/server/services/wallet.service'
@@ -71,6 +72,7 @@ function TransactionsPage() {
   const [pendingDelete, setPendingDelete] = useState<{ tx: Tx; mode?: InstallmentMode } | null>(null)
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const queryClient = useQueryClient()
+  const haptic = useHaptic()
 
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
@@ -107,6 +109,7 @@ function TransactionsPage() {
 
   function handleConfirmDelete(mode?: InstallmentMode) {
     if (!confirmingTx) return
+    haptic.error()
     const tx = confirmingTx
     setConfirmingTx(null)
     setPendingDelete({ tx, mode })

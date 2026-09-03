@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Trash2, Wallet, Plus, Repeat2, Layers } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '#/lib/utils'
+import { useHaptic } from '#/hooks/use-haptic'
 import { CATEGORY_ICONS } from '#/lib/category-icons'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { getCategories } from '#/server/services/category.service'
@@ -65,6 +66,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
   const isEdit = !!transaction
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const haptic = useHaptic()
   const [type, setType] = useState<TransactionType>(transaction?.type ?? 'EXPENSE')
   const [cents, setCents] = useState(() => Math.round((transaction?.amount ?? 0) * 100))
   const [saved, setSaved] = useState(false)
@@ -197,6 +199,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
       })
     },
     onSuccess: () => {
+      haptic.success()
       invalidateAll()
       setSaved(true)
       setTimeout(() => {
@@ -209,6 +212,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
   const deleteMutation = useMutation({
     mutationFn: () => removeTransaction({ data: { id: transaction!.id } }),
     onSuccess: () => {
+      haptic.success()
       invalidateAll()
       handleClose()
     },
