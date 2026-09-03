@@ -4,6 +4,7 @@ dist
 dist-ssr
 *.local
 .env
+.claude/settings.local.json
 .nitro
 .tanstack
 .wrangler
