@@ -201,3 +201,19 @@ Handler utility: `src/utils/mcp-handler.ts`.
 - **`Decimal` fields** (`balance`, `amount`) — always call `.toNumber()` before returning from repositories.
 - **Recurring transactions** — `triggerRecurring()` is called on mount in `_authenticated.tsx` to auto-generate due transactions; invalidates `transactions`, `dashboard`, `wallets` query keys on count > 0.
 - **Path aliases** — `#/*` and `@/*` both resolve to `src/*`.
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked as GitHub issues in `Welbert-Soares/nexis`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context — `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
