@@ -18,6 +18,7 @@ npm run db:migrate   # create and run migration
 npm run db:studio    # Prisma Studio UI
 npm run db:seed      # seed database
 npm run storybook    # component explorer on :6006
+npm run gen:pwa-assets  # regenera ícones e splash do PWA (manual, fora do build)
 ```
 
 All `db:*` commands read from `.env.local` via `dotenv-cli`.  
