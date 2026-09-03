@@ -1,25 +1,30 @@
 {
+  "id": "/",
+  "scope": "/",
   "name": "Nexis",
   "short_name": "Nexis",
   "description": "Seu sistema operacional financeiro pessoal",
+  "lang": "pt-BR",
+  "dir": "ltr",
   "start_url": "/dashboard",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#09090b",
   "background_color": "#09090b",
+  "categories": ["finance", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
-    {
-      "src": "logo-nexis-fundo.webp",
-      "type": "image/webp",
-      "sizes": "512x512",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "logo-nexis-fundo.webp",
-      "type": "image/webp",
-      "sizes": "192x192",
-      "purpose": "any maskable"
-    }
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
-  "categories": ["finance", "productivity"]
+  "shortcuts": [
+    {
+      "name": "Novo gasto",
+      "short_name": "Novo gasto",
+      "description": "Registrar uma nova transação",
+      "url": "/transactions?action=new",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
 }
