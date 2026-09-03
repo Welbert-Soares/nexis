@@ -18,7 +18,7 @@ O Nexis hoje é um PWA (TanStack Start SSR + Prisma + NeonDB). O usuário roda e
 | Alvo de execução | **Expo Go** — sem módulo nativo custom nesta fase | A |
 | Repo | **separado** (`nexis-mobile`), não monorepo | A |
 | API | **REST + fetch tipado**, não tRPC | A |
-| Styling | **NativeWind v4** (Tailwind pra RN) | A |
+| Styling | **NativeWind v5 (preview)** + react-native-css + Tailwind v4, per skill `expo:expo-tailwind-setup` | B |
 | Primeira fatia | Fundação + Auth + Dashboard (só leitura) | — |
 
 ### O que já existe no repo `nexis` (web) e é relevante
@@ -52,7 +52,7 @@ O Nexis hoje é um PWA (TanStack Start SSR + Prisma + NeonDB). O usuário roda e
 
 ## Objetivo da Fatia 1
 
-Um app Expo que roda no Expo Go do iPhone, faz login com Google, e mostra o Dashboard com dados reais do banco de produção — provando a pipeline inteira ponta a ponta: **Expo Go → OAuth → endpoint REST novo com auth por Bearer → client fetch tipado → validação Zod → tela nativa**. Nenhuma escrita, nenhuma outra tela.
+Um app Expo que roda no Expo Go do iPhone, faz login com Google, e mostra o Dashboard com dados reais do banco de produção — provando a pipeline inteira ponta a ponta: **Expo Go → OAuth → endpoint REST novo com sessão por cookie → client fetch tipado → validação Zod → tela nativa**. Nenhuma escrita, nenhuma outra tela.
 
 **Princípio de performance (vale pra todo o projeto mobile):** a tela aparece na hora — com cache do TanStack Query ou vazia — e os dados preenchem depois. Nunca bloquear o render esperando fetch. Navegação usa as primitivas nativas do Expo Router (`react-native-screens`), sem transição animada em JS. Skeleton só em cold load real.
 
@@ -61,40 +61,41 @@ Um app Expo que roda no Expo Go do iPhone, faz login com Google, e mostra o Dash
 ## Arquitetura
 
 ```
-┌─────────────────────────┐         HTTPS + Bearer         ┌──────────────────────────┐
+┌─────────────────────────┐        HTTPS + Cookie header   ┌──────────────────────────┐
 │  nexis-mobile (Expo Go)  │  ──────────────────────────▶  │  nexis (Vercel / Nitro)   │
 │                          │                                │                          │
 │  Expo Router             │   GET /api/mobile/dashboard    │  /api/mobile/*  (novo)    │
-│  TanStack Query          │   Authorization: Bearer <tok>  │  Better Auth + bearer()   │
-│  NativeWind v4           │                                │  + expo()  (novo)         │
+│  TanStack Query          │   Cookie: <session>            │  Better Auth + expo()     │
+│  NativeWind v5 (preview) │                                │       (novo)              │
 │  better-auth/react       │   POST /api/auth/*  (OAuth)    │  /api/auth/$  (existe)    │
 │    + expoClient          │  ◀──────────────────────────  │  getDashboardData()       │
-│  expo-secure-store       │        redirect nexismobile:// │  (repository, intocado)  │
+│  expo-secure-store       │            redirect ao app     │  (repository, intocado)  │
 └─────────────────────────┘                                └────────────┬─────────────┘
                                                                         │
                                                                   NeonDB (Postgres)
 ```
 
-- **`nexis` só ganha código aditivo.** Nenhuma rota, service ou componente web existente muda de comportamento. Os plugins `bearer`/`expo` do Better Auth adicionam capacidade (aceitar `Authorization: Bearer` além do cookie) sem remover nada.
+- **`nexis` só ganha código aditivo.** Nenhuma rota, service ou componente web existente muda de comportamento. O plugin `expo()` do Better Auth adiciona capacidade (fluxo OAuth pra app + validação de `id_token` no fallback) sem remover nada; a sessão do mobile continua sendo um cookie Better Auth, igual ao web.
 - **`nexis-mobile` é 100% independente em runtime.** Não importa código do `nexis`. Compartilha só: o backend (via HTTP), o banco (via backend), e o *contrato* de dados (schemas Zod copiados à mão nesta fase).
 
 ---
 
 ## Parte A — mudanças no backend `nexis` (aditivas)
 
-### A1. Better Auth: plugins `bearer` + `expo`
+### A1. Better Auth: plugin `expo`
 
 `src/lib/auth.ts`:
 
-- Adicionar `import { bearer } from 'better-auth/plugins'` e `import { expo } from '@better-auth/expo'`.
-- Nova dep: `@better-auth/expo` (peer do `better-auth`, lado servidor).
+- Adicionar `import { expo } from '@better-auth/expo'`. Nova dep: `@better-auth/expo` (lado servidor).
 - No objeto `betterAuth({...})`:
-  - `plugins: [bearer(), expo()]`
-  - `trustedOrigins: ['nexismobile://', ...(existentes se houver)]` — o `expo()` plugin exige o scheme do app aqui pra permitir o redirect do OAuth de volta pro app.
+  - `plugins: [expo()]`
+  - `trustedOrigins: ['nexismobile://', 'nexismobile://**', 'exp://**']` — o `expo()` plugin exige aqui o scheme do app e (pra dev no Expo Go) os wildcards `exp://`.
 - `session`, `socialProviders`, `account` ficam iguais.
-- O handler em `src/routes/api/auth/$.ts` **não muda** — os plugins se plugam no `auth` e o handler já os serve.
+- O handler em `src/routes/api/auth/$.ts` **não muda** — o plugin se pluga no `auth` e o handler já o serve.
 
-Efeito: `auth.api.getSession({ headers })` passa a resolver a sessão tanto por cookie (web) quanto por `Authorization: Bearer <token>` (mobile). O `expo()` plugin trata a troca do código OAuth pelo token e o redirect `nexismobile://`.
+Efeito: o `expo()` plugin habilita o fluxo OAuth pra app (redirect de volta pro scheme) e o `signIn.social({ idToken })` do fallback. A sessão do mobile é o **mesmo cookie Better Auth** do web; `auth.api.getSession({ headers })` resolve normalmente quando o app manda o header `Cookie`.
+
+**Não usamos o plugin `bearer()`** — o `@better-auth/expo` trabalha com o cookie via `authClient.getCookie()`, não com token Bearer.
 
 ### A2. Rota REST `GET /api/mobile/dashboard`
 
@@ -149,31 +150,37 @@ export const Route = createFileRoute('/api/mobile/dashboard')({
 
 ### B1. Scaffold
 
-- `npx create-expo-app@latest nexis-mobile` com template TypeScript (Expo Router incluso).
-- **Confirmar:** path `C:\Users\welbert.barbosa\Documents\study\nexis-mobile` (irmão do `nexis`).
-- SDK: o mais recente estável no momento da implementação. Managed workflow. **Sem `expo prebuild`, sem `ios/`/`android/`** — alvo Expo Go.
+- `npx create-expo-app@latest nexis-mobile` com template TypeScript (Expo Router incluso). SDK atual (**57** no momento — RN 0.86, React 19.2).
+- Path `C:\Users\welbert.barbosa\Documents\study\nexis-mobile` (irmão do `nexis`).
+- Managed workflow. **Sem `expo prebuild`, sem `ios/`/`android/`** — alvo Expo Go.
 - `app.json`:
-  - `expo.scheme: "nexismobile"` (**confirmar** o nome)
+  - `expo.scheme: "nexismobile"`
   - `expo.name: "Nexis"`, `expo.slug: "nexis-mobile"`
   - `expo.userInterfaceStyle: "dark"`
-  - `ios.bundleIdentifier` / `android.package` — definidos mas sem efeito no Expo Go; deixados prontos pro build futuro.
+  - `ios.bundleIdentifier` / `android.package` — definidos mas sem efeito no Expo Go; prontos pro build futuro.
 - Git: `git init`, primeiro commit com o scaffold limpo.
 
 ### B2. Dependências
 
-| Pacote | Papel | Expo Go? |
-|---|---|---|
-| `expo-router` | navegação file-based | ✅ (no template) |
-| `@tanstack/react-query` | cache/fetch client | ✅ (JS puro) |
-| `nativewind` + `tailwindcss` | styling | ✅ (transform Babel + runtime) |
-| `better-auth` + `@better-auth/expo` | auth client + plugin expo | ✅ |
-| `expo-secure-store` | storage do token de sessão | ✅ (SDK) |
-| `expo-web-browser` | abrir o OAuth no browser do sistema | ✅ (SDK) |
-| `expo-constants` | ler `EXPO_PUBLIC_*` / manifest | ✅ (SDK) |
-| `lucide-react-native` + `react-native-svg` | ícones (paridade com o web Lucide) | ✅ |
-| `zod` | validar respostas da API | ✅ |
+Styling segue a skill **`expo:expo-tailwind-setup`** (NativeWind **v5 preview** + react-native-css + Tailwind v4). Instalar via `npx expo install` sempre que possível (resolve a versão compatível com o SDK).
 
-Sem `react-native-reanimated`/`gesture-handler` custom nesta fatia (Expo Router já traz o necessário).
+| Pacote | Papel |
+|---|---|
+| `expo-router`, `react-native-safe-area-context`, `react-native-screens` | navegação nativa (no template) |
+| `@tanstack/react-query` | cache/fetch client |
+| `tailwindcss@^4`, `nativewind@5.0.0-preview.2`, `react-native-css@0.0.0-nightly.5ce6396`, `@tailwindcss/postcss`, `tailwind-merge`, `clsx` | styling (versões conforme a skill; bump se `expo install` recomendar) |
+| `react-native-reanimated` | exigido pelos wrappers `src/tw/` (Image/Animated) |
+| `better-auth`, `@better-auth/expo` | auth |
+| `expo-secure-store` | storage da sessão |
+| `expo-network` | detecção de rede (dep do `@better-auth/expo`) |
+| `expo-web-browser`, `expo-linking`, `expo-constants` | fluxo OAuth |
+| `expo-auth-session` | **fallback** de OAuth (só se o `@better-auth/expo` falhar no Expo Go) |
+| `expo-image` | avatar |
+| `lucide-react-native`, `react-native-svg` | ícones (paridade Lucide com o web) |
+| `zod` | validar respostas da API |
+| **dev:** `jest-expo`, `jest`, `@testing-library/react-native`, `react-test-renderer` | testes |
+
+`package.json`: `"resolutions": { "lightningcss": "1.30.1" }` (compat, per skill).
 
 ### B3. Estrutura de pastas
 
@@ -181,33 +188,39 @@ Sem `react-native-reanimated`/`gesture-handler` custom nesta fatia (Expo Router 
 nexis-mobile/
   app/
     _layout.tsx              # QueryClientProvider + SessionProvider + gate de auth + <Stack>
-    index.tsx                # redireciona p/ (app) ou (auth)/login conforme sessão
+    index.tsx                # <Redirect> p/ (app) ou (auth)/login conforme sessão
     (auth)/
       _layout.tsx
       login.tsx              # botão "Entrar com Google"
     (app)/
-      _layout.tsx            # <Tabs> nativo (só a aba Dashboard nesta fatia; placeholders p/ o resto)
+      _layout.tsx            # <Tabs> nativo (só a aba Dashboard nesta fatia)
       index.tsx              # tela Dashboard
   src/
+    tw/
+      index.tsx              # wrappers useCssElement: View, Text, Pressable, ScrollView, TextInput, Link
+      image.tsx              # wrapper CSS da expo-image
     api/
-      client.ts             # fetch tipado + Bearer + erro + parse
+      client.ts             # fetch tipado (Cookie header) + erro + parse
       dashboard.ts          # getDashboard() -> DashboardData (validado por Zod)
     auth/
       client.ts             # createAuthClient + expoClient
-      session.tsx           # SessionProvider / useSession (wrap do authClient.useSession)
+      session.tsx           # SessionProvider / useSession
     schemas/
       dashboard.ts          # Zod: DashboardResponseSchema (cópia do contrato)
     theme/
-      colors.ts             # tokens zinc/azul espelhando o web
+      colors.ts             # tokens zinc/azul em JS (p/ uso fora de className)
     lib/
-      format.ts             # fmtBRL, fmtDate (Intl.NumberFormat)
-  global.css                # @tailwind base/components/utilities
-  tailwind.config.js        # preset nativewind + cores de theme/colors
-  babel.config.js           # preset expo + nativewind/babel
-  metro.config.js           # withNativeWind
-  .env                      # EXPO_PUBLIC_API_URL=<url prod Vercel>
+      format.ts             # fmtBRL, fmtDate
+  global.css                # @import "tailwindcss/..." + @theme com os tokens
+  postcss.config.mjs        # { plugins: { "@tailwindcss/postcss": {} } }
+  metro.config.js           # withNativewind(config, { inlineVariables:false, globalClassNamePolyfill:false })
+  .env                      # EXPO_PUBLIC_API_URL=https://nexis-virid.vercel.app
   app.json
 ```
+
+**Sem `babel.config.js`** (NativeWind v5 + Tailwind v4 é CSS-first; se o template criar um só com preset expo, manter — mas nada de `nativewind/babel`).
+**Sem `tailwind.config.js`** — tema via `@theme` no `global.css`. `content` não é necessário (a skill não usa).
+Todo componente de UI vem de **`#/tw`** (ou `#/tw/image`), nunca de `react-native` direto — senão `className` não aplica.
 
 ### B4. Auth client (`src/auth/client.ts`)
 
@@ -230,11 +243,8 @@ export const authClient = createAuthClient({
 export const { signIn, signOut, useSession, getSession } = authClient
 ```
 
-- `expoClient` persiste a sessão no `SecureStore` e injeta o `Authorization: Bearer` em todas as chamadas feitas pelo `authClient.$fetch`.
-- **Contrato pro `api/client.ts`:** ele precisa do mesmo header. Duas opções, decidir na implementação:
-  1. Rotear as chamadas REST pelo `authClient.$fetch` (herda o Bearer de graça).
-  2. Ler o token via API do `expoClient` (`authClient.getCookie()` expõe o valor armazenado) e setar o header no nosso `fetch`.
-  Preferência: **opção 1** — menos código, um caminho só de auth.
+- O `expoClient` persiste a sessão (cookie) no `SecureStore`. **Não** injeta header automático nas nossas chamadas `fetch`.
+- **Contrato pro `api/client.ts`:** ler o cookie com `await authClient.getCookie()` e mandar como header `Cookie`, com `credentials: 'omit'` (padrão documentado do `@better-auth/expo`).
 
 ### B5. Fetch client tipado (`src/api/client.ts`)
 
@@ -244,21 +254,30 @@ import { authClient } from '#/auth/client'
 const BASE = process.env.EXPO_PUBLIC_API_URL!
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) { super(message) }
+  constructor(public status: number, message: string) {
+    super(message)
+    this.name = 'ApiError'
+  }
 }
 
 export async function apiGet<T>(path: string, parse: (raw: unknown) => T): Promise<T> {
-  const res = await authClient.$fetch(`${BASE}${path}`, { method: 'GET' })
-  // authClient.$fetch já anexa o Bearer e faz JSON parse; normalizar a forma aqui
-  if (res.error) throw new ApiError(res.error.status ?? 0, res.error.message ?? 'Request failed')
-  return parse(res.data)
+  const cookie = await authClient.getCookie()
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'GET',
+    headers: { Cookie: cookie, Accept: 'application/json' },
+    credentials: 'omit',
+  })
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new ApiError(res.status, body || res.statusText)
+  }
+  return parse(await res.json())
 }
 ```
 
-(A forma exata do retorno de `authClient.$fetch` é confirmada na implementação; a interface pública `apiGet<T>(path, parse) -> Promise<T>` é o contrato estável.)
-
 - `parse` = `schema.parse` do Zod. Erro de validação = bug de contrato, propaga.
 - `ApiError` com `status` → a UI distingue 401 (deslogar) de 5xx (retry/erro).
+- Interface pública estável: `apiGet<T>(path, parse) -> Promise<T>` + `ApiError { status }`.
 
 ### B6. Schema Zod (`src/schemas/dashboard.ts`)
 
@@ -326,26 +345,27 @@ export const dashboardQuery = {
 ### B9. Login (`app/(auth)/login.tsx`)
 
 - Tela centrada: logo Nexis, tagline, um botão "Entrar com Google".
-- `onPress` → `authClient.signIn.social({ provider: 'google', callbackURL: '/' })`.
-  - O `expoClient` abre o browser do sistema (`expo-web-browser`), conduz o OAuth, recebe o redirect `nexismobile://`, grava a sessão no `SecureStore`.
+- **Caminho A (principal):** `onPress` → `authClient.signIn.social({ provider: 'google', callbackURL: '/' })`.
+  - O `expoClient` abre o browser do sistema (`expo-web-browser`), conduz o OAuth, recebe o redirect, grava a sessão no `SecureStore`.
   - `useSession` re-renderiza → `app/index.tsx` redireciona pra `(app)`.
-- Estado de loading no botão enquanto o browser está aberto; tratar cancelamento (usuário fecha o browser) sem erro ruidoso.
+- **Caminho B (fallback, só se A não voltar pro app no Expo Go):** `expo-auth-session` com `AuthSession.makeRedirectUri()` faz o OAuth direto com o Google, obtém o `id_token`, e chama `authClient.signIn.social({ provider: 'google', idToken: { token } })` — o backend (`expo()` + provider `google` já configurado) valida o `id_token`, cria a `Session` e devolve o cookie. Mesma tela, mesmo botão; a decisão A↔B é feita na implementação após testar no device.
+- Estado de loading no botão enquanto o browser está aberto; cancelamento (usuário fecha o browser) não vira erro ruidoso.
 
 ### B10. Dashboard (`app/(app)/index.tsx`)
 
-Porta o layout web pra primitivas nativas:
+Porta o layout web pra primitivas nativas. **Componentes vêm de `#/tw` e `#/tw/image`**, não de `react-native`.
 
 | Web | Nativo |
 |---|---|
-| `<div className>` | `<View className>` (NativeWind) |
-| textos | `<Text className>` |
-| `PullToRefresh` | `<ScrollView refreshControl={<RefreshControl />}>` |
-| `Avatar` | `expo-image` circular, fallback iniciais |
+| `<div className>` | `<View className>` de `#/tw` |
+| textos | `<Text className>` de `#/tw` |
+| `PullToRefresh` | `<ScrollView>` de `#/tw` + `RefreshControl` (de `react-native`) |
+| `Avatar` | `<Image>` de `#/tw/image`, circular, fallback iniciais |
 | `SummaryCard` ×2 | `<View>` grid 2 col (flex) |
 | lista `recent` | `.map` (≤5 itens, não precisa `FlatList`) |
-| `OnboardingCard` | idem, com `<Link href="/(app)/wallets">` (placeholder) |
+| `OnboardingCard` | idem, com `<Link href="/(app)/wallets">` de `#/tw` (destino é placeholder) |
 | ícones Lucide | `lucide-react-native` |
-| `fmt()` BRL | `Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' })` |
+| `fmt()` BRL | `src/lib/format.ts` → `Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' })` |
 
 - `useQuery(dashboardQuery)`.
 - **Render imediato:** enquanto `isLoading` e sem cache → skeleton leve (Views cinza). Com cache → mostra na hora, revalida em background (`isFetching` pode virar um indicador sutil, opcional).
@@ -353,24 +373,40 @@ Porta o layout web pra primitivas nativas:
 - Sem animação de entrada (nada de stagger). A tela nativa já renderiza rápido.
 - Saudação usa `session.user.name.split(' ')[0]`; avatar usa `session.user.image`.
 
-### B11. Tema (`src/theme/colors.ts` + `tailwind.config.js`)
+### B11. Tema (`global.css` + `src/theme/colors.ts`)
 
-- Tokens espelhando o web: `bg` `#09090b` (zinc-950), `card` `#18181b`/`rgba(24,24,27,0.5)`, `border` `#27272a` (zinc-800), `text` `#fafafa`, `muted` `#71717a` (zinc-500), `accent` `#60a5fa` (blue-400), `positive` `#34d399` (emerald-400), `negative` `#f87171` (red-400).
-- `tailwind.config.js`: `presets: [require('nativewind/preset')]`, `content: ['./app/**/*.{ts,tsx}', './src/**/*.{ts,tsx}']`, `theme.extend.colors` com os tokens.
+- Tokens espelhando o web, definidos como cores do Tailwind v4 no `global.css` via `@theme`:
+  ```css
+  @layer theme {
+    @theme {
+      --color-bg: #09090b;         /* zinc-950 */
+      --color-card: #18181b;       /* zinc-900 */
+      --color-border: #27272a;     /* zinc-800 */
+      --color-fg: #fafafa;
+      --color-muted: #71717a;      /* zinc-500 */
+      --color-accent: #60a5fa;     /* blue-400 */
+      --color-positive: #34d399;   /* emerald-400 */
+      --color-negative: #f87171;   /* red-400 */
+    }
+  }
+  ```
+  Uso: `className="bg-bg text-fg border-border"`, `text-positive`, etc.
+- `src/theme/colors.ts` — os mesmos valores hex em objeto JS, pra onde `className` não alcança (ex: `backgroundColor` inline calculado a partir de `category.color`, `tintColor` de ícone Lucide).
 
 ### B12. Testes (mobile)
 
 `jest-expo` + `@testing-library/react-native`:
 
-- `src/schemas/dashboard.test.ts` — um fixture JSON válido (com `date` ISO, `category` null e não-null, `recent` vazio e cheio) `.parse` sem erro e produz o shape esperado; um fixture inválido (`amount` string) joga `ZodError`.
-- `src/api/client.test.ts` — mock do `authClient.$fetch`: retorno `{ data }` → `apiGet` resolve com `parse(data)`; retorno `{ error: { status: 401 } }` → `apiGet` rejeita com `ApiError` de `status` 401.
-- `app/(app)/index.test.tsx` — render do Dashboard com `QueryClientProvider` + query pré-populada no cache (`queryClient.setQueryData(['dashboard'], fixture)`) e `useSession` mockado → assere que "Receitas", o valor formatado e as linhas de `recent` aparecem; com `hasWallets: false` → aparece o texto do onboarding.
+- `src/schemas/dashboard.test.ts` — fixture JSON válido (`date` ISO, `category` null e não-null, `recent` vazio e cheio) `.parse` sem erro e produz o shape esperado; fixture inválido (`amount` string) joga `ZodError`.
+- `src/api/client.test.ts` — mock de `authClient.getCookie` + `global.fetch`: resposta `ok` com JSON → `apiGet` resolve com `parse(json)` e o header `Cookie` foi enviado; resposta `401` → `apiGet` rejeita com `ApiError` de `status` 401.
+- `src/lib/format.test.ts` — `fmtBRL(1234.5)` → `"R$ 1.234,50"` (ou o formato que o Hermes produzir; o teste fixa o esperado e revela se `Intl` diverge).
+- `app/(app)/index.test.tsx` — render do Dashboard com `QueryClientProvider` + cache pré-populado (`queryClient.setQueryData(['dashboard'], fixture)`) e `useSession` mockado → "Receitas", o valor formatado e as linhas de `recent` aparecem; com `hasWallets: false` → texto do onboarding aparece.
 
 Sem teste E2E / Detox nesta fatia.
 
 ### B13. Rodar
 
-- `nexis-mobile/.env`: `EXPO_PUBLIC_API_URL=https://<url-prod-vercel>`
+- `nexis-mobile/.env`: `EXPO_PUBLIC_API_URL=https://nexis-virid.vercel.app`
 - `npx expo start` (ou `--tunnel` se o iPhone não estiver na mesma rede) → QR no terminal → abrir no **Expo Go** do iPhone.
 - A API é a Vercel de produção, então o celular alcança sem config de rede local.
 - Login real com a conta Google do usuário; Dashboard com os dados reais dele.
@@ -379,10 +415,11 @@ Sem teste E2E / Detox nesta fatia.
 
 ## Contrato entre as partes (o que a Fatia 2+ herda)
 
-- **`apiGet<T>(path, parse) -> Promise<T>`** e `ApiError { status }` — todo endpoint futuro passa por aqui.
-- **Namespace `/api/mobile/*`** no `nexis`, cada rota: `getSession` por Bearer → 401 ou `json(repositoryCall(session.user.id))`.
+- **`apiGet<T>(path, parse) -> Promise<T>`** e `ApiError { status }` — todo endpoint futuro passa por aqui (cookie via `authClient.getCookie()` → header `Cookie`).
+- **Namespace `/api/mobile/*`** no `nexis`, cada rota: `auth.api.getSession({ headers })` → 401 ou `Response.json(repositoryCall(session.user.id))`.
 - **Um schema Zod por resposta** em `src/schemas/`, copiado do contrato da rota.
 - **Um objeto `<recurso>Query`** (`queryKey`, `queryFn`, `staleTime`) por recurso, consumido com `useQuery`.
+- **UI vem de `#/tw`** — nunca `react-native` direto.
 - Padrão de tela: render imediato (cache/vazio) + dados depois; navegação nativa; sem animação de entrada bloqueante.
 
 ---
@@ -403,11 +440,11 @@ Sem teste E2E / Detox nesta fatia.
 
 ## Riscos / pontos de atenção
 
-- **`@better-auth/expo` + Expo Go:** o redirect OAuth via scheme funciona no Expo Go, mas o scheme efetivo no Expo Go é `exp://…` — o `expoClient` lida com isso em dev, mas **validar no device real cedo** (é o coração da fatia). Se travar, o fallback é o `makeRedirectUri` do `expo-auth-session` com proxy.
-- **`authClient.$fetch` como transporte REST:** confirmar que ele aceita URL absoluta e método/headers custom, e a forma do retorno (`{ data, error }`). Se for inconveniente, cair pro plano B do B5 (ler o token e usar `fetch` puro).
-- **`Intl.NumberFormat` no Hermes:** suportado nas versões de RN atuais com `hermes-intl`; confirmar que o BRL formata certo (`R$ 1.234,56`). Fallback: formatador manual (o web tem um).
-- **URL da Vercel:** se não houver uma URL de produção estável ainda, o app aponta pra um preview — funciona, mas muda a cada deploy. Idealmente fixar o domínio de produção.
-- **NativeWind v4 + SDK novo:** ocasionalmente há defasagem de compatibilidade na semana de um lançamento de SDK. Se `npx expo start` reclamar, fixar a versão de `nativewind` que o `expo install` recomendar.
+- **NativeWind v5 é preview.** `nativewind@5.0.0-preview.2` + `react-native-css@nightly`. **Mitigação:** Task 1 do plano é só "scaffold + NativeWind v5 + uma tela estilizada renderiza no Expo Go" — se não funcionar no SDK 57, a task falha na hora e o fallback é NativeWind v4 estável (`className` direto via `nativewind/babel`, sem wrappers `#/tw`, `tailwind.config.js` com Tailwind v3). Custo afundado mínimo.
+- **`@better-auth/expo` + Expo Go:** o redirect OAuth pode não voltar pro app no Expo Go (scheme efetivo é `exp://…`). **É o risco central da fatia — validar no device antes de construir em cima.** Fallback embutido no B9: `expo-auth-session` + `signIn.social({ idToken })`.
+- **`Intl.NumberFormat` no Hermes:** suportado no RN atual, mas confirmar o formato BRL exato (`R$ 1.234,56`). `src/lib/format.test.ts` fixa o esperado; se divergir, formatador manual (o web tem um).
+- **`getCookie()` do `@better-auth/expo`:** confirmar que retorna a string de cookie pronta pro header (formato `name=value; name2=value2`). Se retornar outra coisa, ajustar `apiGet`.
+- **`react-native-reanimated`:** exigido pelos wrappers da skill de tailwind; incluído no Expo Go, mas confere se o `expo start` pede alguma config de plugin.
 
 ---
 
