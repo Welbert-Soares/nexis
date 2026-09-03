@@ -28,3 +28,9 @@ describe('service worker', () => {
     expect(Object.keys(all)).not.toContain('vite-plugin-pwa')
   })
 })
+
+describe('componentes mortos', () => {
+  it('install-prompt.tsx (duplicata) foi removido', () => {
+    expect(existsSync(path.join(repoRoot, 'src/components/ui/install-prompt.tsx'))).toBe(false)
+  })
+})
