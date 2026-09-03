@@ -18,7 +18,7 @@ export const pwaMeta: MetaTag[] = [
   { name: 'theme-color', content: '#09090b' },
   { name: 'mobile-web-app-capable', content: 'yes' },
   { name: 'apple-mobile-web-app-capable', content: 'yes' },
-  { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+  { name: 'apple-mobile-web-app-status-bar-style', content: 'black' },
   { name: 'apple-mobile-web-app-title', content: 'Nexis' },
   { name: 'application-name', content: 'Nexis' },
 ]

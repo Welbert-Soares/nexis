@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { pwaLinks, pwaMeta } from './pwa-head'
 
 describe('pwaMeta', () => {
-  it('define a status bar do iOS como black-translucent', () => {
+  it('define a status bar do iOS como black (opaca)', () => {
+    // black-translucent estica a webview p/ tela cheia no standalone e
+    // desalinha o shell `fixed inset-0` (faixa morta embaixo da nav no iOS).
     const bar = pwaMeta.find((m) => m.name === 'apple-mobile-web-app-status-bar-style')
-    expect(bar?.content).toBe('black-translucent')
+    expect(bar?.content).toBe('black')
   })
 
   it('mantém as capabilities de web app', () => {
