@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { Plus, ChevronDown, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getAnalytics } from '#/server/services/analytics.service'
@@ -9,6 +9,7 @@ import { getBudgets } from '#/server/services/budget.service'
 import { BudgetSheet, type EditableBudget } from '#/components/budgets/budget-sheet'
 import { fadeUp, stagger } from '#/lib/motion'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
+import { Skeleton } from '#/components/ui/skeleton'
 import { cn } from '#/lib/utils'
 
 const now = new Date()
@@ -47,6 +48,7 @@ function AnalyticsPage() {
   const { data: budgets = [], isLoading: budgetsLoading } = useQuery({
     queryKey: ['budgets', budgetMonth, budgetYear],
     queryFn: () => getBudgets({ data: { month: budgetMonth, year: budgetYear } }),
+    placeholderData: keepPreviousData,
   })
 
   function prevBudgetMonth() {
@@ -187,7 +189,7 @@ function SummaryCard({ label, value, color, loading }: { label: string; value: n
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-3 space-y-1.5">
       <p className="text-xs text-zinc-500">{label}</p>
       {loading ? (
-        <div className="h-5 w-16 shimmer rounded" />
+        <Skeleton className="h-5 w-16" />
       ) : (
         <p className={cn('text-sm font-semibold tabular-nums', color)}>{fmt(value)}</p>
       )}
@@ -452,7 +454,7 @@ function AnalyticsSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2].map((i) => (
-        <div key={i} className="h-40 shimmer rounded-2xl" />
+        <Skeleton key={i} className="h-40 rounded-2xl" />
       ))}
     </div>
   )

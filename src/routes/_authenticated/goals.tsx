@@ -10,6 +10,7 @@ import { getUserGoals, depositGoalFromWallet, withdrawFromGoal } from '#/server/
 import { getUserWallets } from '#/server/services/wallet.service'
 import { GoalSheet, type EditableGoal } from '#/components/goals/goal-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
+import { Skeleton } from '#/components/ui/skeleton'
 import { CurrencyInput } from '#/components/ui/currency-input'
 
 export const Route = createFileRoute('/_authenticated/goals')({
@@ -425,7 +426,7 @@ function GoalsSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2].map((i) => (
-        <div key={i} className="h-[104px] shimmer rounded-2xl" />
+        <Skeleton key={i} className="h-[104px] rounded-2xl" />
       ))}
     </div>
   )
