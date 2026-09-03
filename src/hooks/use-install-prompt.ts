@@ -8,7 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
 function bumpSessionCount(): number {
   if (typeof window === 'undefined') return 0
   try {
-    const current = Number(localStorage.getItem('pwa-session-count') ?? '0')
+    const current = Number(localStorage.getItem('pwa-session-count')) || 0
     if (sessionStorage.getItem('pwa-session-counted') === '1') return current
     const next = current + 1
     localStorage.setItem('pwa-session-count', String(next))

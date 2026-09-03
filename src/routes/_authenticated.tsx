@@ -44,7 +44,10 @@ function AuthenticatedLayout() {
   }, [])
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-zinc-950">
+    <div
+      className="fixed inset-0 flex flex-col bg-zinc-950"
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+    >
       <OfflineBanner />
       <main className="min-h-0 flex-1 overflow-hidden">
         <ErrorBoundary>

@@ -37,7 +37,7 @@ TanStack Start with file-based routing. Routes live in `src/routes/`. The router
 ```
 src/routes/
   __root.tsx                    # HTML shell, PWA meta tags
-  _authenticated.tsx            # layout: flex-col 100dvh, BottomNav, auth guard
+  _authenticated.tsx            # layout: flex-col fixed inset-0, BottomNav, auth guard
   _authenticated/
     dashboard.tsx
     transactions.tsx
@@ -70,8 +70,8 @@ export const Route = createFileRoute('/api/foo')({
 `src/routes/_authenticated.tsx` — authenticated layout shell:
 
 ```tsx
-<div className="flex flex-col bg-zinc-950"
-     style={{ height: '100dvh', paddingTop: 'env(safe-area-inset-top)' }}>
+<div className="fixed inset-0 flex flex-col bg-zinc-950"
+     style={{ paddingTop: 'env(safe-area-inset-top)' }}>
   <OfflineBanner />
   <main className="min-h-0 flex-1 overflow-hidden">
     <Outlet />
