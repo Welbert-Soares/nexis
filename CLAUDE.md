@@ -208,7 +208,7 @@ Handler utility: `src/utils/mcp-handler.ts`.
 
 ### Issue tracker
 
-Issues and specs are tracked as GitHub issues in `Welbert-Soares/nexis`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues and specs are tracked as GitHub issues in `Welbert-Soares/nexis`, via the GitHub MCP server (`mcp__plugin_github_github__*`). See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
