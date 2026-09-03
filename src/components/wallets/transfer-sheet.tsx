@@ -4,6 +4,7 @@ import { Drawer } from 'vaul'
 import { ArrowRight, Check } from 'lucide-react'
 import { transferUserWallets } from '#/server/services/wallet.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
+import { useIosKeyboardLock } from '#/hooks/use-ios-keyboard-lock'
 
 type Wallet = { id: string; name: string; color: string | null; balance: number }
 
@@ -19,6 +20,8 @@ export function TransferSheet({ open, wallets, onClose }: Props) {
   const [toId, setToId] = useState('')
   const [cents, setCents] = useState(0)
   const [saved, setSaved] = useState(false)
+
+  useIosKeyboardLock(open)
 
   const mutation = useMutation({
     mutationFn: () =>
