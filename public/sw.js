@@ -1,16 +1,14 @@
-const CACHE_NAME = 'nexis-v1'
+// Nexis service worker — transporte de Web Push apenas.
+// Sem cache/offline por decisão de projeto.
+// Ver docs/superpowers/specs/2026-09-03-pwa-native-feel-and-install-design.md.
+// Offline fica para a futura versão React Native.
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   self.skipWaiting()
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))),
-    ),
-  )
-  self.clients.claim()
+  event.waitUntil(self.clients.claim())
 })
 
 self.addEventListener('push', (event) => {
