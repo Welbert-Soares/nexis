@@ -70,8 +70,7 @@ export const Route = createFileRoute('/api/foo')({
 `src/routes/_authenticated.tsx` — authenticated layout shell:
 
 ```tsx
-<div className="fixed inset-0 flex flex-col bg-zinc-950"
-     style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+<div className="fixed inset-0 flex flex-col bg-zinc-950">
   <OfflineBanner />
   <main className="min-h-0 flex-1 overflow-hidden">
     <Outlet />
@@ -79,6 +78,8 @@ export const Route = createFileRoute('/api/foo')({
   <BottomNav />   {/* pb-[env(safe-area-inset-bottom)] handles home indicator */}
 </div>
 ```
+
+`fixed inset-0` (not `100dvh`) is deliberate — chosen after iOS PWA viewport-calc bugs left black bands with `dvh`. The iOS status bar style is `black` (opaque), not `black-translucent`: the shell is calibrated against the inset standalone viewport, and `black-translucent` reintroduces a bottom dead-band. See `src/lib/pwa-head.ts`.
 
 Page components fill `main` with `h-full` and scroll via `PullToRefresh` (`overflow-y: auto`).  
 `BottomNav` — `src/components/layout/bottom-nav.tsx`: Dashboard, Transações, +(FAB), Carteiras, Análise.
