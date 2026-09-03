@@ -8,6 +8,8 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
+import { pwaLinks, pwaMeta } from '#/lib/pwa-head'
+
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
@@ -24,18 +26,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         name: 'viewport',
         content: 'width=device-width, initial-scale=1, viewport-fit=cover',
       },
-      { name: 'theme-color', content: '#09090b' },
-      { name: 'mobile-web-app-capable', content: 'yes' },
-      { name: 'apple-mobile-web-app-capable', content: 'yes' },
-      { name: 'apple-mobile-web-app-status-bar-style', content: 'black' },
-      { name: 'apple-mobile-web-app-title', content: 'Nexis' },
-      { name: 'application-name', content: 'Nexis' },
+      ...pwaMeta,
       { title: 'Nexis' },
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
-      { rel: 'manifest', href: '/manifest.json' },
-      { rel: 'apple-touch-icon', href: '/logo-nexis-fundo.webp' },
+      ...pwaLinks,
     ],
   }),
   shellComponent: RootDocument,
