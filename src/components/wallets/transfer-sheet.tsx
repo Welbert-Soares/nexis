@@ -4,7 +4,6 @@ import { Drawer } from 'vaul'
 import { ArrowRight, Check } from 'lucide-react'
 import { transferUserWallets } from '#/server/services/wallet.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
-import { useIosKeyboardLock } from '#/hooks/use-ios-keyboard-lock'
 
 type Wallet = { id: string; name: string; color: string | null; balance: number }
 
@@ -20,8 +19,6 @@ export function TransferSheet({ open, wallets, onClose }: Props) {
   const [toId, setToId] = useState('')
   const [cents, setCents] = useState(0)
   const [saved, setSaved] = useState(false)
-
-  useIosKeyboardLock(open)
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -50,7 +47,7 @@ export function TransferSheet({ open, wallets, onClose }: Props) {
   const canSubmit = fromId && toId && fromId !== toId && cents > 0 && !insufficientFunds
 
   return (
-    <Drawer.Root open={open} onClose={handleClose} disablePreventScroll={false}>
+    <Drawer.Root open={open} onClose={handleClose}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={handleClose} />
         <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col max-h-[calc(100dvh-16px)] overflow-hidden rounded-t-2xl bg-zinc-900 outline-none">
