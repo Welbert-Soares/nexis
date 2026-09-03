@@ -13,7 +13,7 @@ const GAP_BETWEEN = 500
 
 export function AppToasts() {
   const haptic = useHaptic()
-  const { showPrompt: showInstall, isIOS, install, dismiss: dismissInstall } = useInstallPrompt()
+  const { showAutoPrompt: showInstall, isIOS, install, dismiss: dismissInstall } = useInstallPrompt()
   const { supported, permission, subscribed, loading, subscribe } = usePushNotifications()
   const [notifDismissed, setNotifDismissed] = useState(() =>
     typeof window !== 'undefined' && localStorage.getItem('notif-prompt-dismissed') === '1',

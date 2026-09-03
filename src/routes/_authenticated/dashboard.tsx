@@ -9,6 +9,7 @@ import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { ProfileSheet } from '#/components/profile/profile-sheet'
 import { Avatar } from '#/components/ui/avatar'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
+import { Skeleton } from '#/components/ui/skeleton'
 import { CATEGORY_ICONS } from '#/lib/category-icons'
 
 
@@ -48,7 +49,7 @@ function DashboardPage() {
           <div className="space-y-1">
             <p className="text-sm text-zinc-500">Olá, {firstName}</p>
             {isLoading ? (
-              <div className="h-10 w-40 shimmer rounded-lg" />
+              <Skeleton className="h-10 w-40 rounded-lg" />
             ) : (
               <h1 className="text-4xl font-bold tabular-nums text-white">
                 {fmt(data?.totalBalance ?? 0)}
@@ -147,7 +148,7 @@ function SummaryCard({
         <span className="text-xs">{label}</span>
       </div>
       {loading ? (
-        <div className="h-6 w-24 shimmer rounded" />
+        <Skeleton className="h-6 w-24" />
       ) : (
         <p className={cn('text-lg font-semibold tabular-nums', color)}>{fmt(value)}</p>
       )}
@@ -248,12 +249,12 @@ function TransactionsSkeleton() {
     <div className="space-y-1">
       {[1, 2, 3].map((i) => (
         <div key={i} className="flex items-center gap-3 rounded-xl px-1 py-2.5">
-          <div className="h-8 w-8 shrink-0 shimmer rounded-xl" />
+          <Skeleton className="h-8 w-8 shrink-0 rounded-xl" />
           <div className="flex-1 space-y-1.5">
-            <div className="h-3.5 w-28 shimmer rounded" />
-            <div className="h-3 w-20 shimmer rounded opacity-60" />
+            <Skeleton className="h-3.5 w-28" />
+            <Skeleton className="h-3 w-20 opacity-60" />
           </div>
-          <div className="h-3.5 w-14 shimmer rounded" />
+          <Skeleton className="h-3.5 w-14" />
         </div>
       ))}
     </div>

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Drawer } from 'vaul'
 import { Check, Trash2 } from 'lucide-react'
 import { cn } from '#/lib/utils'
+import { useHaptic } from '#/hooks/use-haptic'
 import { createUserGoal, updateUserGoal, deleteUserGoal } from '#/server/services/goal.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
 
@@ -37,6 +38,7 @@ function toDateInput(d: Date) {
 export function GoalSheet({ open, goal, onClose }: Props) {
   const isEdit = !!goal
   const queryClient = useQueryClient()
+  const haptic = useHaptic()
   const [targetCents, setTargetCents] = useState(() => Math.round((goal?.targetAmount ?? 0) * 100))
   const [seedCents, setSeedCents] = useState(0)
   const [color, setColor] = useState(goal?.color ?? COLORS[0])
@@ -99,6 +101,7 @@ export function GoalSheet({ open, goal, onClose }: Props) {
   const deleteMutation = useMutation({
     mutationFn: () => deleteUserGoal({ data: { id: goal!.id } }),
     onSuccess: () => {
+      haptic.success()
       invalidate()
       handleClose()
     },
@@ -149,7 +152,7 @@ export function GoalSheet({ open, goal, onClose }: Props) {
                     Cancelar
                   </button>
                   <button
-                    onClick={() => deleteMutation.mutate()}
+                    onClick={() => { haptic.error(); deleteMutation.mutate() }}
                     disabled={deleteMutation.isPending}
                     className="flex-1 rounded-xl bg-red-500/20 py-3 text-sm font-medium text-red-400 disabled:opacity-50"
                   >

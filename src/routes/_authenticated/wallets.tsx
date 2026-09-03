@@ -8,6 +8,7 @@ import { getUserWallets } from '#/server/services/wallet.service'
 import { WalletSheet, type EditableWallet } from '#/components/wallets/wallet-sheet'
 import { TransferSheet } from '#/components/wallets/transfer-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
+import { Skeleton } from '#/components/ui/skeleton'
 import { cn } from '#/lib/utils'
 import { fadeUp, stagger } from '#/lib/motion'
 
@@ -186,7 +187,7 @@ function WalletsSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2].map((i) => (
-        <div key={i} className="h-[72px] shimmer rounded-2xl" />
+        <Skeleton key={i} className="h-[72px] rounded-2xl" />
       ))}
     </div>
   )

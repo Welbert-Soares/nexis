@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
+import { useQuery, useQueryClient, useMutation, keepPreviousData } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, ArrowLeftRight, Download, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
 import { cn } from '#/lib/utils'
+import { useHaptic } from '#/hooks/use-haptic'
 import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { listTransactions, removeTransaction, removeInstallments, getTransactionMaxDate } from '#/server/services/transaction.service'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { TransactionSheet, type EditableTransaction } from '#/components/transactions/transaction-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
+import { Skeleton } from '#/components/ui/skeleton'
 import { CATEGORY_ICONS } from '#/lib/category-icons'
 
 const searchSchema = z.object({
@@ -71,6 +73,7 @@ function TransactionsPage() {
   const [pendingDelete, setPendingDelete] = useState<{ tx: Tx; mode?: InstallmentMode } | null>(null)
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const queryClient = useQueryClient()
+  const haptic = useHaptic()
 
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
@@ -107,6 +110,7 @@ function TransactionsPage() {
 
   function handleConfirmDelete(mode?: InstallmentMode) {
     if (!confirmingTx) return
+    haptic.error()
     const tx = confirmingTx
     setConfirmingTx(null)
     setPendingDelete({ tx, mode })
@@ -149,6 +153,7 @@ function TransactionsPage() {
           walletId: walletFilter ?? undefined,
         },
       }),
+    placeholderData: keepPreviousData,
   })
 
   const income = transactions
@@ -794,12 +799,12 @@ function ListSkeleton() {
     <div className="space-y-3">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="flex items-center gap-3 py-1">
-          <div className="h-2 w-2 rounded-full shimmer" />
+          <Skeleton className="h-2 w-2 rounded-full" />
           <div className="flex-1 space-y-1.5">
-            <div className="h-3.5 w-32 shimmer rounded" />
-            <div className="h-3 w-20 shimmer rounded opacity-60" />
+            <Skeleton className="h-3.5 w-32" />
+            <Skeleton className="h-3 w-20 opacity-60" />
           </div>
-          <div className="h-3.5 w-16 shimmer rounded" />
+          <Skeleton className="h-3.5 w-16" />
         </div>
       ))}
     </div>
