@@ -13,6 +13,9 @@ import { triggerRecurring } from '#/server/services/transaction.service'
 import { checkGoalDeadlines } from '#/server/services/goal.service'
 
 export const Route = createFileRoute('/_authenticated')({
+  // Matches Better Auth's cookieCache maxAge (src/lib/auth.ts) so switching
+  // tabs doesn't re-hit the server for a session check on every navigation.
+  staleTime: 5 * 60_000,
   beforeLoad: async () => {
     const session = await getSession()
     if (!session) throw redirect({ to: '/login' })
