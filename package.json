@@ -21,6 +21,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@better-auth/expo": "^1.6.11",
     "@faker-js/faker": "^10.3.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@prisma/adapter-pg": "^7.4.2",

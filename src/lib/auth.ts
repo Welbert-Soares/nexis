@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
+import { expo } from '@better-auth/expo'
 import { prisma } from '#/db'
 
 export const auth = betterAuth({
@@ -26,6 +27,8 @@ export const auth = betterAuth({
       maxAge: 60 * 5,
     },
   },
+  plugins: [expo()],
+  trustedOrigins: ['nexismobile://', 'nexismobile://**', 'exp://**'],
 })
 
 export type Session = typeof auth.$Infer.Session

@@ -18,6 +18,7 @@ import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authent
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as ApiMobileDashboardRouteImport } from './routes/api/mobile/dashboard'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const McpRoute = McpRouteImport.update({
@@ -65,6 +66,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiMobileDashboardRoute = ApiMobileDashboardRouteImport.update({
+  id: '/api/mobile/dashboard',
+  path: '/api/mobile/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/_authenticated/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/wallets'
     | '/api/auth/$'
+    | '/api/mobile/dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/wallets'
     | '/api/auth/$'
+    | '/api/mobile/dashboard'
   id:
     | '__root__'
     | '/'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/_authenticated/transactions'
     | '/_authenticated/wallets'
     | '/api/auth/$'
+    | '/api/mobile/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -149,6 +161,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiMobileDashboardRoute: typeof ApiMobileDashboardRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -216,6 +229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/mobile/dashboard': {
+      id: '/api/mobile/dashboard'
+      path: '/api/mobile/dashboard'
+      fullPath: '/api/mobile/dashboard'
+      preLoaderRoute: typeof ApiMobileDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -252,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiMobileDashboardRoute: ApiMobileDashboardRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
