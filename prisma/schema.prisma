@@ -136,6 +136,14 @@ model Transaction {
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
   deletedAt   DateTime?
+
+  // Every dashboard/transactions/analytics query filters by wallet + date range;
+  // without this Postgres full-scans the table on each page load.
+  @@index([walletId, date])
+  // Hit on every app open by triggerRecurring()'s due-transaction scan.
+  @@index([walletId, nextDue])
+  @@index([categoryId])
+  @@index([goalId])
 }
 
 model Goal {
