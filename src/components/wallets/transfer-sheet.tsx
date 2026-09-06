@@ -57,51 +57,53 @@ export function TransferSheet({ open, wallets, onClose }: Props) {
             <Drawer.Title className="mb-5 text-base font-semibold text-white">Transferir</Drawer.Title>
 
             {saved ? (
-              <div className="flex flex-col items-center gap-3 py-10">
+              <div className="flex min-h-[50dvh] flex-col items-center justify-center gap-3">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20">
                   <Check className="h-7 w-7 text-emerald-400" strokeWidth={2.5} />
                 </div>
                 <p className="text-sm font-medium text-zinc-300">Transferência realizada</p>
               </div>
             ) : (
-              <div className="space-y-5">
-                {/* De → Para */}
-                <div className="flex items-center gap-2">
-                  <WalletSelect
-                    label="De"
-                    value={fromId}
-                    onChange={setFromId}
-                    wallets={wallets}
-                    exclude={toId}
-                  />
-                  <ArrowRight className="h-4 w-4 shrink-0 text-zinc-600" />
-                  <WalletSelect
-                    label="Para"
-                    value={toId}
-                    onChange={setToId}
-                    wallets={wallets}
-                    exclude={fromId}
-                  />
+              <div className="flex min-h-[50dvh] flex-col">
+                <div className="flex-1 space-y-5">
+                  {/* De → Para */}
+                  <div className="flex items-center gap-2">
+                    <WalletSelect
+                      label="De"
+                      value={fromId}
+                      onChange={setFromId}
+                      wallets={wallets}
+                      exclude={toId}
+                    />
+                    <ArrowRight className="h-4 w-4 shrink-0 text-zinc-600" />
+                    <WalletSelect
+                      label="Para"
+                      value={toId}
+                      onChange={setToId}
+                      wallets={wallets}
+                      exclude={fromId}
+                    />
+                  </div>
+
+                  {/* Saldo disponível */}
+                  {fromWallet && (
+                    <p className="text-xs text-zinc-500">
+                      Disponível: <span className="tabular-nums text-zinc-300">{fmt(fromWallet.balance)}</span>
+                    </p>
+                  )}
+
+                  {/* Valor */}
+                  <div className="space-y-2">
+                    <p className="text-xs text-zinc-500">Valor</p>
+                    <CurrencyInput cents={cents} onChange={setCents} error={insufficientFunds} />
+                  </div>
+
+                  {mutation.isError && (
+                    <p className="text-center text-xs text-red-400">
+                      {mutation.error instanceof Error ? mutation.error.message : 'Erro ao transferir'}
+                    </p>
+                  )}
                 </div>
-
-                {/* Saldo disponível */}
-                {fromWallet && (
-                  <p className="text-xs text-zinc-500">
-                    Disponível: <span className="tabular-nums text-zinc-300">{fmt(fromWallet.balance)}</span>
-                  </p>
-                )}
-
-                {/* Valor */}
-                <div className="space-y-2">
-                  <p className="text-xs text-zinc-500">Valor</p>
-                  <CurrencyInput cents={cents} onChange={setCents} error={insufficientFunds} />
-                </div>
-
-                {mutation.isError && (
-                  <p className="text-center text-xs text-red-400">
-                    {mutation.error instanceof Error ? mutation.error.message : 'Erro ao transferir'}
-                  </p>
-                )}
 
                 <button
                   onClick={() => mutation.mutate()}
