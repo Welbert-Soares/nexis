@@ -45,6 +45,7 @@ export type TransactionMinAggregateOutputType = {
   recurring: boolean | null
   interval: $Enums.RecurrenceInterval | null
   nextDue: Date | null
+  isTransfer: boolean | null
   parentId: string | null
   goalId: string | null
   createdAt: Date | null
@@ -63,6 +64,7 @@ export type TransactionMaxAggregateOutputType = {
   recurring: boolean | null
   interval: $Enums.RecurrenceInterval | null
   nextDue: Date | null
+  isTransfer: boolean | null
   parentId: string | null
   goalId: string | null
   createdAt: Date | null
@@ -81,6 +83,7 @@ export type TransactionCountAggregateOutputType = {
   recurring: number
   interval: number
   nextDue: number
+  isTransfer: number
   parentId: number
   goalId: number
   createdAt: number
@@ -109,6 +112,7 @@ export type TransactionMinAggregateInputType = {
   recurring?: true
   interval?: true
   nextDue?: true
+  isTransfer?: true
   parentId?: true
   goalId?: true
   createdAt?: true
@@ -127,6 +131,7 @@ export type TransactionMaxAggregateInputType = {
   recurring?: true
   interval?: true
   nextDue?: true
+  isTransfer?: true
   parentId?: true
   goalId?: true
   createdAt?: true
@@ -145,6 +150,7 @@ export type TransactionCountAggregateInputType = {
   recurring?: true
   interval?: true
   nextDue?: true
+  isTransfer?: true
   parentId?: true
   goalId?: true
   createdAt?: true
@@ -250,6 +256,7 @@ export type TransactionGroupByOutputType = {
   recurring: boolean
   interval: $Enums.RecurrenceInterval | null
   nextDue: Date | null
+  isTransfer: boolean
   parentId: string | null
   goalId: string | null
   createdAt: Date
@@ -291,6 +298,7 @@ export type TransactionWhereInput = {
   recurring?: Prisma.BoolFilter<"Transaction"> | boolean
   interval?: Prisma.EnumRecurrenceIntervalNullableFilter<"Transaction"> | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
+  isTransfer?: Prisma.BoolFilter<"Transaction"> | boolean
   parentId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   goalId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
@@ -314,6 +322,7 @@ export type TransactionOrderByWithRelationInput = {
   recurring?: Prisma.SortOrder
   interval?: Prisma.SortOrderInput | Prisma.SortOrder
   nextDue?: Prisma.SortOrderInput | Prisma.SortOrder
+  isTransfer?: Prisma.SortOrder
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   goalId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -340,6 +349,7 @@ export type TransactionWhereUniqueInput = Prisma.AtLeast<{
   recurring?: Prisma.BoolFilter<"Transaction"> | boolean
   interval?: Prisma.EnumRecurrenceIntervalNullableFilter<"Transaction"> | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
+  isTransfer?: Prisma.BoolFilter<"Transaction"> | boolean
   parentId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   goalId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
@@ -363,6 +373,7 @@ export type TransactionOrderByWithAggregationInput = {
   recurring?: Prisma.SortOrder
   interval?: Prisma.SortOrderInput | Prisma.SortOrder
   nextDue?: Prisma.SortOrderInput | Prisma.SortOrder
+  isTransfer?: Prisma.SortOrder
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   goalId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -389,6 +400,7 @@ export type TransactionScalarWhereWithAggregatesInput = {
   recurring?: Prisma.BoolWithAggregatesFilter<"Transaction"> | boolean
   interval?: Prisma.EnumRecurrenceIntervalNullableWithAggregatesFilter<"Transaction"> | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.DateTimeNullableWithAggregatesFilter<"Transaction"> | Date | string | null
+  isTransfer?: Prisma.BoolWithAggregatesFilter<"Transaction"> | boolean
   parentId?: Prisma.StringNullableWithAggregatesFilter<"Transaction"> | string | null
   goalId?: Prisma.StringNullableWithAggregatesFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Transaction"> | Date | string
@@ -405,6 +417,7 @@ export type TransactionCreateInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -426,6 +439,7 @@ export type TransactionUncheckedCreateInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   parentId?: string | null
   goalId?: string | null
   createdAt?: Date | string
@@ -443,6 +457,7 @@ export type TransactionUpdateInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -464,6 +479,7 @@ export type TransactionUncheckedUpdateInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -483,6 +499,7 @@ export type TransactionCreateManyInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   parentId?: string | null
   goalId?: string | null
   createdAt?: Date | string
@@ -499,6 +516,7 @@ export type TransactionUpdateManyMutationInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -515,6 +533,7 @@ export type TransactionUncheckedUpdateManyInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -548,6 +567,7 @@ export type TransactionCountOrderByAggregateInput = {
   recurring?: Prisma.SortOrder
   interval?: Prisma.SortOrder
   nextDue?: Prisma.SortOrder
+  isTransfer?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
   goalId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -570,6 +590,7 @@ export type TransactionMaxOrderByAggregateInput = {
   recurring?: Prisma.SortOrder
   interval?: Prisma.SortOrder
   nextDue?: Prisma.SortOrder
+  isTransfer?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
   goalId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -588,6 +609,7 @@ export type TransactionMinOrderByAggregateInput = {
   recurring?: Prisma.SortOrder
   interval?: Prisma.SortOrder
   nextDue?: Prisma.SortOrder
+  isTransfer?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
   goalId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -796,6 +818,7 @@ export type TransactionCreateWithoutWalletInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -815,6 +838,7 @@ export type TransactionUncheckedCreateWithoutWalletInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   parentId?: string | null
   goalId?: string | null
   createdAt?: Date | string
@@ -863,6 +887,7 @@ export type TransactionScalarWhereInput = {
   recurring?: Prisma.BoolFilter<"Transaction"> | boolean
   interval?: Prisma.EnumRecurrenceIntervalNullableFilter<"Transaction"> | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
+  isTransfer?: Prisma.BoolFilter<"Transaction"> | boolean
   parentId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   goalId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
@@ -879,6 +904,7 @@ export type TransactionCreateWithoutCategoryInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -898,6 +924,7 @@ export type TransactionUncheckedCreateWithoutCategoryInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   parentId?: string | null
   goalId?: string | null
   createdAt?: Date | string
@@ -941,6 +968,7 @@ export type TransactionCreateWithoutChildrenInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -961,6 +989,7 @@ export type TransactionUncheckedCreateWithoutChildrenInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   parentId?: string | null
   goalId?: string | null
   createdAt?: Date | string
@@ -982,6 +1011,7 @@ export type TransactionCreateWithoutParentInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1002,6 +1032,7 @@ export type TransactionUncheckedCreateWithoutParentInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   goalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1039,6 +1070,7 @@ export type TransactionUpdateWithoutChildrenInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1059,6 +1091,7 @@ export type TransactionUncheckedUpdateWithoutChildrenInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1091,6 +1124,7 @@ export type TransactionCreateWithoutGoalInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1111,6 +1145,7 @@ export type TransactionUncheckedCreateWithoutGoalInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   parentId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1154,6 +1189,7 @@ export type TransactionCreateManyWalletInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   parentId?: string | null
   goalId?: string | null
   createdAt?: Date | string
@@ -1170,6 +1206,7 @@ export type TransactionUpdateWithoutWalletInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1189,6 +1226,7 @@ export type TransactionUncheckedUpdateWithoutWalletInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1207,6 +1245,7 @@ export type TransactionUncheckedUpdateManyWithoutWalletInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1224,6 +1263,7 @@ export type TransactionCreateManyCategoryInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   parentId?: string | null
   goalId?: string | null
   createdAt?: Date | string
@@ -1240,6 +1280,7 @@ export type TransactionUpdateWithoutCategoryInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1259,6 +1300,7 @@ export type TransactionUncheckedUpdateWithoutCategoryInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1277,6 +1319,7 @@ export type TransactionUncheckedUpdateManyWithoutCategoryInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1295,6 +1338,7 @@ export type TransactionCreateManyParentInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   goalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1310,6 +1354,7 @@ export type TransactionUpdateWithoutParentInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1330,6 +1375,7 @@ export type TransactionUncheckedUpdateWithoutParentInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   goalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1348,6 +1394,7 @@ export type TransactionUncheckedUpdateManyWithoutParentInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   goalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1365,6 +1412,7 @@ export type TransactionCreateManyGoalInput = {
   recurring?: boolean
   interval?: $Enums.RecurrenceInterval | null
   nextDue?: Date | string | null
+  isTransfer?: boolean
   parentId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1380,6 +1428,7 @@ export type TransactionUpdateWithoutGoalInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1400,6 +1449,7 @@ export type TransactionUncheckedUpdateWithoutGoalInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1418,6 +1468,7 @@ export type TransactionUncheckedUpdateManyWithoutGoalInput = {
   recurring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   interval?: Prisma.NullableEnumRecurrenceIntervalFieldUpdateOperationsInput | $Enums.RecurrenceInterval | null
   nextDue?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1466,6 +1517,7 @@ export type TransactionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   recurring?: boolean
   interval?: boolean
   nextDue?: boolean
+  isTransfer?: boolean
   parentId?: boolean
   goalId?: boolean
   createdAt?: boolean
@@ -1490,6 +1542,7 @@ export type TransactionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   recurring?: boolean
   interval?: boolean
   nextDue?: boolean
+  isTransfer?: boolean
   parentId?: boolean
   goalId?: boolean
   createdAt?: boolean
@@ -1512,6 +1565,7 @@ export type TransactionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   recurring?: boolean
   interval?: boolean
   nextDue?: boolean
+  isTransfer?: boolean
   parentId?: boolean
   goalId?: boolean
   createdAt?: boolean
@@ -1534,6 +1588,7 @@ export type TransactionSelectScalar = {
   recurring?: boolean
   interval?: boolean
   nextDue?: boolean
+  isTransfer?: boolean
   parentId?: boolean
   goalId?: boolean
   createdAt?: boolean
@@ -1541,7 +1596,7 @@ export type TransactionSelectScalar = {
   deletedAt?: boolean
 }
 
-export type TransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "type" | "description" | "date" | "walletId" | "categoryId" | "recurring" | "interval" | "nextDue" | "parentId" | "goalId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["transaction"]>
+export type TransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "type" | "description" | "date" | "walletId" | "categoryId" | "recurring" | "interval" | "nextDue" | "isTransfer" | "parentId" | "goalId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["transaction"]>
 export type TransactionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>
   category?: boolean | Prisma.Transaction$categoryArgs<ExtArgs>
@@ -1583,6 +1638,7 @@ export type $TransactionPayload<ExtArgs extends runtime.Types.Extensions.Interna
     recurring: boolean
     interval: $Enums.RecurrenceInterval | null
     nextDue: Date | null
+    isTransfer: boolean
     parentId: string | null
     goalId: string | null
     createdAt: Date
@@ -2026,6 +2082,7 @@ export interface TransactionFieldRefs {
   readonly recurring: Prisma.FieldRef<"Transaction", 'Boolean'>
   readonly interval: Prisma.FieldRef<"Transaction", 'RecurrenceInterval'>
   readonly nextDue: Prisma.FieldRef<"Transaction", 'DateTime'>
+  readonly isTransfer: Prisma.FieldRef<"Transaction", 'Boolean'>
   readonly parentId: Prisma.FieldRef<"Transaction", 'String'>
   readonly goalId: Prisma.FieldRef<"Transaction", 'String'>
   readonly createdAt: Prisma.FieldRef<"Transaction", 'DateTime'>

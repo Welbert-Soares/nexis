@@ -70,6 +70,7 @@ export async function transferBetweenWallets(
         walletId: fromWalletId,
         description: `Transferência → ${to.name}`,
         date: now,
+        isTransfer: true,
       },
     })
     await tx.transaction.create({
@@ -80,6 +81,7 @@ export async function transferBetweenWallets(
         description: `Transferência ← ${from.name}`,
         date: now,
         parentId: expense.id,
+        isTransfer: true,
       },
     })
   })

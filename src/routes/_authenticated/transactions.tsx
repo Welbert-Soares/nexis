@@ -55,6 +55,7 @@ type Tx = {
   interval: string | null
   parentId: string | null
   isInstallment: boolean
+  isTransfer: boolean
 }
 
 function TransactionsPage() {
@@ -157,10 +158,10 @@ function TransactionsPage() {
   })
 
   const income = transactions
-    .filter((t) => t.type === 'INCOME')
+    .filter((t) => t.type === 'INCOME' && !t.isTransfer)
     .reduce((acc, t) => acc + t.amount, 0)
   const expenses = transactions
-    .filter((t) => t.type === 'EXPENSE')
+    .filter((t) => t.type === 'EXPENSE' && !t.isTransfer)
     .reduce((acc, t) => acc + t.amount, 0)
 
   function prevMonth() {
@@ -736,7 +737,7 @@ function SwipeableRow({ transaction, onTap, onDelete, disabled }: { transaction:
 }
 
 function isTransfer(t: Tx) {
-  return t.description?.startsWith('Transferência →') || t.description?.startsWith('Transferência ←')
+  return t.isTransfer
 }
 
 function TransactionRow({ transaction: t, onTap }: { transaction: Tx; onTap: () => void }) {
