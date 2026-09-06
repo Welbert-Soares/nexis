@@ -1383,6 +1383,7 @@ export const TransactionScalarFieldEnum = {
   recurring: 'recurring',
   interval: 'interval',
   nextDue: 'nextDue',
+  isTransfer: 'isTransfer',
   parentId: 'parentId',
   goalId: 'goalId',
   createdAt: 'createdAt',

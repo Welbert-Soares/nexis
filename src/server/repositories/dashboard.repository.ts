@@ -17,7 +17,7 @@ export async function getDashboardData(userId: string) {
 
     prisma.transaction.groupBy({
       by: ['type'],
-      where: { wallet: { userId }, date: { gte: startOfMonth }, deletedAt: null },
+      where: { wallet: { userId }, date: { gte: startOfMonth }, deletedAt: null, isTransfer: false },
       _sum: { amount: true },
     }),
 
