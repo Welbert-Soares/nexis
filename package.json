@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "vercel-build": "prisma generate && prisma db push --accept-data-loss && vite build",
     "preview": "vite preview",
     "gen:pwa-assets": "node scripts/generate-pwa-assets.mjs",
     "test": "vitest run",
