@@ -65,6 +65,7 @@ function TransactionsPage() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [filter, setFilter] = useState<Filter>('ALL')
   const [walletFilter, setWalletFilter] = useState<string | null>(null)
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [expandedChip, setExpandedChip] = useState<string | null>(null)
   const chipsRef = useRef<HTMLDivElement>(null)
@@ -205,8 +206,20 @@ function TransactionsPage() {
     })
   }
 
+  const categoriesInMonth = Array.from(
+    new Map(
+      (transactions as Tx[])
+        .filter((t) => t.category && t.categoryId)
+        .map((t) => [t.categoryId!, { id: t.categoryId!, name: t.category!.name, color: t.category!.color, icon: t.category!.icon }]),
+    ).values(),
+  ).sort((a, b) => a.name.localeCompare(b.name))
+
+  const byCategory = categoryFilter
+    ? (transactions as Tx[]).filter((t) => t.categoryId === categoryFilter)
+    : (transactions as Tx[])
+
   const filtered = search.trim()
-    ? (transactions as Tx[]).filter((t) => {
+    ? byCategory.filter((t) => {
         const q = search.toLowerCase()
         return (
           t.description?.toLowerCase().includes(q) ||
@@ -214,7 +227,7 @@ function TransactionsPage() {
           t.wallet.name.toLowerCase().includes(q)
         )
       })
-    : (transactions as Tx[])
+    : byCategory
 
   const displayed = pendingDelete ? filtered.filter((t) => t.id !== pendingDelete.tx.id) : filtered
   const grouped = groupByDate(displayed)
@@ -293,11 +306,13 @@ function TransactionsPage() {
 
           {/* Filtros — colapsável */}
           {(() => {
-            const hasActiveFilter = filter !== 'ALL' || walletFilter !== null
+            const hasActiveFilter = filter !== 'ALL' || walletFilter !== null || categoryFilter !== null
             const activeWallet = wallets.find((w) => w.id === walletFilter)
+            const activeCategory = categoriesInMonth.find((c) => c.id === categoryFilter)
             const activeLabel = [
               filter !== 'ALL' ? FILTERS.find((f) => f.value === filter)?.label : null,
               activeWallet ? activeWallet.name : null,
+              activeCategory ? activeCategory.name : null,
             ].filter(Boolean).join(' · ') || 'Filtros'
 
             return (
@@ -333,7 +348,7 @@ function TransactionsPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       transition={{ duration: 0.15 }}
-                      onClick={() => { setFilter('ALL'); setWalletFilter(null); setExpandedChip(null) }}
+                      onClick={() => { setFilter('ALL'); setWalletFilter(null); setCategoryFilter(null); setExpandedChip(null) }}
                       className="text-zinc-500 active:text-zinc-300 transition-colors"
                     >
                       <FilterX className="h-3.5 w-3.5" />
@@ -463,6 +478,52 @@ function TransactionsPage() {
                                         className="ml-1.5 overflow-hidden whitespace-nowrap text-xs font-medium"
                                       >
                                         {w.name}
+                                      </motion.span>
+                                    )}
+                                  </AnimatePresence>
+                                </motion.button>
+                              )
+                            })}
+                          </>
+                        )}
+
+                        {categoriesInMonth.length > 0 && (
+                          <>
+                            <div className="my-1 w-px shrink-0 bg-zinc-700" />
+                            {categoriesInMonth.map((c) => {
+                              const isSelected = categoryFilter === c.id
+                              const chipId = `category-${c.id}`
+                              const isExpanded = expandedChip === chipId
+                              const CategoryIcon = c.icon ? CATEGORY_ICONS[c.icon] : null
+                              return (
+                                <motion.button
+                                  layout
+                                  transition={{ layout: { duration: 0.18, ease: 'easeInOut' } }}
+                                  key={c.id}
+                                  onClick={() => {
+                                    setCategoryFilter(c.id === categoryFilter ? null : c.id)
+                                    setExpandedChip(isExpanded ? null : chipId)
+                                  }}
+                                  className={cn(
+                                    'shrink-0 flex items-center rounded-full py-1.5 px-2.5 transition-colors',
+                                    isSelected ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-800/60 text-zinc-500',
+                                  )}
+                                >
+                                  {CategoryIcon
+                                    ? <CategoryIcon className="h-3.5 w-3.5 shrink-0" style={c.color ? { color: isSelected ? undefined : c.color } : undefined} />
+                                    : <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: c.color ?? '#71717a' }} />
+                                  }
+                                  <AnimatePresence>
+                                    {isExpanded && (
+                                      <motion.span
+                                        key="label"
+                                        initial={{ maxWidth: 0, opacity: 0 }}
+                                        animate={{ maxWidth: 200, opacity: 1 }}
+                                        exit={{ maxWidth: 0, opacity: 0 }}
+                                        transition={{ duration: 0.18, ease: 'easeInOut' }}
+                                        className="ml-1.5 overflow-hidden whitespace-nowrap text-xs font-medium"
+                                      >
+                                        {c.name}
                                       </motion.span>
                                     )}
                                   </AnimatePresence>
