@@ -1,4 +1,5 @@
 import { prisma } from '#/db'
+import { Prisma } from '#/generated/prisma/client.js'
 
 export async function shouldSendNotification(userId: string, type: string, entityId: string): Promise<boolean> {
   const today = new Date().toISOString().slice(0, 10)
@@ -6,9 +7,13 @@ export async function shouldSendNotification(userId: string, type: string, entit
   try {
     await prisma.notificationLog.create({ data: { userId, key } })
     return true
-  } catch {
-    // unique constraint = already sent today
-    return false
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      // já enviado hoje (constraint única userId+key)
+      return false
+    }
+    console.error('[push] falha ao registrar NotificationLog:', err)
+    throw err
   }
 }
 

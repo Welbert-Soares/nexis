@@ -24,5 +24,7 @@ export const unsubscribeFromNotifications = createServerFn({ method: 'POST' })
   })
 
 export const getVapidPublicKey = createServerFn({ method: 'GET' }).handler(() => {
-  return process.env.VAPID_PUBLIC_KEY!
+  const key = process.env.VAPID_PUBLIC_KEY
+  if (!key) throw new Error('VAPID_PUBLIC_KEY não configurada no servidor')
+  return key
 })
