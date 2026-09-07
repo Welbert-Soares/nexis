@@ -1,12 +1,14 @@
 import { getSubscriptionsByUser, deleteSubscriptionByEndpoint } from '#/server/repositories/push.repository'
 
 async function getWebPush() {
+  const { VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY } = process.env
+  if (!VAPID_SUBJECT || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    throw new Error(
+      '[push] VAPID_SUBJECT/VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY não configuradas — notificações push não podem ser enviadas.',
+    )
+  }
   const webpush = (await import('web-push')).default
-  webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT!,
-    process.env.VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!,
-  )
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
   return webpush
 }
 
@@ -26,7 +28,9 @@ export async function sendPushToUser(
       } catch (err: unknown) {
         if ((err as { statusCode?: number }).statusCode === 410) {
           await deleteSubscriptionByEndpoint(sub.endpoint)
+          return
         }
+        console.error(`[push] falha ao enviar para ${sub.endpoint}:`, err)
       }
     }),
   )

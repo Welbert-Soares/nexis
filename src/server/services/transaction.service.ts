@@ -37,8 +37,12 @@ function checkBudgetsAndNotify(userId: string) {
       : exceeded.length > 1
       ? `${exceeded.length} orçamentos ultrapassados este mês`
       : `${top.name} está em ${Math.round(top.pct * 100)}% do limite`
-    sendPushToUser(userId, { title, body, url: '/analytics' }).catch(() => {})
-  }).catch(() => {})
+    sendPushToUser(userId, { title, body, url: '/analytics' }).catch((err) => {
+      console.error('[push] falha ao enviar notificação de orçamento:', err)
+    })
+  }).catch((err) => {
+    console.error('[push] checkBudgetsAndNotify falhou:', err)
+  })
 }
 
 const createTransactionSchema = z.object({
@@ -150,15 +154,23 @@ export const triggerRecurring = createServerFn({ method: 'POST' })
     pruneOldNotificationLogs().catch(() => {})
     const count = await processDueRecurring(session.user.id)
     if (count > 0) {
-      const canSend = await shouldSendNotification(session.user.id, 'recurring', `count:${count}`)
-      if (canSend) {
-        sendPushToUser(session.user.id, {
-          title: 'Transações recorrentes',
-          body: count === 1
-            ? '1 transação recorrente foi lançada automaticamente'
-            : `${count} transações recorrentes foram lançadas automaticamente`,
-          url: '/transactions',
-        }).catch(() => {})
+      // Falha ao notificar não pode derrubar o retorno de `count` — as transações
+      // recorrentes já foram geradas e o client depende de `count` pra invalidar queries.
+      try {
+        const canSend = await shouldSendNotification(session.user.id, 'recurring', `count:${count}`)
+        if (canSend) {
+          sendPushToUser(session.user.id, {
+            title: 'Transações recorrentes',
+            body: count === 1
+              ? '1 transação recorrente foi lançada automaticamente'
+              : `${count} transações recorrentes foram lançadas automaticamente`,
+            url: '/transactions',
+          }).catch((err) => {
+            console.error('[push] falha ao enviar notificação de recorrência:', err)
+          })
+        }
+      } catch (err) {
+        console.error('[push] shouldSendNotification (recorrência) falhou:', err)
       }
     }
     return count
