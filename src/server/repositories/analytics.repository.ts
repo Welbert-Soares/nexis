@@ -79,5 +79,8 @@ export async function getAnalyticsData(userId: string) {
   const income = monthlyAgg.find((r) => r.type === 'INCOME')?._sum.amount?.toNumber() ?? 0
   const expenses = monthlyAgg.find((r) => r.type === 'EXPENSE')?._sum.amount?.toNumber() ?? 0
 
-  return { monthly: { income, expenses }, categoryBreakdown, trend }
+  const dayOfMonth = now.getDate()
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+
+  return { monthly: { income, expenses }, categoryBreakdown, trend, dayOfMonth, daysInMonth }
 }

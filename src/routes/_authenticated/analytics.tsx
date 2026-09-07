@@ -76,6 +76,8 @@ function AnalyticsPage() {
   const income = data?.monthly.income ?? 0
   const expenses = data?.monthly.expenses ?? 0
   const net = income - expenses
+  const dayOfMonth = data?.dayOfMonth ?? 1
+  const daysInMonth = data?.daysInMonth ?? 30
 
   return (
     <div className="flex h-full flex-col pt-10">
@@ -97,6 +99,14 @@ function AnalyticsPage() {
               <SummaryCard label="Saldo" value={net} color={net >= 0 ? 'text-blue-400' : 'text-red-400'} loading={isLoading} />
             </div>
           </motion.section>
+
+          {/* Ritmo do mês */}
+          {!isLoading && income > 0 && (
+            <motion.section variants={fadeUp} className="space-y-3">
+              <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-600">Ritmo do mês</h2>
+              <SpendingPace income={income} expenses={expenses} dayOfMonth={dayOfMonth} daysInMonth={daysInMonth} />
+            </motion.section>
+          )}
 
           {/* Tendência 6 meses */}
           {!isLoading && !!data?.trend.length && (
@@ -192,6 +202,69 @@ function SummaryCard({ label, value, color, loading }: { label: string; value: n
         <Skeleton className="h-5 w-16" />
       ) : (
         <p className={cn('text-sm font-semibold tabular-nums', color)}>{fmt(value)}</p>
+      )}
+    </div>
+  )
+}
+
+function SpendingPace({
+  income, expenses, dayOfMonth, daysInMonth,
+}: {
+  income: number
+  expenses: number
+  dayOfMonth: number
+  daysInMonth: number
+}) {
+  const pctMonthElapsed = Math.min(Math.round((dayOfMonth / daysInMonth) * 100), 100)
+  const pctIncomeSpent = Math.min(Math.round((expenses / income) * 100), 999)
+  const aheadOfPace = pctIncomeSpent > pctMonthElapsed
+
+  const daysLeft = Math.max(daysInMonth - dayOfMonth, 0)
+  const remaining = income - expenses
+  const dailyBudget = daysLeft > 0 ? remaining / daysLeft : remaining
+
+  const barColor = pctIncomeSpent > 100 ? '#ef4444'
+    : aheadOfPace ? '#f97316'
+    : '#22c55e'
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
+      <div className="relative h-2.5 w-full rounded-full bg-zinc-800">
+        <motion.div
+          className="h-2.5 rounded-full"
+          style={{ backgroundColor: barColor }}
+          initial={{ width: 0 }}
+          animate={{ width: `${Math.min(pctIncomeSpent, 100)}%` }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        />
+        <div
+          className="absolute top-0 h-2.5 w-0.5 bg-white/70"
+          style={{ left: `${pctMonthElapsed}%` }}
+          title="Dia do mês"
+        />
+      </div>
+
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-zinc-400">
+          <span className={cn('font-semibold tabular-nums', pctIncomeSpent > 100 ? 'text-red-400' : aheadOfPace ? 'text-orange-400' : 'text-emerald-400')}>
+            {pctIncomeSpent}%
+          </span> da renda gasta
+        </span>
+        <span className="text-zinc-600">mês {pctMonthElapsed}% andado</span>
+      </div>
+
+      <p className="text-[11px] leading-relaxed text-zinc-500">
+        {pctIncomeSpent > 100
+          ? 'Você já gastou mais do que recebeu esse mês.'
+          : aheadOfPace
+          ? 'Ritmo de gastos acima do ideal pra durar o mês inteiro.'
+          : 'Ritmo de gastos dentro do esperado pro dia do mês.'}
+      </p>
+
+      {remaining > 0 && daysLeft > 0 && (
+        <p className="text-xs text-zinc-400">
+          Restam <span className="font-semibold text-white">{fmt(dailyBudget)}</span>/dia pelos próximos {daysLeft} dias pra fechar o mês no azul.
+        </p>
       )}
     </div>
   )
