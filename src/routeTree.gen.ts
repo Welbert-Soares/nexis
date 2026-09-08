@@ -32,6 +32,8 @@ import { Route as ApiMobileTransactionsTriggerRecurringRouteImport } from './rou
 import { Route as ApiMobileTransactionsMaxDateRouteImport } from './routes/api/mobile/transactions.max-date'
 import { Route as ApiMobileTransactionsIdRouteImport } from './routes/api/mobile/transactions.$id'
 import { Route as ApiMobileGoalsIdRouteImport } from './routes/api/mobile/goals.$id'
+import { Route as ApiMobileCategoriesManageRouteImport } from './routes/api/mobile/categories.manage'
+import { Route as ApiMobileCategoriesIdRouteImport } from './routes/api/mobile/categories.$id'
 import { Route as ApiMobileBudgetsIdRouteImport } from './routes/api/mobile/budgets.$id'
 import { Route as ApiMobileGoalsIdWithdrawRouteImport } from './routes/api/mobile/goals.$id.withdraw'
 import { Route as ApiMobileGoalsIdDepositRouteImport } from './routes/api/mobile/goals.$id.deposit'
@@ -154,6 +156,17 @@ const ApiMobileGoalsIdRoute = ApiMobileGoalsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiMobileGoalsRoute,
 } as any)
+const ApiMobileCategoriesManageRoute =
+  ApiMobileCategoriesManageRouteImport.update({
+    id: '/manage',
+    path: '/manage',
+    getParentRoute: () => ApiMobileCategoriesRoute,
+  } as any)
+const ApiMobileCategoriesIdRoute = ApiMobileCategoriesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiMobileCategoriesRoute,
+} as any)
 const ApiMobileBudgetsIdRoute = ApiMobileBudgetsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -183,12 +196,14 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
   '/api/mobile/budgets': typeof ApiMobileBudgetsRouteWithChildren
-  '/api/mobile/categories': typeof ApiMobileCategoriesRoute
+  '/api/mobile/categories': typeof ApiMobileCategoriesRouteWithChildren
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/goals': typeof ApiMobileGoalsRouteWithChildren
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
+  '/api/mobile/categories/$id': typeof ApiMobileCategoriesIdRoute
+  '/api/mobile/categories/manage': typeof ApiMobileCategoriesManageRoute
   '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRouteWithChildren
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
@@ -210,12 +225,14 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
   '/api/mobile/budgets': typeof ApiMobileBudgetsRouteWithChildren
-  '/api/mobile/categories': typeof ApiMobileCategoriesRoute
+  '/api/mobile/categories': typeof ApiMobileCategoriesRouteWithChildren
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/goals': typeof ApiMobileGoalsRouteWithChildren
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
+  '/api/mobile/categories/$id': typeof ApiMobileCategoriesIdRoute
+  '/api/mobile/categories/manage': typeof ApiMobileCategoriesManageRoute
   '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRouteWithChildren
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
@@ -239,12 +256,14 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
   '/api/mobile/budgets': typeof ApiMobileBudgetsRouteWithChildren
-  '/api/mobile/categories': typeof ApiMobileCategoriesRoute
+  '/api/mobile/categories': typeof ApiMobileCategoriesRouteWithChildren
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/goals': typeof ApiMobileGoalsRouteWithChildren
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
+  '/api/mobile/categories/$id': typeof ApiMobileCategoriesIdRoute
+  '/api/mobile/categories/manage': typeof ApiMobileCategoriesManageRoute
   '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRouteWithChildren
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
@@ -274,6 +293,8 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
     | '/api/mobile/budgets/$id'
+    | '/api/mobile/categories/$id'
+    | '/api/mobile/categories/manage'
     | '/api/mobile/goals/$id'
     | '/api/mobile/transactions/$id'
     | '/api/mobile/transactions/max-date'
@@ -301,6 +322,8 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
     | '/api/mobile/budgets/$id'
+    | '/api/mobile/categories/$id'
+    | '/api/mobile/categories/manage'
     | '/api/mobile/goals/$id'
     | '/api/mobile/transactions/$id'
     | '/api/mobile/transactions/max-date'
@@ -329,6 +352,8 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
     | '/api/mobile/budgets/$id'
+    | '/api/mobile/categories/$id'
+    | '/api/mobile/categories/manage'
     | '/api/mobile/goals/$id'
     | '/api/mobile/transactions/$id'
     | '/api/mobile/transactions/max-date'
@@ -347,7 +372,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiMobileAnalyticsRoute: typeof ApiMobileAnalyticsRoute
   ApiMobileBudgetsRoute: typeof ApiMobileBudgetsRouteWithChildren
-  ApiMobileCategoriesRoute: typeof ApiMobileCategoriesRoute
+  ApiMobileCategoriesRoute: typeof ApiMobileCategoriesRouteWithChildren
   ApiMobileDashboardRoute: typeof ApiMobileDashboardRoute
   ApiMobileGoalsRoute: typeof ApiMobileGoalsRouteWithChildren
   ApiMobileTransactionsRoute: typeof ApiMobileTransactionsRouteWithChildren
@@ -517,6 +542,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMobileGoalsIdRouteImport
       parentRoute: typeof ApiMobileGoalsRoute
     }
+    '/api/mobile/categories/manage': {
+      id: '/api/mobile/categories/manage'
+      path: '/manage'
+      fullPath: '/api/mobile/categories/manage'
+      preLoaderRoute: typeof ApiMobileCategoriesManageRouteImport
+      parentRoute: typeof ApiMobileCategoriesRoute
+    }
+    '/api/mobile/categories/$id': {
+      id: '/api/mobile/categories/$id'
+      path: '/$id'
+      fullPath: '/api/mobile/categories/$id'
+      preLoaderRoute: typeof ApiMobileCategoriesIdRouteImport
+      parentRoute: typeof ApiMobileCategoriesRoute
+    }
     '/api/mobile/budgets/$id': {
       id: '/api/mobile/budgets/$id'
       path: '/$id'
@@ -571,6 +610,19 @@ const ApiMobileBudgetsRouteChildren: ApiMobileBudgetsRouteChildren = {
 
 const ApiMobileBudgetsRouteWithChildren =
   ApiMobileBudgetsRoute._addFileChildren(ApiMobileBudgetsRouteChildren)
+
+interface ApiMobileCategoriesRouteChildren {
+  ApiMobileCategoriesIdRoute: typeof ApiMobileCategoriesIdRoute
+  ApiMobileCategoriesManageRoute: typeof ApiMobileCategoriesManageRoute
+}
+
+const ApiMobileCategoriesRouteChildren: ApiMobileCategoriesRouteChildren = {
+  ApiMobileCategoriesIdRoute: ApiMobileCategoriesIdRoute,
+  ApiMobileCategoriesManageRoute: ApiMobileCategoriesManageRoute,
+}
+
+const ApiMobileCategoriesRouteWithChildren =
+  ApiMobileCategoriesRoute._addFileChildren(ApiMobileCategoriesRouteChildren)
 
 interface ApiMobileGoalsIdRouteChildren {
   ApiMobileGoalsIdDepositRoute: typeof ApiMobileGoalsIdDepositRoute
@@ -636,7 +688,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiMobileAnalyticsRoute: ApiMobileAnalyticsRoute,
   ApiMobileBudgetsRoute: ApiMobileBudgetsRouteWithChildren,
-  ApiMobileCategoriesRoute: ApiMobileCategoriesRoute,
+  ApiMobileCategoriesRoute: ApiMobileCategoriesRouteWithChildren,
   ApiMobileDashboardRoute: ApiMobileDashboardRoute,
   ApiMobileGoalsRoute: ApiMobileGoalsRouteWithChildren,
   ApiMobileTransactionsRoute: ApiMobileTransactionsRouteWithChildren,
