@@ -1,15 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { auth } from '#/lib/auth'
-import { createTransaction, getTransactionsByMonth } from '#/server/repositories/transaction.repository'
+import {
+  calcNextDue,
+  createInstallments,
+  createTransaction,
+  getTransactionsByMonth,
+} from '#/server/repositories/transaction.repository'
 
 const listQuery = z.object({
   year: z.coerce.number().int(),
   month: z.coerce.number().int().min(1).max(12),
 })
 
-// Cópia do createTransactionSchema de transaction.service.ts, sem os campos de
-// recorrência/parcelamento (fora do escopo da Fatia 3 do app mobile).
+// Cópia do createTransactionSchema de transaction.service.ts.
 const createBody = z.object({
   walletId: z.string(),
   amount: z.number().positive(),
@@ -17,6 +21,9 @@ const createBody = z.object({
   categoryId: z.string().optional(),
   description: z.string().optional(),
   date: z.string().optional(), // 'YYYY-MM-DD'
+  recurring: z.boolean().optional(),
+  interval: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'YEARLY']).optional(),
+  installments: z.number().int().min(2).max(24).optional(),
 })
 
 // O app manda 'YYYY-MM-DD'; persistir como meio-dia local do servidor evita o
@@ -55,8 +62,30 @@ export const Route = createFileRoute('/api/mobile/transactions')({
           return Response.json({ error: parsed.error.message }, { status: 400 })
         }
 
-        const { date, ...rest } = parsed.data
-        const t = await createTransaction({ ...rest, date: toDate(date) })
+        const { date, installments, recurring, interval, ...rest } = parsed.data
+        const when = toDate(date) ?? new Date()
+
+        if (installments && installments >= 2) {
+          await createInstallments({
+            walletId: rest.walletId,
+            amount: rest.amount,
+            type: rest.type,
+            categoryId: rest.categoryId,
+            description: rest.description,
+            date: when,
+            installments,
+          })
+          return Response.json(null)
+        }
+
+        const nextDue = recurring ? calcNextDue(when, interval ?? 'MONTHLY') : undefined
+        const t = await createTransaction({
+          ...rest,
+          date: toDate(date),
+          recurring,
+          interval,
+          nextDue,
+        })
         return Response.json({ ...t, amount: t.amount.toNumber() })
       },
     },
