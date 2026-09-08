@@ -22,12 +22,15 @@ import { Route as ApiMobileWalletsRouteImport } from './routes/api/mobile/wallet
 import { Route as ApiMobileTransactionsRouteImport } from './routes/api/mobile/transactions'
 import { Route as ApiMobileDashboardRouteImport } from './routes/api/mobile/dashboard'
 import { Route as ApiMobileCategoriesRouteImport } from './routes/api/mobile/categories'
+import { Route as ApiMobileBudgetsRouteImport } from './routes/api/mobile/budgets'
+import { Route as ApiMobileAnalyticsRouteImport } from './routes/api/mobile/analytics'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiMobileWalletsTransferRouteImport } from './routes/api/mobile/wallets.transfer'
 import { Route as ApiMobileWalletsIdRouteImport } from './routes/api/mobile/wallets.$id'
 import { Route as ApiMobileTransactionsTriggerRecurringRouteImport } from './routes/api/mobile/transactions.trigger-recurring'
 import { Route as ApiMobileTransactionsMaxDateRouteImport } from './routes/api/mobile/transactions.max-date'
 import { Route as ApiMobileTransactionsIdRouteImport } from './routes/api/mobile/transactions.$id'
+import { Route as ApiMobileBudgetsIdRouteImport } from './routes/api/mobile/budgets.$id'
 
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
@@ -94,6 +97,16 @@ const ApiMobileCategoriesRoute = ApiMobileCategoriesRouteImport.update({
   path: '/api/mobile/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMobileBudgetsRoute = ApiMobileBudgetsRouteImport.update({
+  id: '/api/mobile/budgets',
+  path: '/api/mobile/budgets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileAnalyticsRoute = ApiMobileAnalyticsRouteImport.update({
+  id: '/api/mobile/analytics',
+  path: '/api/mobile/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -127,6 +140,11 @@ const ApiMobileTransactionsIdRoute = ApiMobileTransactionsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiMobileTransactionsRoute,
 } as any)
+const ApiMobileBudgetsIdRoute = ApiMobileBudgetsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiMobileBudgetsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,10 +156,13 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
+  '/api/mobile/budgets': typeof ApiMobileBudgetsRouteWithChildren
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
+  '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/transactions/trigger-recurring': typeof ApiMobileTransactionsTriggerRecurringRoute
@@ -158,10 +179,13 @@ export interface FileRoutesByTo {
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
+  '/api/mobile/budgets': typeof ApiMobileBudgetsRouteWithChildren
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
+  '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/transactions/trigger-recurring': typeof ApiMobileTransactionsTriggerRecurringRoute
@@ -180,10 +204,13 @@ export interface FileRoutesById {
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/_authenticated/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
+  '/api/mobile/budgets': typeof ApiMobileBudgetsRouteWithChildren
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
+  '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/transactions/trigger-recurring': typeof ApiMobileTransactionsTriggerRecurringRoute
@@ -202,10 +229,13 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/wallets'
     | '/api/auth/$'
+    | '/api/mobile/analytics'
+    | '/api/mobile/budgets'
     | '/api/mobile/categories'
     | '/api/mobile/dashboard'
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
+    | '/api/mobile/budgets/$id'
     | '/api/mobile/transactions/$id'
     | '/api/mobile/transactions/max-date'
     | '/api/mobile/transactions/trigger-recurring'
@@ -222,10 +252,13 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/wallets'
     | '/api/auth/$'
+    | '/api/mobile/analytics'
+    | '/api/mobile/budgets'
     | '/api/mobile/categories'
     | '/api/mobile/dashboard'
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
+    | '/api/mobile/budgets/$id'
     | '/api/mobile/transactions/$id'
     | '/api/mobile/transactions/max-date'
     | '/api/mobile/transactions/trigger-recurring'
@@ -243,10 +276,13 @@ export interface FileRouteTypes {
     | '/_authenticated/transactions'
     | '/_authenticated/wallets'
     | '/api/auth/$'
+    | '/api/mobile/analytics'
+    | '/api/mobile/budgets'
     | '/api/mobile/categories'
     | '/api/mobile/dashboard'
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
+    | '/api/mobile/budgets/$id'
     | '/api/mobile/transactions/$id'
     | '/api/mobile/transactions/max-date'
     | '/api/mobile/transactions/trigger-recurring'
@@ -260,6 +296,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiMobileAnalyticsRoute: typeof ApiMobileAnalyticsRoute
+  ApiMobileBudgetsRoute: typeof ApiMobileBudgetsRouteWithChildren
   ApiMobileCategoriesRoute: typeof ApiMobileCategoriesRoute
   ApiMobileDashboardRoute: typeof ApiMobileDashboardRoute
   ApiMobileTransactionsRoute: typeof ApiMobileTransactionsRouteWithChildren
@@ -359,6 +397,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMobileCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/mobile/budgets': {
+      id: '/api/mobile/budgets'
+      path: '/api/mobile/budgets'
+      fullPath: '/api/mobile/budgets'
+      preLoaderRoute: typeof ApiMobileBudgetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/analytics': {
+      id: '/api/mobile/analytics'
+      path: '/api/mobile/analytics'
+      fullPath: '/api/mobile/analytics'
+      preLoaderRoute: typeof ApiMobileAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -401,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMobileTransactionsIdRouteImport
       parentRoute: typeof ApiMobileTransactionsRoute
     }
+    '/api/mobile/budgets/$id': {
+      id: '/api/mobile/budgets/$id'
+      path: '/$id'
+      fullPath: '/api/mobile/budgets/$id'
+      preLoaderRoute: typeof ApiMobileBudgetsIdRouteImport
+      parentRoute: typeof ApiMobileBudgetsRoute
+    }
   }
 }
 
@@ -423,6 +482,17 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
+
+interface ApiMobileBudgetsRouteChildren {
+  ApiMobileBudgetsIdRoute: typeof ApiMobileBudgetsIdRoute
+}
+
+const ApiMobileBudgetsRouteChildren: ApiMobileBudgetsRouteChildren = {
+  ApiMobileBudgetsIdRoute: ApiMobileBudgetsIdRoute,
+}
+
+const ApiMobileBudgetsRouteWithChildren =
+  ApiMobileBudgetsRoute._addFileChildren(ApiMobileBudgetsRouteChildren)
 
 interface ApiMobileTransactionsRouteChildren {
   ApiMobileTransactionsIdRoute: typeof ApiMobileTransactionsIdRoute
@@ -461,6 +531,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiMobileAnalyticsRoute: ApiMobileAnalyticsRoute,
+  ApiMobileBudgetsRoute: ApiMobileBudgetsRouteWithChildren,
   ApiMobileCategoriesRoute: ApiMobileCategoriesRoute,
   ApiMobileDashboardRoute: ApiMobileDashboardRoute,
   ApiMobileTransactionsRoute: ApiMobileTransactionsRouteWithChildren,
