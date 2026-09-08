@@ -3,11 +3,13 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 const getSession = vi.fn()
 const updateTransaction = vi.fn()
 const deleteTransaction = vi.fn()
+const deleteInstallmentGroup = vi.fn()
 
 vi.mock('#/lib/auth', () => ({ auth: { api: { getSession: (...a: unknown[]) => getSession(...a) } } }))
 vi.mock('#/server/repositories/transaction.repository', () => ({
   updateTransaction: (...a: unknown[]) => updateTransaction(...a),
   deleteTransaction: (...a: unknown[]) => deleteTransaction(...a),
+  deleteInstallmentGroup: (...a: unknown[]) => deleteInstallmentGroup(...a),
 }))
 
 async function handlers() {
@@ -31,6 +33,7 @@ describe('/api/mobile/transactions/$id', () => {
     getSession.mockReset()
     updateTransaction.mockReset()
     deleteTransaction.mockReset()
+    deleteInstallmentGroup.mockReset()
   })
 
   it('POST 200 edita a transação do usuário', async () => {
@@ -106,5 +109,48 @@ describe('/api/mobile/transactions/$id', () => {
     const res = await (await handlers()).DELETE({ request: req('DELETE'), params: { id: 't1' } })
     expect(res.status).toBe(401)
     expect(deleteTransaction).not.toHaveBeenCalled()
+  })
+
+  function delReq(qs = '') {
+    return new Request(`http://x/api/mobile/transactions/t1${qs}`, { method: 'DELETE' })
+  }
+
+  it('DELETE ?mode=all chama deleteInstallmentGroup', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    deleteInstallmentGroup.mockResolvedValue(undefined)
+    const res = await (await handlers()).DELETE({ request: delReq('?mode=all'), params: { id: 't1' } })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toBeNull()
+    expect(deleteInstallmentGroup).toHaveBeenCalledWith('t1', 'u1', 'all')
+    expect(deleteTransaction).not.toHaveBeenCalled()
+  })
+
+  it('DELETE ?mode=this-and-future chama deleteInstallmentGroup', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    deleteInstallmentGroup.mockResolvedValue(undefined)
+    await (await handlers()).DELETE({ request: delReq('?mode=this-and-future'), params: { id: 't1' } })
+    expect(deleteInstallmentGroup).toHaveBeenCalledWith('t1', 'u1', 'this-and-future')
+  })
+
+  it('DELETE sem mode chama deleteTransaction', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    deleteTransaction.mockResolvedValue(undefined)
+    await (await handlers()).DELETE({ request: delReq(), params: { id: 't1' } })
+    expect(deleteTransaction).toHaveBeenCalledWith('t1', 'u1')
+    expect(deleteInstallmentGroup).not.toHaveBeenCalled()
+  })
+
+  it('DELETE ?mode=foo (inválido) cai no deleteTransaction', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    deleteTransaction.mockResolvedValue(undefined)
+    await (await handlers()).DELETE({ request: delReq('?mode=foo'), params: { id: 't1' } })
+    expect(deleteTransaction).toHaveBeenCalledWith('t1', 'u1')
+  })
+
+  it('DELETE ?mode=all com erro do repo → 404', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    deleteInstallmentGroup.mockRejectedValue(new Error('Transaction not found'))
+    const res = await (await handlers()).DELETE({ request: delReq('?mode=all'), params: { id: 't1' } })
+    expect(res.status).toBe(404)
   })
 })
