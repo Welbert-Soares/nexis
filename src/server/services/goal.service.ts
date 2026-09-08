@@ -7,11 +7,12 @@ import {
   deleteGoal,
   getGoalsByUser,
   updateGoal,
+  depositToGoal,
+  withdrawFromGoal as withdrawFromGoalRepo,
 } from '#/server/repositories/goal.repository'
 import { sendPushToUser } from '#/server/services/push-notify.server'
 import { shouldSendNotification } from '#/server/repositories/push.repository'
 import { prisma } from '#/db'
-import { getWalletBalance } from '#/server/repositories/wallet.repository'
 
 async function getSessionOrThrow() {
   const session = await auth.api.getSession({ headers: getRequest().headers })
@@ -133,31 +134,7 @@ export const withdrawFromGoal = createServerFn({ method: 'POST' })
   }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
-    const { goalId, walletId, amount } = data
-
-    const [goal, wallet] = await Promise.all([
-      prisma.goal.findFirst({ where: { id: goalId, userId: session.user.id } }),
-      prisma.wallet.findFirst({ where: { id: walletId, userId: session.user.id } }),
-    ])
-    if (!goal) throw new Error('Meta não encontrada')
-    if (!wallet) throw new Error('Carteira não encontrada')
-
-    // calcula currentAmount atual
-    const txs = await prisma.transaction.findMany({
-      where: { goalId, deletedAt: null },
-      select: { amount: true, type: true },
-    })
-    const net = txs.reduce((acc, t) =>
-      acc + (t.type === 'EXPENSE' ? t.amount.toNumber() : -t.amount.toNumber()), 0)
-    const currentAmount = goal.seedAmount.toNumber() + net
-
-    if (amount > currentAmount) throw new Error('Valor excede o saldo guardado na meta')
-
-    await prisma.transaction.create({
-      data: { amount, type: 'INCOME', walletId, goalId, description: `Resgate ← ${goal.name}`, date: new Date() },
-    })
-
-    return { goalId, currentAmount: currentAmount - amount }
+    return withdrawFromGoalRepo(session.user.id, data)
   })
 
 export const depositGoalFromWallet = createServerFn({ method: 'POST' })
@@ -168,40 +145,20 @@ export const depositGoalFromWallet = createServerFn({ method: 'POST' })
   }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
-    const { goalId, walletId, amount } = data
+    const res = await depositToGoal(session.user.id, data)
 
-    const [goal, wallet] = await Promise.all([
-      prisma.goal.findFirst({ where: { id: goalId, userId: session.user.id } }),
-      prisma.wallet.findFirst({ where: { id: walletId, userId: session.user.id } }),
-    ])
-    if (!goal) throw new Error('Meta não encontrada')
-    if (!wallet) throw new Error('Carteira não encontrada')
-
-    const balance = await getWalletBalance(walletId)
-    if (amount > balance) throw new Error('Saldo insuficiente na carteira selecionada')
-
-    await prisma.transaction.create({
-      data: { amount, type: 'EXPENSE', walletId, goalId, description: `Aporte → ${goal.name}`, date: new Date() },
-    })
-
-    const depositsAgg = await prisma.transaction.aggregate({
-      where: { goalId, deletedAt: null },
-      _sum: { amount: true },
-    })
-    const current = goal.seedAmount.toNumber() + (depositsAgg._sum.amount?.toNumber() ?? 0)
-    const target = goal.targetAmount.toNumber()
-
-    if (current >= target) {
-      shouldSendNotification(session.user.id, 'goal-completed', goalId).then((canSend) => {
+    // Aviso "meta atingida" fica no service (o mobile não dispara push).
+    if (res.currentAmount >= res.targetAmount) {
+      shouldSendNotification(session.user.id, 'goal-completed', data.goalId).then((canSend) => {
         if (canSend) {
           sendPushToUser(session.user.id, {
             title: 'Meta atingida! 🎉',
-            body: `Você completou a meta "${goal.name}"`,
+            body: `Você completou a meta "${res.name}"`,
             url: '/goals',
           }).catch(() => {})
         }
       }).catch(() => {})
     }
 
-    return { goalId, currentAmount: current, targetAmount: target }
+    return res
   })
