@@ -1,7 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { auth } from '#/lib/auth'
-import { deleteTransaction, updateTransaction } from '#/server/repositories/transaction.repository'
+import {
+  deleteInstallmentGroup,
+  deleteTransaction,
+  updateTransaction,
+} from '#/server/repositories/transaction.repository'
 
 // editTransactionSchema de transaction.service.ts, sem o `id` (vem do path) e sem
 // os campos de recorrência (fora do escopo da Fatia 3 do app mobile).
@@ -53,8 +57,16 @@ export const Route = createFileRoute('/api/mobile/transactions/$id')({
         const session = await auth.api.getSession({ headers: request.headers })
         if (!session) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
+        const mode = new URL(request.url).searchParams.get('mode')
+        const groupMode =
+          mode === 'this' || mode === 'this-and-future' || mode === 'all' ? mode : null
+
         try {
-          await deleteTransaction(txId(request, params), session.user.id)
+          if (groupMode) {
+            await deleteInstallmentGroup(txId(request, params), session.user.id, groupMode)
+          } else {
+            await deleteTransaction(txId(request, params), session.user.id)
+          }
           return Response.json(null)
         } catch (e) {
           return Response.json(

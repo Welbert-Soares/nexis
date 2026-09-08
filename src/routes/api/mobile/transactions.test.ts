@@ -3,11 +3,15 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 const getSession = vi.fn()
 const getTransactionsByMonth = vi.fn()
 const createTransaction = vi.fn()
+const createInstallments = vi.fn()
+const calcNextDue = vi.fn((..._a: unknown[]) => new Date('2099-01-01T12:00:00.000Z'))
 
 vi.mock('#/lib/auth', () => ({ auth: { api: { getSession: (...a: unknown[]) => getSession(...a) } } }))
 vi.mock('#/server/repositories/transaction.repository', () => ({
   getTransactionsByMonth: (...a: unknown[]) => getTransactionsByMonth(...a),
   createTransaction: (...a: unknown[]) => createTransaction(...a),
+  createInstallments: (...a: unknown[]) => createInstallments(...a),
+  calcNextDue: (...a: unknown[]) => calcNextDue(...a),
 }))
 
 async function handlers() {
@@ -49,6 +53,9 @@ describe('/api/mobile/transactions', () => {
     getSession.mockReset()
     getTransactionsByMonth.mockReset()
     createTransaction.mockReset()
+    createInstallments.mockReset()
+    calcNextDue.mockReset()
+    calcNextDue.mockReturnValue(new Date('2099-01-01T12:00:00.000Z'))
   })
 
   it('GET 401 sem sessão', async () => {
@@ -158,5 +165,72 @@ describe('/api/mobile/transactions', () => {
     expect(passed.getFullYear()).toBe(2026)
     expect(passed.getMonth()).toBe(8) // setembro
     expect(passed.getDate()).toBe(15)
+  })
+
+  it('POST com installments>=2 chama createInstallments e responde null', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    createInstallments.mockResolvedValue({ id: 'root' })
+    const res = await (await handlers()).POST({
+      request: req('http://x/api/mobile/transactions', 'POST', {
+        walletId: 'w1',
+        amount: 300,
+        type: 'EXPENSE',
+        installments: 3,
+      }),
+    })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toBeNull()
+    expect(createInstallments).toHaveBeenCalledWith(
+      expect.objectContaining({ walletId: 'w1', amount: 300, type: 'EXPENSE', installments: 3 }),
+    )
+    expect(createTransaction).not.toHaveBeenCalled()
+  })
+
+  it('POST recurring calcula nextDue no backend e passa pro createTransaction', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    createTransaction.mockResolvedValue({ id: 't9', amount: { toNumber: () => 50 } })
+    await (await handlers()).POST({
+      request: req('http://x/api/mobile/transactions', 'POST', {
+        walletId: 'w1',
+        amount: 50,
+        type: 'EXPENSE',
+        date: '2026-09-15',
+        recurring: true,
+        interval: 'WEEKLY',
+      }),
+    })
+    expect(calcNextDue).toHaveBeenCalledWith(expect.any(Date), 'WEEKLY')
+    const passed = createTransaction.mock.calls[0][0]
+    expect(passed.recurring).toBe(true)
+    expect(passed.interval).toBe('WEEKLY')
+    expect(passed.nextDue).toEqual(new Date('2099-01-01T12:00:00.000Z'))
+  })
+
+  it('POST recurring sem interval usa MONTHLY', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    createTransaction.mockResolvedValue({ id: 't9', amount: { toNumber: () => 50 } })
+    await (await handlers()).POST({
+      request: req('http://x/api/mobile/transactions', 'POST', {
+        walletId: 'w1',
+        amount: 50,
+        type: 'EXPENSE',
+        recurring: true,
+      }),
+    })
+    expect(calcNextDue).toHaveBeenCalledWith(expect.any(Date), 'MONTHLY')
+  })
+
+  it('POST installments:1 é 400 (mínimo 2)', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    const res = await (await handlers()).POST({
+      request: req('http://x/api/mobile/transactions', 'POST', {
+        walletId: 'w1',
+        amount: 10,
+        type: 'EXPENSE',
+        installments: 1,
+      }),
+    })
+    expect(res.status).toBe(400)
+    expect(createInstallments).not.toHaveBeenCalled()
   })
 })

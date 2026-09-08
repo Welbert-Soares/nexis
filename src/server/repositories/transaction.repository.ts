@@ -19,7 +19,7 @@ export function createTransaction(data: {
   })
 }
 
-function calcNextDue(from: Date, interval: RecurrenceInterval): Date {
+export function calcNextDue(from: Date, interval: RecurrenceInterval): Date {
   const d = new Date(from)
   switch (interval) {
     case 'WEEKLY':    d.setDate(d.getDate() + 7); break
