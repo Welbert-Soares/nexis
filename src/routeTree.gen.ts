@@ -18,8 +18,11 @@ import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authent
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as ApiMobileWalletsRouteImport } from './routes/api/mobile/wallets'
 import { Route as ApiMobileDashboardRouteImport } from './routes/api/mobile/dashboard'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiMobileWalletsTransferRouteImport } from './routes/api/mobile/wallets.transfer'
+import { Route as ApiMobileWalletsIdRouteImport } from './routes/api/mobile/wallets.$id'
 
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
@@ -66,6 +69,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiMobileWalletsRoute = ApiMobileWalletsRouteImport.update({
+  id: '/api/mobile/wallets',
+  path: '/api/mobile/wallets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMobileDashboardRoute = ApiMobileDashboardRouteImport.update({
   id: '/api/mobile/dashboard',
   path: '/api/mobile/dashboard',
@@ -75,6 +83,17 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileWalletsTransferRoute =
+  ApiMobileWalletsTransferRouteImport.update({
+    id: '/transfer',
+    path: '/transfer',
+    getParentRoute: () => ApiMobileWalletsRoute,
+  } as any)
+const ApiMobileWalletsIdRoute = ApiMobileWalletsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiMobileWalletsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -88,6 +107,9 @@ export interface FileRoutesByFullPath {
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
+  '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
+  '/api/mobile/wallets/$id': typeof ApiMobileWalletsIdRoute
+  '/api/mobile/wallets/transfer': typeof ApiMobileWalletsTransferRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -100,6 +122,9 @@ export interface FileRoutesByTo {
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
+  '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
+  '/api/mobile/wallets/$id': typeof ApiMobileWalletsIdRoute
+  '/api/mobile/wallets/transfer': typeof ApiMobileWalletsTransferRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,6 +139,9 @@ export interface FileRoutesById {
   '/_authenticated/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
+  '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
+  '/api/mobile/wallets/$id': typeof ApiMobileWalletsIdRoute
+  '/api/mobile/wallets/transfer': typeof ApiMobileWalletsTransferRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,6 +156,9 @@ export interface FileRouteTypes {
     | '/wallets'
     | '/api/auth/$'
     | '/api/mobile/dashboard'
+    | '/api/mobile/wallets'
+    | '/api/mobile/wallets/$id'
+    | '/api/mobile/wallets/transfer'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,6 +171,9 @@ export interface FileRouteTypes {
     | '/wallets'
     | '/api/auth/$'
     | '/api/mobile/dashboard'
+    | '/api/mobile/wallets'
+    | '/api/mobile/wallets/$id'
+    | '/api/mobile/wallets/transfer'
   id:
     | '__root__'
     | '/'
@@ -153,6 +187,9 @@ export interface FileRouteTypes {
     | '/_authenticated/wallets'
     | '/api/auth/$'
     | '/api/mobile/dashboard'
+    | '/api/mobile/wallets'
+    | '/api/mobile/wallets/$id'
+    | '/api/mobile/wallets/transfer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -162,6 +199,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiMobileDashboardRoute: typeof ApiMobileDashboardRoute
+  ApiMobileWalletsRoute: typeof ApiMobileWalletsRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -229,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/mobile/wallets': {
+      id: '/api/mobile/wallets'
+      path: '/api/mobile/wallets'
+      fullPath: '/api/mobile/wallets'
+      preLoaderRoute: typeof ApiMobileWalletsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/mobile/dashboard': {
       id: '/api/mobile/dashboard'
       path: '/api/mobile/dashboard'
@@ -242,6 +287,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/wallets/transfer': {
+      id: '/api/mobile/wallets/transfer'
+      path: '/transfer'
+      fullPath: '/api/mobile/wallets/transfer'
+      preLoaderRoute: typeof ApiMobileWalletsTransferRouteImport
+      parentRoute: typeof ApiMobileWalletsRoute
+    }
+    '/api/mobile/wallets/$id': {
+      id: '/api/mobile/wallets/$id'
+      path: '/$id'
+      fullPath: '/api/mobile/wallets/$id'
+      preLoaderRoute: typeof ApiMobileWalletsIdRouteImport
+      parentRoute: typeof ApiMobileWalletsRoute
     }
   }
 }
@@ -266,6 +325,19 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface ApiMobileWalletsRouteChildren {
+  ApiMobileWalletsIdRoute: typeof ApiMobileWalletsIdRoute
+  ApiMobileWalletsTransferRoute: typeof ApiMobileWalletsTransferRoute
+}
+
+const ApiMobileWalletsRouteChildren: ApiMobileWalletsRouteChildren = {
+  ApiMobileWalletsIdRoute: ApiMobileWalletsIdRoute,
+  ApiMobileWalletsTransferRoute: ApiMobileWalletsTransferRoute,
+}
+
+const ApiMobileWalletsRouteWithChildren =
+  ApiMobileWalletsRoute._addFileChildren(ApiMobileWalletsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
@@ -273,6 +345,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiMobileDashboardRoute: ApiMobileDashboardRoute,
+  ApiMobileWalletsRoute: ApiMobileWalletsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
