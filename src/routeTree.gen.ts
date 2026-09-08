@@ -31,6 +31,7 @@ import { Route as ApiMobileWalletsIdRouteImport } from './routes/api/mobile/wall
 import { Route as ApiMobileTransactionsTriggerRecurringRouteImport } from './routes/api/mobile/transactions.trigger-recurring'
 import { Route as ApiMobileTransactionsMaxDateRouteImport } from './routes/api/mobile/transactions.max-date'
 import { Route as ApiMobileTransactionsIdRouteImport } from './routes/api/mobile/transactions.$id'
+import { Route as ApiMobileGoalsIdRouteImport } from './routes/api/mobile/goals.$id'
 import { Route as ApiMobileBudgetsIdRouteImport } from './routes/api/mobile/budgets.$id'
 
 const McpRoute = McpRouteImport.update({
@@ -146,6 +147,11 @@ const ApiMobileTransactionsIdRoute = ApiMobileTransactionsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiMobileTransactionsRoute,
 } as any)
+const ApiMobileGoalsIdRoute = ApiMobileGoalsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiMobileGoalsRoute,
+} as any)
 const ApiMobileBudgetsIdRoute = ApiMobileBudgetsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -166,10 +172,11 @@ export interface FileRoutesByFullPath {
   '/api/mobile/budgets': typeof ApiMobileBudgetsRouteWithChildren
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
-  '/api/mobile/goals': typeof ApiMobileGoalsRoute
+  '/api/mobile/goals': typeof ApiMobileGoalsRouteWithChildren
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
+  '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRoute
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/transactions/trigger-recurring': typeof ApiMobileTransactionsTriggerRecurringRoute
@@ -190,10 +197,11 @@ export interface FileRoutesByTo {
   '/api/mobile/budgets': typeof ApiMobileBudgetsRouteWithChildren
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
-  '/api/mobile/goals': typeof ApiMobileGoalsRoute
+  '/api/mobile/goals': typeof ApiMobileGoalsRouteWithChildren
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
+  '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRoute
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/transactions/trigger-recurring': typeof ApiMobileTransactionsTriggerRecurringRoute
@@ -216,10 +224,11 @@ export interface FileRoutesById {
   '/api/mobile/budgets': typeof ApiMobileBudgetsRouteWithChildren
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
-  '/api/mobile/goals': typeof ApiMobileGoalsRoute
+  '/api/mobile/goals': typeof ApiMobileGoalsRouteWithChildren
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
+  '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRoute
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/transactions/trigger-recurring': typeof ApiMobileTransactionsTriggerRecurringRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
     | '/api/mobile/budgets/$id'
+    | '/api/mobile/goals/$id'
     | '/api/mobile/transactions/$id'
     | '/api/mobile/transactions/max-date'
     | '/api/mobile/transactions/trigger-recurring'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
     | '/api/mobile/budgets/$id'
+    | '/api/mobile/goals/$id'
     | '/api/mobile/transactions/$id'
     | '/api/mobile/transactions/max-date'
     | '/api/mobile/transactions/trigger-recurring'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
     | '/api/mobile/budgets/$id'
+    | '/api/mobile/goals/$id'
     | '/api/mobile/transactions/$id'
     | '/api/mobile/transactions/max-date'
     | '/api/mobile/transactions/trigger-recurring'
@@ -312,7 +324,7 @@ export interface RootRouteChildren {
   ApiMobileBudgetsRoute: typeof ApiMobileBudgetsRouteWithChildren
   ApiMobileCategoriesRoute: typeof ApiMobileCategoriesRoute
   ApiMobileDashboardRoute: typeof ApiMobileDashboardRoute
-  ApiMobileGoalsRoute: typeof ApiMobileGoalsRoute
+  ApiMobileGoalsRoute: typeof ApiMobileGoalsRouteWithChildren
   ApiMobileTransactionsRoute: typeof ApiMobileTransactionsRouteWithChildren
   ApiMobileWalletsRoute: typeof ApiMobileWalletsRouteWithChildren
 }
@@ -473,6 +485,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMobileTransactionsIdRouteImport
       parentRoute: typeof ApiMobileTransactionsRoute
     }
+    '/api/mobile/goals/$id': {
+      id: '/api/mobile/goals/$id'
+      path: '/$id'
+      fullPath: '/api/mobile/goals/$id'
+      preLoaderRoute: typeof ApiMobileGoalsIdRouteImport
+      parentRoute: typeof ApiMobileGoalsRoute
+    }
     '/api/mobile/budgets/$id': {
       id: '/api/mobile/budgets/$id'
       path: '/$id'
@@ -513,6 +532,18 @@ const ApiMobileBudgetsRouteChildren: ApiMobileBudgetsRouteChildren = {
 
 const ApiMobileBudgetsRouteWithChildren =
   ApiMobileBudgetsRoute._addFileChildren(ApiMobileBudgetsRouteChildren)
+
+interface ApiMobileGoalsRouteChildren {
+  ApiMobileGoalsIdRoute: typeof ApiMobileGoalsIdRoute
+}
+
+const ApiMobileGoalsRouteChildren: ApiMobileGoalsRouteChildren = {
+  ApiMobileGoalsIdRoute: ApiMobileGoalsIdRoute,
+}
+
+const ApiMobileGoalsRouteWithChildren = ApiMobileGoalsRoute._addFileChildren(
+  ApiMobileGoalsRouteChildren,
+)
 
 interface ApiMobileTransactionsRouteChildren {
   ApiMobileTransactionsIdRoute: typeof ApiMobileTransactionsIdRoute
@@ -555,7 +586,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMobileBudgetsRoute: ApiMobileBudgetsRouteWithChildren,
   ApiMobileCategoriesRoute: ApiMobileCategoriesRoute,
   ApiMobileDashboardRoute: ApiMobileDashboardRoute,
-  ApiMobileGoalsRoute: ApiMobileGoalsRoute,
+  ApiMobileGoalsRoute: ApiMobileGoalsRouteWithChildren,
   ApiMobileTransactionsRoute: ApiMobileTransactionsRouteWithChildren,
   ApiMobileWalletsRoute: ApiMobileWalletsRouteWithChildren,
 }
