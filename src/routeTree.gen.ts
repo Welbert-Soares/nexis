@@ -33,6 +33,8 @@ import { Route as ApiMobileTransactionsMaxDateRouteImport } from './routes/api/m
 import { Route as ApiMobileTransactionsIdRouteImport } from './routes/api/mobile/transactions.$id'
 import { Route as ApiMobileGoalsIdRouteImport } from './routes/api/mobile/goals.$id'
 import { Route as ApiMobileBudgetsIdRouteImport } from './routes/api/mobile/budgets.$id'
+import { Route as ApiMobileGoalsIdWithdrawRouteImport } from './routes/api/mobile/goals.$id.withdraw'
+import { Route as ApiMobileGoalsIdDepositRouteImport } from './routes/api/mobile/goals.$id.deposit'
 
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
@@ -157,6 +159,17 @@ const ApiMobileBudgetsIdRoute = ApiMobileBudgetsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiMobileBudgetsRoute,
 } as any)
+const ApiMobileGoalsIdWithdrawRoute =
+  ApiMobileGoalsIdWithdrawRouteImport.update({
+    id: '/withdraw',
+    path: '/withdraw',
+    getParentRoute: () => ApiMobileGoalsIdRoute,
+  } as any)
+const ApiMobileGoalsIdDepositRoute = ApiMobileGoalsIdDepositRouteImport.update({
+  id: '/deposit',
+  path: '/deposit',
+  getParentRoute: () => ApiMobileGoalsIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -176,12 +189,14 @@ export interface FileRoutesByFullPath {
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
-  '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRoute
+  '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRouteWithChildren
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/transactions/trigger-recurring': typeof ApiMobileTransactionsTriggerRecurringRoute
   '/api/mobile/wallets/$id': typeof ApiMobileWalletsIdRoute
   '/api/mobile/wallets/transfer': typeof ApiMobileWalletsTransferRoute
+  '/api/mobile/goals/$id/deposit': typeof ApiMobileGoalsIdDepositRoute
+  '/api/mobile/goals/$id/withdraw': typeof ApiMobileGoalsIdWithdrawRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -201,12 +216,14 @@ export interface FileRoutesByTo {
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
-  '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRoute
+  '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRouteWithChildren
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/transactions/trigger-recurring': typeof ApiMobileTransactionsTriggerRecurringRoute
   '/api/mobile/wallets/$id': typeof ApiMobileWalletsIdRoute
   '/api/mobile/wallets/transfer': typeof ApiMobileWalletsTransferRoute
+  '/api/mobile/goals/$id/deposit': typeof ApiMobileGoalsIdDepositRoute
+  '/api/mobile/goals/$id/withdraw': typeof ApiMobileGoalsIdWithdrawRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -228,12 +245,14 @@ export interface FileRoutesById {
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/budgets/$id': typeof ApiMobileBudgetsIdRoute
-  '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRoute
+  '/api/mobile/goals/$id': typeof ApiMobileGoalsIdRouteWithChildren
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
   '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/transactions/trigger-recurring': typeof ApiMobileTransactionsTriggerRecurringRoute
   '/api/mobile/wallets/$id': typeof ApiMobileWalletsIdRoute
   '/api/mobile/wallets/transfer': typeof ApiMobileWalletsTransferRoute
+  '/api/mobile/goals/$id/deposit': typeof ApiMobileGoalsIdDepositRoute
+  '/api/mobile/goals/$id/withdraw': typeof ApiMobileGoalsIdWithdrawRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -261,6 +280,8 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions/trigger-recurring'
     | '/api/mobile/wallets/$id'
     | '/api/mobile/wallets/transfer'
+    | '/api/mobile/goals/$id/deposit'
+    | '/api/mobile/goals/$id/withdraw'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -286,6 +307,8 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions/trigger-recurring'
     | '/api/mobile/wallets/$id'
     | '/api/mobile/wallets/transfer'
+    | '/api/mobile/goals/$id/deposit'
+    | '/api/mobile/goals/$id/withdraw'
   id:
     | '__root__'
     | '/'
@@ -312,6 +335,8 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions/trigger-recurring'
     | '/api/mobile/wallets/$id'
     | '/api/mobile/wallets/transfer'
+    | '/api/mobile/goals/$id/deposit'
+    | '/api/mobile/goals/$id/withdraw'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -499,6 +524,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMobileBudgetsIdRouteImport
       parentRoute: typeof ApiMobileBudgetsRoute
     }
+    '/api/mobile/goals/$id/withdraw': {
+      id: '/api/mobile/goals/$id/withdraw'
+      path: '/withdraw'
+      fullPath: '/api/mobile/goals/$id/withdraw'
+      preLoaderRoute: typeof ApiMobileGoalsIdWithdrawRouteImport
+      parentRoute: typeof ApiMobileGoalsIdRoute
+    }
+    '/api/mobile/goals/$id/deposit': {
+      id: '/api/mobile/goals/$id/deposit'
+      path: '/deposit'
+      fullPath: '/api/mobile/goals/$id/deposit'
+      preLoaderRoute: typeof ApiMobileGoalsIdDepositRouteImport
+      parentRoute: typeof ApiMobileGoalsIdRoute
+    }
   }
 }
 
@@ -533,12 +572,25 @@ const ApiMobileBudgetsRouteChildren: ApiMobileBudgetsRouteChildren = {
 const ApiMobileBudgetsRouteWithChildren =
   ApiMobileBudgetsRoute._addFileChildren(ApiMobileBudgetsRouteChildren)
 
+interface ApiMobileGoalsIdRouteChildren {
+  ApiMobileGoalsIdDepositRoute: typeof ApiMobileGoalsIdDepositRoute
+  ApiMobileGoalsIdWithdrawRoute: typeof ApiMobileGoalsIdWithdrawRoute
+}
+
+const ApiMobileGoalsIdRouteChildren: ApiMobileGoalsIdRouteChildren = {
+  ApiMobileGoalsIdDepositRoute: ApiMobileGoalsIdDepositRoute,
+  ApiMobileGoalsIdWithdrawRoute: ApiMobileGoalsIdWithdrawRoute,
+}
+
+const ApiMobileGoalsIdRouteWithChildren =
+  ApiMobileGoalsIdRoute._addFileChildren(ApiMobileGoalsIdRouteChildren)
+
 interface ApiMobileGoalsRouteChildren {
-  ApiMobileGoalsIdRoute: typeof ApiMobileGoalsIdRoute
+  ApiMobileGoalsIdRoute: typeof ApiMobileGoalsIdRouteWithChildren
 }
 
 const ApiMobileGoalsRouteChildren: ApiMobileGoalsRouteChildren = {
-  ApiMobileGoalsIdRoute: ApiMobileGoalsIdRoute,
+  ApiMobileGoalsIdRoute: ApiMobileGoalsIdRouteWithChildren,
 }
 
 const ApiMobileGoalsRouteWithChildren = ApiMobileGoalsRoute._addFileChildren(
