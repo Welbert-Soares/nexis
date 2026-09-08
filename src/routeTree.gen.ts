@@ -25,6 +25,7 @@ import { Route as ApiMobileCategoriesRouteImport } from './routes/api/mobile/cat
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiMobileWalletsTransferRouteImport } from './routes/api/mobile/wallets.transfer'
 import { Route as ApiMobileWalletsIdRouteImport } from './routes/api/mobile/wallets.$id'
+import { Route as ApiMobileTransactionsMaxDateRouteImport } from './routes/api/mobile/transactions.max-date'
 import { Route as ApiMobileTransactionsIdRouteImport } from './routes/api/mobile/transactions.$id'
 
 const McpRoute = McpRouteImport.update({
@@ -108,6 +109,12 @@ const ApiMobileWalletsIdRoute = ApiMobileWalletsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiMobileWalletsRoute,
 } as any)
+const ApiMobileTransactionsMaxDateRoute =
+  ApiMobileTransactionsMaxDateRouteImport.update({
+    id: '/max-date',
+    path: '/max-date',
+    getParentRoute: () => ApiMobileTransactionsRoute,
+  } as any)
 const ApiMobileTransactionsIdRoute = ApiMobileTransactionsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -129,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
+  '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/wallets/$id': typeof ApiMobileWalletsIdRoute
   '/api/mobile/wallets/transfer': typeof ApiMobileWalletsTransferRoute
 }
@@ -147,6 +155,7 @@ export interface FileRoutesByTo {
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
+  '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/wallets/$id': typeof ApiMobileWalletsIdRoute
   '/api/mobile/wallets/transfer': typeof ApiMobileWalletsTransferRoute
 }
@@ -167,6 +176,7 @@ export interface FileRoutesById {
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
   '/api/mobile/wallets': typeof ApiMobileWalletsRouteWithChildren
   '/api/mobile/transactions/$id': typeof ApiMobileTransactionsIdRoute
+  '/api/mobile/transactions/max-date': typeof ApiMobileTransactionsMaxDateRoute
   '/api/mobile/wallets/$id': typeof ApiMobileWalletsIdRoute
   '/api/mobile/wallets/transfer': typeof ApiMobileWalletsTransferRoute
 }
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
     | '/api/mobile/transactions/$id'
+    | '/api/mobile/transactions/max-date'
     | '/api/mobile/wallets/$id'
     | '/api/mobile/wallets/transfer'
   fileRoutesByTo: FileRoutesByTo
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
     | '/api/mobile/transactions/$id'
+    | '/api/mobile/transactions/max-date'
     | '/api/mobile/wallets/$id'
     | '/api/mobile/wallets/transfer'
   id:
@@ -224,6 +236,7 @@ export interface FileRouteTypes {
     | '/api/mobile/transactions'
     | '/api/mobile/wallets'
     | '/api/mobile/transactions/$id'
+    | '/api/mobile/transactions/max-date'
     | '/api/mobile/wallets/$id'
     | '/api/mobile/wallets/transfer'
   fileRoutesById: FileRoutesById
@@ -354,6 +367,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMobileWalletsIdRouteImport
       parentRoute: typeof ApiMobileWalletsRoute
     }
+    '/api/mobile/transactions/max-date': {
+      id: '/api/mobile/transactions/max-date'
+      path: '/max-date'
+      fullPath: '/api/mobile/transactions/max-date'
+      preLoaderRoute: typeof ApiMobileTransactionsMaxDateRouteImport
+      parentRoute: typeof ApiMobileTransactionsRoute
+    }
     '/api/mobile/transactions/$id': {
       id: '/api/mobile/transactions/$id'
       path: '/$id'
@@ -386,10 +406,12 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 
 interface ApiMobileTransactionsRouteChildren {
   ApiMobileTransactionsIdRoute: typeof ApiMobileTransactionsIdRoute
+  ApiMobileTransactionsMaxDateRoute: typeof ApiMobileTransactionsMaxDateRoute
 }
 
 const ApiMobileTransactionsRouteChildren: ApiMobileTransactionsRouteChildren = {
   ApiMobileTransactionsIdRoute: ApiMobileTransactionsIdRoute,
+  ApiMobileTransactionsMaxDateRoute: ApiMobileTransactionsMaxDateRoute,
 }
 
 const ApiMobileTransactionsRouteWithChildren =
