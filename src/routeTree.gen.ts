@@ -22,6 +22,7 @@ import { Route as ApiMobileWalletsRouteImport } from './routes/api/mobile/wallet
 import { Route as ApiMobileTransactionsRouteImport } from './routes/api/mobile/transactions'
 import { Route as ApiMobileDashboardRouteImport } from './routes/api/mobile/dashboard'
 import { Route as ApiMobileCategoriesRouteImport } from './routes/api/mobile/categories'
+import { Route as ApiMobileAnalyticsRouteImport } from './routes/api/mobile/analytics'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiMobileWalletsTransferRouteImport } from './routes/api/mobile/wallets.transfer'
 import { Route as ApiMobileWalletsIdRouteImport } from './routes/api/mobile/wallets.$id'
@@ -94,6 +95,11 @@ const ApiMobileCategoriesRoute = ApiMobileCategoriesRouteImport.update({
   path: '/api/mobile/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMobileAnalyticsRoute = ApiMobileAnalyticsRouteImport.update({
+  id: '/api/mobile/analytics',
+  path: '/api/mobile/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/_authenticated/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/wallets'
     | '/api/auth/$'
+    | '/api/mobile/analytics'
     | '/api/mobile/categories'
     | '/api/mobile/dashboard'
     | '/api/mobile/transactions'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/wallets'
     | '/api/auth/$'
+    | '/api/mobile/analytics'
     | '/api/mobile/categories'
     | '/api/mobile/dashboard'
     | '/api/mobile/transactions'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/_authenticated/transactions'
     | '/_authenticated/wallets'
     | '/api/auth/$'
+    | '/api/mobile/analytics'
     | '/api/mobile/categories'
     | '/api/mobile/dashboard'
     | '/api/mobile/transactions'
@@ -260,6 +272,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiMobileAnalyticsRoute: typeof ApiMobileAnalyticsRoute
   ApiMobileCategoriesRoute: typeof ApiMobileCategoriesRoute
   ApiMobileDashboardRoute: typeof ApiMobileDashboardRoute
   ApiMobileTransactionsRoute: typeof ApiMobileTransactionsRouteWithChildren
@@ -357,6 +370,13 @@ declare module '@tanstack/react-router' {
       path: '/api/mobile/categories'
       fullPath: '/api/mobile/categories'
       preLoaderRoute: typeof ApiMobileCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/analytics': {
+      id: '/api/mobile/analytics'
+      path: '/api/mobile/analytics'
+      fullPath: '/api/mobile/analytics'
+      preLoaderRoute: typeof ApiMobileAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -461,6 +481,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiMobileAnalyticsRoute: ApiMobileAnalyticsRoute,
   ApiMobileCategoriesRoute: ApiMobileCategoriesRoute,
   ApiMobileDashboardRoute: ApiMobileDashboardRoute,
   ApiMobileTransactionsRoute: ApiMobileTransactionsRouteWithChildren,
