@@ -22,6 +22,7 @@ import { Route as ApiMobileWalletsRouteImport } from './routes/api/mobile/wallet
 import { Route as ApiMobileTransactionsRouteImport } from './routes/api/mobile/transactions'
 import { Route as ApiMobileDashboardRouteImport } from './routes/api/mobile/dashboard'
 import { Route as ApiMobileCategoriesRouteImport } from './routes/api/mobile/categories'
+import { Route as ApiMobileBudgetsRouteImport } from './routes/api/mobile/budgets'
 import { Route as ApiMobileAnalyticsRouteImport } from './routes/api/mobile/analytics'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiMobileWalletsTransferRouteImport } from './routes/api/mobile/wallets.transfer'
@@ -95,6 +96,11 @@ const ApiMobileCategoriesRoute = ApiMobileCategoriesRouteImport.update({
   path: '/api/mobile/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMobileBudgetsRoute = ApiMobileBudgetsRouteImport.update({
+  id: '/api/mobile/budgets',
+  path: '/api/mobile/budgets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMobileAnalyticsRoute = ApiMobileAnalyticsRouteImport.update({
   id: '/api/mobile/analytics',
   path: '/api/mobile/analytics',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
+  '/api/mobile/budgets': typeof ApiMobileBudgetsRoute
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
+  '/api/mobile/budgets': typeof ApiMobileBudgetsRoute
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/_authenticated/wallets': typeof AuthenticatedWalletsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/mobile/analytics': typeof ApiMobileAnalyticsRoute
+  '/api/mobile/budgets': typeof ApiMobileBudgetsRoute
   '/api/mobile/categories': typeof ApiMobileCategoriesRoute
   '/api/mobile/dashboard': typeof ApiMobileDashboardRoute
   '/api/mobile/transactions': typeof ApiMobileTransactionsRouteWithChildren
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/wallets'
     | '/api/auth/$'
     | '/api/mobile/analytics'
+    | '/api/mobile/budgets'
     | '/api/mobile/categories'
     | '/api/mobile/dashboard'
     | '/api/mobile/transactions'
@@ -233,6 +243,7 @@ export interface FileRouteTypes {
     | '/wallets'
     | '/api/auth/$'
     | '/api/mobile/analytics'
+    | '/api/mobile/budgets'
     | '/api/mobile/categories'
     | '/api/mobile/dashboard'
     | '/api/mobile/transactions'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/_authenticated/wallets'
     | '/api/auth/$'
     | '/api/mobile/analytics'
+    | '/api/mobile/budgets'
     | '/api/mobile/categories'
     | '/api/mobile/dashboard'
     | '/api/mobile/transactions'
@@ -273,6 +285,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiMobileAnalyticsRoute: typeof ApiMobileAnalyticsRoute
+  ApiMobileBudgetsRoute: typeof ApiMobileBudgetsRoute
   ApiMobileCategoriesRoute: typeof ApiMobileCategoriesRoute
   ApiMobileDashboardRoute: typeof ApiMobileDashboardRoute
   ApiMobileTransactionsRoute: typeof ApiMobileTransactionsRouteWithChildren
@@ -370,6 +383,13 @@ declare module '@tanstack/react-router' {
       path: '/api/mobile/categories'
       fullPath: '/api/mobile/categories'
       preLoaderRoute: typeof ApiMobileCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/budgets': {
+      id: '/api/mobile/budgets'
+      path: '/api/mobile/budgets'
+      fullPath: '/api/mobile/budgets'
+      preLoaderRoute: typeof ApiMobileBudgetsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/mobile/analytics': {
@@ -482,6 +502,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiMobileAnalyticsRoute: ApiMobileAnalyticsRoute,
+  ApiMobileBudgetsRoute: ApiMobileBudgetsRoute,
   ApiMobileCategoriesRoute: ApiMobileCategoriesRoute,
   ApiMobileDashboardRoute: ApiMobileDashboardRoute,
   ApiMobileTransactionsRoute: ApiMobileTransactionsRouteWithChildren,
