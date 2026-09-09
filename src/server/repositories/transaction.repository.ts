@@ -210,7 +210,7 @@ export async function updateTransaction(
     date?: Date
     recurring?: boolean
     interval?: RecurrenceInterval
-    nextDue?: Date
+    nextDue?: Date | null
   },
 ) {
   const old = await prisma.transaction.findFirst({
@@ -219,6 +219,19 @@ export async function updateTransaction(
   if (!old) throw new Error('Transaction not found')
 
   const newWalletId = data.walletId ?? old.walletId
+
+  // `nextDue` é derivado no backend: recalcula ao ligar/trocar o intervalo,
+  // limpa ao desligar. Um `nextDue` explícito (o web ainda manda ao ligar) vence.
+  if (data.recurring === true && data.nextDue === undefined) {
+    const base = data.date ?? old.date
+    data.nextDue = calcNextDue(
+      base,
+      data.interval ?? (old.interval as RecurrenceInterval | null) ?? 'MONTHLY',
+    )
+  }
+  if (data.recurring === false) {
+    data.nextDue = null
+  }
 
   return prisma.transaction.update({
     where: { id },
