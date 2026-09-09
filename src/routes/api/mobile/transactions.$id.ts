@@ -7,8 +7,9 @@ import {
   updateTransaction,
 } from '#/server/repositories/transaction.repository'
 
-// editTransactionSchema de transaction.service.ts, sem o `id` (vem do path) e sem
-// os campos de recorrência (fora do escopo da Fatia 3 do app mobile).
+// editTransactionSchema de transaction.service.ts, sem o `id` (vem do path).
+// `recurring`/`interval` voltaram na Fatia 7 (a Fatia 3 tinha removido); o
+// `nextDue` é derivado no `updateTransaction`, o app não manda.
 const editBody = z.object({
   amount: z.number().positive(),
   type: z.enum(['INCOME', 'EXPENSE']),
@@ -16,6 +17,8 @@ const editBody = z.object({
   categoryId: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   date: z.string().optional(), // 'YYYY-MM-DD'
+  recurring: z.boolean().optional(),
+  interval: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'YEARLY']).optional(),
 })
 
 function txId(request: Request, params?: { id?: string }): string {
