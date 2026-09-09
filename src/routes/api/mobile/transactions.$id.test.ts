@@ -88,6 +88,40 @@ describe('/api/mobile/transactions/$id', () => {
     expect(updateTransaction).not.toHaveBeenCalled()
   })
 
+  it('POST 200 com recurring/interval repassa pro updateTransaction', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    updateTransaction.mockResolvedValue({ id: 't1', amount: { toNumber: () => 10 } })
+    await (await handlers()).POST({
+      request: req('POST', { amount: 10, type: 'EXPENSE', recurring: true, interval: 'WEEKLY' }),
+      params: { id: 't1' },
+    })
+    expect(updateTransaction).toHaveBeenCalledWith(
+      't1',
+      'u1',
+      expect.objectContaining({ recurring: true, interval: 'WEEKLY' }),
+    )
+  })
+
+  it('POST 200 com recurring:false repassa o desligamento', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    updateTransaction.mockResolvedValue({ id: 't1', amount: { toNumber: () => 10 } })
+    await (await handlers()).POST({
+      request: req('POST', { amount: 10, type: 'EXPENSE', recurring: false }),
+      params: { id: 't1' },
+    })
+    expect(updateTransaction.mock.calls[0][2].recurring).toBe(false)
+  })
+
+  it('POST 400 com interval fora do enum', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    const res = await (await handlers()).POST({
+      request: req('POST', { amount: 10, type: 'EXPENSE', recurring: true, interval: 'DAILY' }),
+      params: { id: 't1' },
+    })
+    expect(res.status).toBe(400)
+    expect(updateTransaction).not.toHaveBeenCalled()
+  })
+
   it('DELETE 200 exclui a transação do usuário', async () => {
     getSession.mockResolvedValue({ user: { id: 'u1' } })
     deleteTransaction.mockResolvedValue(undefined)
