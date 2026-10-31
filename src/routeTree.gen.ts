@@ -9,38 +9,42 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedWalletsRouteImport } from './routes/_authenticated/wallets'
-import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
-import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
-import { Route as ApiMobileWalletsRouteImport } from './routes/api/mobile/wallets'
-import { Route as ApiMobileTransactionsRouteImport } from './routes/api/mobile/transactions'
-import { Route as ApiMobileGoalsRouteImport } from './routes/api/mobile/goals'
-import { Route as ApiMobileDashboardRouteImport } from './routes/api/mobile/dashboard'
-import { Route as ApiMobileCategoriesRouteImport } from './routes/api/mobile/categories'
-import { Route as ApiMobileBudgetsRouteImport } from './routes/api/mobile/budgets'
-import { Route as ApiMobileAnalyticsRouteImport } from './routes/api/mobile/analytics'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
+import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
+import { Route as AuthenticatedWalletsRouteImport } from './routes/_authenticated/wallets'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiMobileWalletsTransferRouteImport } from './routes/api/mobile/wallets.transfer'
-import { Route as ApiMobileWalletsIdRouteImport } from './routes/api/mobile/wallets.$id'
-import { Route as ApiMobileTransactionsTriggerRecurringRouteImport } from './routes/api/mobile/transactions.trigger-recurring'
-import { Route as ApiMobileTransactionsMaxDateRouteImport } from './routes/api/mobile/transactions.max-date'
-import { Route as ApiMobileTransactionsIdRouteImport } from './routes/api/mobile/transactions.$id'
-import { Route as ApiMobileGoalsIdRouteImport } from './routes/api/mobile/goals.$id'
-import { Route as ApiMobileCategoriesManageRouteImport } from './routes/api/mobile/categories.manage'
-import { Route as ApiMobileCategoriesIdRouteImport } from './routes/api/mobile/categories.$id'
+import { Route as ApiMobileAnalyticsRouteImport } from './routes/api/mobile/analytics'
+import { Route as ApiMobileBudgetsRouteImport } from './routes/api/mobile/budgets'
+import { Route as ApiMobileCategoriesRouteImport } from './routes/api/mobile/categories'
+import { Route as ApiMobileDashboardRouteImport } from './routes/api/mobile/dashboard'
+import { Route as ApiMobileGoalsRouteImport } from './routes/api/mobile/goals'
+import { Route as ApiMobileTransactionsRouteImport } from './routes/api/mobile/transactions'
+import { Route as ApiMobileWalletsRouteImport } from './routes/api/mobile/wallets'
 import { Route as ApiMobileBudgetsIdRouteImport } from './routes/api/mobile/budgets.$id'
-import { Route as ApiMobileGoalsIdWithdrawRouteImport } from './routes/api/mobile/goals.$id.withdraw'
+import { Route as ApiMobileCategoriesIdRouteImport } from './routes/api/mobile/categories.$id'
+import { Route as ApiMobileCategoriesManageRouteImport } from './routes/api/mobile/categories.manage'
+import { Route as ApiMobileGoalsIdRouteImport } from './routes/api/mobile/goals.$id'
+import { Route as ApiMobileTransactionsIdRouteImport } from './routes/api/mobile/transactions.$id'
+import { Route as ApiMobileTransactionsMaxDateRouteImport } from './routes/api/mobile/transactions.max-date'
+import { Route as ApiMobileTransactionsTriggerRecurringRouteImport } from './routes/api/mobile/transactions.trigger-recurring'
+import { Route as ApiMobileWalletsIdRouteImport } from './routes/api/mobile/wallets.$id'
+import { Route as ApiMobileWalletsTransferRouteImport } from './routes/api/mobile/wallets.transfer'
 import { Route as ApiMobileGoalsIdDepositRouteImport } from './routes/api/mobile/goals.$id.deposit'
+import { Route as ApiMobileGoalsIdWithdrawRouteImport } from './routes/api/mobile/goals.$id.withdraw'
 
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -48,18 +52,24 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedWalletsRoute = AuthenticatedWalletsRouteImport.update({
-  id: '/wallets',
-  path: '/wallets',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTransactionsRoute =
@@ -68,49 +78,14 @@ const AuthenticatedTransactionsRoute =
     path: '/transactions',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
-  id: '/goals',
-  path: '/goals',
+const AuthenticatedWalletsRoute = AuthenticatedWalletsRouteImport.update({
+  id: '/wallets',
+  path: '/wallets',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const ApiMobileWalletsRoute = ApiMobileWalletsRouteImport.update({
-  id: '/api/mobile/wallets',
-  path: '/api/mobile/wallets',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiMobileTransactionsRoute = ApiMobileTransactionsRouteImport.update({
-  id: '/api/mobile/transactions',
-  path: '/api/mobile/transactions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiMobileGoalsRoute = ApiMobileGoalsRouteImport.update({
-  id: '/api/mobile/goals',
-  path: '/api/mobile/goals',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiMobileDashboardRoute = ApiMobileDashboardRouteImport.update({
-  id: '/api/mobile/dashboard',
-  path: '/api/mobile/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiMobileCategoriesRoute = ApiMobileCategoriesRouteImport.update({
-  id: '/api/mobile/categories',
-  path: '/api/mobile/categories',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiMobileBudgetsRoute = ApiMobileBudgetsRouteImport.update({
-  id: '/api/mobile/budgets',
-  path: '/api/mobile/budgets',
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMobileAnalyticsRoute = ApiMobileAnalyticsRouteImport.update({
@@ -118,43 +93,45 @@ const ApiMobileAnalyticsRoute = ApiMobileAnalyticsRouteImport.update({
   path: '/api/mobile/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
+const ApiMobileBudgetsRoute = ApiMobileBudgetsRouteImport.update({
+  id: '/api/mobile/budgets',
+  path: '/api/mobile/budgets',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiMobileWalletsTransferRoute =
-  ApiMobileWalletsTransferRouteImport.update({
-    id: '/transfer',
-    path: '/transfer',
-    getParentRoute: () => ApiMobileWalletsRoute,
-  } as any)
-const ApiMobileWalletsIdRoute = ApiMobileWalletsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ApiMobileWalletsRoute,
+const ApiMobileCategoriesRoute = ApiMobileCategoriesRouteImport.update({
+  id: '/api/mobile/categories',
+  path: '/api/mobile/categories',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const ApiMobileTransactionsTriggerRecurringRoute =
-  ApiMobileTransactionsTriggerRecurringRouteImport.update({
-    id: '/trigger-recurring',
-    path: '/trigger-recurring',
-    getParentRoute: () => ApiMobileTransactionsRoute,
-  } as any)
-const ApiMobileTransactionsMaxDateRoute =
-  ApiMobileTransactionsMaxDateRouteImport.update({
-    id: '/max-date',
-    path: '/max-date',
-    getParentRoute: () => ApiMobileTransactionsRoute,
-  } as any)
-const ApiMobileTransactionsIdRoute = ApiMobileTransactionsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ApiMobileTransactionsRoute,
+const ApiMobileDashboardRoute = ApiMobileDashboardRouteImport.update({
+  id: '/api/mobile/dashboard',
+  path: '/api/mobile/dashboard',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const ApiMobileGoalsIdRoute = ApiMobileGoalsIdRouteImport.update({
+const ApiMobileGoalsRoute = ApiMobileGoalsRouteImport.update({
+  id: '/api/mobile/goals',
+  path: '/api/mobile/goals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileTransactionsRoute = ApiMobileTransactionsRouteImport.update({
+  id: '/api/mobile/transactions',
+  path: '/api/mobile/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileWalletsRoute = ApiMobileWalletsRouteImport.update({
+  id: '/api/mobile/wallets',
+  path: '/api/mobile/wallets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileBudgetsIdRoute = ApiMobileBudgetsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => ApiMobileGoalsRoute,
+  getParentRoute: () => ApiMobileBudgetsRoute,
+} as any)
+const ApiMobileCategoriesIdRoute = ApiMobileCategoriesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiMobileCategoriesRoute,
 } as any)
 const ApiMobileCategoriesManageRoute =
   ApiMobileCategoriesManageRouteImport.update({
@@ -162,15 +139,43 @@ const ApiMobileCategoriesManageRoute =
     path: '/manage',
     getParentRoute: () => ApiMobileCategoriesRoute,
   } as any)
-const ApiMobileCategoriesIdRoute = ApiMobileCategoriesIdRouteImport.update({
+const ApiMobileGoalsIdRoute = ApiMobileGoalsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => ApiMobileCategoriesRoute,
+  getParentRoute: () => ApiMobileGoalsRoute,
 } as any)
-const ApiMobileBudgetsIdRoute = ApiMobileBudgetsIdRouteImport.update({
+const ApiMobileTransactionsIdRoute = ApiMobileTransactionsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => ApiMobileBudgetsRoute,
+  getParentRoute: () => ApiMobileTransactionsRoute,
+} as any)
+const ApiMobileTransactionsMaxDateRoute =
+  ApiMobileTransactionsMaxDateRouteImport.update({
+    id: '/max-date',
+    path: '/max-date',
+    getParentRoute: () => ApiMobileTransactionsRoute,
+  } as any)
+const ApiMobileTransactionsTriggerRecurringRoute =
+  ApiMobileTransactionsTriggerRecurringRouteImport.update({
+    id: '/trigger-recurring',
+    path: '/trigger-recurring',
+    getParentRoute: () => ApiMobileTransactionsRoute,
+  } as any)
+const ApiMobileWalletsIdRoute = ApiMobileWalletsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiMobileWalletsRoute,
+} as any)
+const ApiMobileWalletsTransferRoute =
+  ApiMobileWalletsTransferRouteImport.update({
+    id: '/transfer',
+    path: '/transfer',
+    getParentRoute: () => ApiMobileWalletsRoute,
+  } as any)
+const ApiMobileGoalsIdDepositRoute = ApiMobileGoalsIdDepositRouteImport.update({
+  id: '/deposit',
+  path: '/deposit',
+  getParentRoute: () => ApiMobileGoalsIdRoute,
 } as any)
 const ApiMobileGoalsIdWithdrawRoute =
   ApiMobileGoalsIdWithdrawRouteImport.update({
@@ -178,11 +183,6 @@ const ApiMobileGoalsIdWithdrawRoute =
     path: '/withdraw',
     getParentRoute: () => ApiMobileGoalsIdRoute,
   } as any)
-const ApiMobileGoalsIdDepositRoute = ApiMobileGoalsIdDepositRouteImport.update({
-  id: '/deposit',
-  path: '/deposit',
-  getParentRoute: () => ApiMobileGoalsIdRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -381,18 +381,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -402,32 +395,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/wallets': {
-      id: '/_authenticated/wallets'
-      path: '/wallets'
-      fullPath: '/wallets'
-      preLoaderRoute: typeof AuthenticatedWalletsRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/transactions': {
-      id: '/_authenticated/transactions'
-      path: '/transactions'
-      fullPath: '/transactions'
-      preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/goals': {
-      id: '/_authenticated/goals'
-      path: '/goals'
-      fullPath: '/goals'
-      preLoaderRoute: typeof AuthenticatedGoalsRouteImport
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -437,53 +423,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/analytics': {
-      id: '/_authenticated/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+    '/_authenticated/goals': {
+      id: '/_authenticated/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof AuthenticatedGoalsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/api/mobile/wallets': {
-      id: '/api/mobile/wallets'
-      path: '/api/mobile/wallets'
-      fullPath: '/api/mobile/wallets'
-      preLoaderRoute: typeof ApiMobileWalletsRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/transactions': {
+      id: '/_authenticated/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/api/mobile/transactions': {
-      id: '/api/mobile/transactions'
-      path: '/api/mobile/transactions'
-      fullPath: '/api/mobile/transactions'
-      preLoaderRoute: typeof ApiMobileTransactionsRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/wallets': {
+      id: '/_authenticated/wallets'
+      path: '/wallets'
+      fullPath: '/wallets'
+      preLoaderRoute: typeof AuthenticatedWalletsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/api/mobile/goals': {
-      id: '/api/mobile/goals'
-      path: '/api/mobile/goals'
-      fullPath: '/api/mobile/goals'
-      preLoaderRoute: typeof ApiMobileGoalsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/mobile/dashboard': {
-      id: '/api/mobile/dashboard'
-      path: '/api/mobile/dashboard'
-      fullPath: '/api/mobile/dashboard'
-      preLoaderRoute: typeof ApiMobileDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/mobile/categories': {
-      id: '/api/mobile/categories'
-      path: '/api/mobile/categories'
-      fullPath: '/api/mobile/categories'
-      preLoaderRoute: typeof ApiMobileCategoriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/mobile/budgets': {
-      id: '/api/mobile/budgets'
-      path: '/api/mobile/budgets'
-      fullPath: '/api/mobile/budgets'
-      preLoaderRoute: typeof ApiMobileBudgetsRouteImport
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/mobile/analytics': {
@@ -493,32 +458,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMobileAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
+    '/api/mobile/budgets': {
+      id: '/api/mobile/budgets'
+      path: '/api/mobile/budgets'
+      fullPath: '/api/mobile/budgets'
+      preLoaderRoute: typeof ApiMobileBudgetsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/mobile/wallets/transfer': {
-      id: '/api/mobile/wallets/transfer'
-      path: '/transfer'
-      fullPath: '/api/mobile/wallets/transfer'
-      preLoaderRoute: typeof ApiMobileWalletsTransferRouteImport
-      parentRoute: typeof ApiMobileWalletsRoute
+    '/api/mobile/categories': {
+      id: '/api/mobile/categories'
+      path: '/api/mobile/categories'
+      fullPath: '/api/mobile/categories'
+      preLoaderRoute: typeof ApiMobileCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/api/mobile/wallets/$id': {
-      id: '/api/mobile/wallets/$id'
+    '/api/mobile/dashboard': {
+      id: '/api/mobile/dashboard'
+      path: '/api/mobile/dashboard'
+      fullPath: '/api/mobile/dashboard'
+      preLoaderRoute: typeof ApiMobileDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/goals': {
+      id: '/api/mobile/goals'
+      path: '/api/mobile/goals'
+      fullPath: '/api/mobile/goals'
+      preLoaderRoute: typeof ApiMobileGoalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/transactions': {
+      id: '/api/mobile/transactions'
+      path: '/api/mobile/transactions'
+      fullPath: '/api/mobile/transactions'
+      preLoaderRoute: typeof ApiMobileTransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/wallets': {
+      id: '/api/mobile/wallets'
+      path: '/api/mobile/wallets'
+      fullPath: '/api/mobile/wallets'
+      preLoaderRoute: typeof ApiMobileWalletsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/budgets/$id': {
+      id: '/api/mobile/budgets/$id'
       path: '/$id'
-      fullPath: '/api/mobile/wallets/$id'
-      preLoaderRoute: typeof ApiMobileWalletsIdRouteImport
-      parentRoute: typeof ApiMobileWalletsRoute
+      fullPath: '/api/mobile/budgets/$id'
+      preLoaderRoute: typeof ApiMobileBudgetsIdRouteImport
+      parentRoute: typeof ApiMobileBudgetsRoute
     }
-    '/api/mobile/transactions/trigger-recurring': {
-      id: '/api/mobile/transactions/trigger-recurring'
-      path: '/trigger-recurring'
-      fullPath: '/api/mobile/transactions/trigger-recurring'
-      preLoaderRoute: typeof ApiMobileTransactionsTriggerRecurringRouteImport
+    '/api/mobile/categories/$id': {
+      id: '/api/mobile/categories/$id'
+      path: '/$id'
+      fullPath: '/api/mobile/categories/$id'
+      preLoaderRoute: typeof ApiMobileCategoriesIdRouteImport
+      parentRoute: typeof ApiMobileCategoriesRoute
+    }
+    '/api/mobile/categories/manage': {
+      id: '/api/mobile/categories/manage'
+      path: '/manage'
+      fullPath: '/api/mobile/categories/manage'
+      preLoaderRoute: typeof ApiMobileCategoriesManageRouteImport
+      parentRoute: typeof ApiMobileCategoriesRoute
+    }
+    '/api/mobile/goals/$id': {
+      id: '/api/mobile/goals/$id'
+      path: '/$id'
+      fullPath: '/api/mobile/goals/$id'
+      preLoaderRoute: typeof ApiMobileGoalsIdRouteImport
+      parentRoute: typeof ApiMobileGoalsRoute
+    }
+    '/api/mobile/transactions/$id': {
+      id: '/api/mobile/transactions/$id'
+      path: '/$id'
+      fullPath: '/api/mobile/transactions/$id'
+      preLoaderRoute: typeof ApiMobileTransactionsIdRouteImport
       parentRoute: typeof ApiMobileTransactionsRoute
     }
     '/api/mobile/transactions/max-date': {
@@ -528,53 +542,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMobileTransactionsMaxDateRouteImport
       parentRoute: typeof ApiMobileTransactionsRoute
     }
-    '/api/mobile/transactions/$id': {
-      id: '/api/mobile/transactions/$id'
-      path: '/$id'
-      fullPath: '/api/mobile/transactions/$id'
-      preLoaderRoute: typeof ApiMobileTransactionsIdRouteImport
+    '/api/mobile/transactions/trigger-recurring': {
+      id: '/api/mobile/transactions/trigger-recurring'
+      path: '/trigger-recurring'
+      fullPath: '/api/mobile/transactions/trigger-recurring'
+      preLoaderRoute: typeof ApiMobileTransactionsTriggerRecurringRouteImport
       parentRoute: typeof ApiMobileTransactionsRoute
     }
-    '/api/mobile/goals/$id': {
-      id: '/api/mobile/goals/$id'
+    '/api/mobile/wallets/$id': {
+      id: '/api/mobile/wallets/$id'
       path: '/$id'
-      fullPath: '/api/mobile/goals/$id'
-      preLoaderRoute: typeof ApiMobileGoalsIdRouteImport
-      parentRoute: typeof ApiMobileGoalsRoute
+      fullPath: '/api/mobile/wallets/$id'
+      preLoaderRoute: typeof ApiMobileWalletsIdRouteImport
+      parentRoute: typeof ApiMobileWalletsRoute
     }
-    '/api/mobile/categories/manage': {
-      id: '/api/mobile/categories/manage'
-      path: '/manage'
-      fullPath: '/api/mobile/categories/manage'
-      preLoaderRoute: typeof ApiMobileCategoriesManageRouteImport
-      parentRoute: typeof ApiMobileCategoriesRoute
-    }
-    '/api/mobile/categories/$id': {
-      id: '/api/mobile/categories/$id'
-      path: '/$id'
-      fullPath: '/api/mobile/categories/$id'
-      preLoaderRoute: typeof ApiMobileCategoriesIdRouteImport
-      parentRoute: typeof ApiMobileCategoriesRoute
-    }
-    '/api/mobile/budgets/$id': {
-      id: '/api/mobile/budgets/$id'
-      path: '/$id'
-      fullPath: '/api/mobile/budgets/$id'
-      preLoaderRoute: typeof ApiMobileBudgetsIdRouteImport
-      parentRoute: typeof ApiMobileBudgetsRoute
-    }
-    '/api/mobile/goals/$id/withdraw': {
-      id: '/api/mobile/goals/$id/withdraw'
-      path: '/withdraw'
-      fullPath: '/api/mobile/goals/$id/withdraw'
-      preLoaderRoute: typeof ApiMobileGoalsIdWithdrawRouteImport
-      parentRoute: typeof ApiMobileGoalsIdRoute
+    '/api/mobile/wallets/transfer': {
+      id: '/api/mobile/wallets/transfer'
+      path: '/transfer'
+      fullPath: '/api/mobile/wallets/transfer'
+      preLoaderRoute: typeof ApiMobileWalletsTransferRouteImport
+      parentRoute: typeof ApiMobileWalletsRoute
     }
     '/api/mobile/goals/$id/deposit': {
       id: '/api/mobile/goals/$id/deposit'
       path: '/deposit'
       fullPath: '/api/mobile/goals/$id/deposit'
       preLoaderRoute: typeof ApiMobileGoalsIdDepositRouteImport
+      parentRoute: typeof ApiMobileGoalsIdRoute
+    }
+    '/api/mobile/goals/$id/withdraw': {
+      id: '/api/mobile/goals/$id/withdraw'
+      path: '/withdraw'
+      fullPath: '/api/mobile/goals/$id/withdraw'
+      preLoaderRoute: typeof ApiMobileGoalsIdWithdrawRouteImport
       parentRoute: typeof ApiMobileGoalsIdRoute
     }
   }
@@ -697,3 +697,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

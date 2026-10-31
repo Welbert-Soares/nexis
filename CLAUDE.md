@@ -111,7 +111,7 @@ export const getUserWallets = createServerFn({ method: 'GET' }).handler(async ()
 })
 
 export const createUserWallet = createServerFn({ method: 'POST' })
-  .inputValidator(createWalletSchema)        // Zod schema inline in service file
+  .validator(createWalletSchema)             // Zod schema inline in service file
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     return createWallet({ userId: session.user.id, ...data })
