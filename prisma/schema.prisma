@@ -83,6 +83,8 @@ model Wallet {
   userId       String
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  imports         StatementImport[]
+  transferChoices ImportTransferChoice[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
@@ -134,6 +136,10 @@ model Transaction {
   children    Transaction[]       @relation("RecurringChildren")
   goalId      String?
   goal        Goal?               @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  // Importação de extrato: identificador da linha no banco e a importação que a criou.
+  externalId  String?
+  importId    String?
+  import      StatementImport?    @relation(fields: [importId], references: [id], onDelete: SetNull)
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
   deletedAt   DateTime?
@@ -145,6 +151,8 @@ model Transaction {
   @@index([walletId, nextDue])
   @@index([categoryId])
   @@index([goalId])
+  @@index([walletId, externalId])
+  @@index([importId])
 }
 
 model Goal {
@@ -169,6 +177,33 @@ model PushSubscription {
   endpoint     String   @unique
   subscription String   // JSON serializado de PushSubscriptionJSON
   createdAt    DateTime @default(now())
+}
+
+// Importação de um extrato bancário numa carteira (ver CONTEXT.md).
+model StatementImport {
+  id               String        @id @default(cuid())
+  userId           String
+  walletId         String
+  wallet           Wallet        @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  format           String        // ex.: "nubank_conta"
+  transactionCount Int
+  transactions     Transaction[]
+  createdAt        DateTime      @default(now())
+  undoneAt         DateTime?
+
+  @@index([walletId, createdAt])
+}
+
+// Carteira da outra ponta escolhida para um grupo de transferência numa carteira.
+// outraPontaWalletId null = tratar o grupo como receita/despesa.
+model ImportTransferChoice {
+  id                 String  @id @default(cuid())
+  walletId           String
+  wallet             Wallet  @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  group              String  // "caixinhas" | "fatura_cartao" | "pix_proprio"
+  outraPontaWalletId String?
+
+  @@unique([walletId, group])
 }
 
 model NotificationLog {
