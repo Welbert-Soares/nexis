@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, useMutation, keepPreviousData } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, ArrowLeftRight, Download, type LucideIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Repeat2, Trash2, SlidersHorizontal, TrendingUp, TrendingDown, Layers, Wallet, FilterX, ArrowLeftRight, Download, FileUp, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from 'vaul'
 import { z } from 'zod'
@@ -11,6 +11,7 @@ import { fadeUp, stagger, scaleIn } from '#/lib/motion'
 import { listTransactions, removeTransaction, removeInstallments, getTransactionMaxDate } from '#/server/services/transaction.service'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { TransactionSheet, type EditableTransaction } from '#/components/transactions/transaction-sheet'
+import { ImportacaoSheet } from '#/components/importacao/importacao-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 import { Skeleton } from '#/components/ui/skeleton'
 import { CATEGORY_ICONS } from '#/lib/category-icons'
@@ -72,6 +73,7 @@ function TransactionsPage() {
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<EditableTransaction | undefined>()
   const [confirmingTx, setConfirmingTx] = useState<Tx | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<{ tx: Tx; mode?: InstallmentMode } | null>(null)
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const queryClient = useQueryClient()
@@ -270,6 +272,14 @@ function TransactionsPage() {
               {fmtMonth(year, month)}
             </p>
             <div className="flex items-center gap-1">
+              <button
+                onClick={() => setImportOpen(true)}
+                className="p-1 text-zinc-600 active:text-zinc-300 transition-colors"
+                title="Importar extrato"
+                aria-label="Importar extrato"
+              >
+                <FileUp className="h-4 w-4" />
+              </button>
               <button
                 onClick={exportCsv}
                 disabled={!transactions?.length}
@@ -708,6 +718,11 @@ function TransactionsPage() {
         open={sheetOpen}
         transaction={editing}
         onClose={() => setEditing(undefined)}
+      />
+      <ImportacaoSheet
+        open={importOpen}
+        walletId={walletFilter || undefined}
+        onClose={() => setImportOpen(false)}
       />
     </>
   )

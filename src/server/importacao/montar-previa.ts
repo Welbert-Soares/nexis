@@ -149,6 +149,18 @@ const MAX_LINHAS = 2000
 
 const CABECALHO_CONTA_NUBANK ='Data,Valor,Identificador,Descrição'
 
+/** Primeiro e último dia do extrato, para carregar só o contexto necessário. Null se não houver datas. */
+export function intervaloDoExtrato(textoDoExtrato: string): { inicio: Date; fim: Date } | null {
+  const datas = textoDoExtrato
+    .split(/\r?\n/)
+    .map((l) => l.match(/^(\d{2}\/\d{2}\/\d{4}),/)?.[1])
+    .filter((d): d is string => !!d)
+    .map(lerData)
+  if (datas.length === 0) return null
+  const tempos = datas.map((d) => d.getTime())
+  return { inicio: new Date(Math.min(...tempos)), fim: new Date(Math.max(...tempos)) }
+}
+
 export function montarPrevia(textoDoExtrato: string, contexto: ContextoPrevia): Previa {
   const [cabecalho, ...linhasBrutas] = textoDoExtrato
     .replace(/^﻿/, '')

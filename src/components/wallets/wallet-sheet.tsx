@@ -3,7 +3,7 @@ import { useForm } from '@tanstack/react-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Drawer } from 'vaul'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Trash2 } from 'lucide-react'
+import { Check, Trash2, FileUp } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import { useHaptic } from '#/hooks/use-haptic'
 import { CATEGORY_ICONS } from '#/lib/category-icons'
@@ -46,9 +46,11 @@ interface Props {
   open: boolean
   wallet?: EditableWallet
   onClose: () => void
+  /** Abre a importação de extrato com esta carteira já escolhida. */
+  onImportar?: (walletId: string) => void
 }
 
-export function WalletSheet({ open, wallet, onClose }: Props) {
+export function WalletSheet({ open, wallet, onClose, onImportar }: Props) {
   const isEdit = !!wallet
   const queryClient = useQueryClient()
   const haptic = useHaptic()
@@ -161,13 +163,24 @@ export function WalletSheet({ open, wallet, onClose }: Props) {
                 {isEdit ? 'Editar carteira' : 'Nova carteira'}
               </Drawer.Title>
               {isEdit && !saved && (
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(true)}
-                  className="p-1 text-zinc-600 active:text-red-400 transition-colors"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-1">
+                  {onImportar && (
+                    <button
+                      type="button"
+                      onClick={() => onImportar(wallet!.id)}
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-zinc-400 active:text-zinc-200 transition-colors"
+                    >
+                      <FileUp className="h-4 w-4" /> Importar extrato
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(true)}
+                    className="p-1 text-zinc-600 active:text-red-400 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               )}
             </div>
 
