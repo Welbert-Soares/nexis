@@ -26,7 +26,15 @@ _Avoid_: Saída, débito, gasto
 Par de transações (uma despesa numa carteira, uma receita em outra) que move dinheiro entre carteiras do próprio usuário e não conta como receita nem despesa nas análises.
 _Avoid_: Movimentação interna
 
+**Estorno**:
+Devolução de uma despesa pelo banco; um estorno e a despesa que ele anula se cancelam e nenhum dos dois é registrado.
+_Avoid_: Reembolso, devolução
+
 ### Importação
+
+**Extrato**:
+Arquivo exportado pelo banco com as movimentações de uma conta num período, cada linha com um identificador único dado pelo banco.
+_Avoid_: CSV, planilha
 
 **Importação**:
 Criação de várias transações de uma vez numa carteira a partir de um extrato bancário em arquivo, confirmada pelo usuário numa prévia.
