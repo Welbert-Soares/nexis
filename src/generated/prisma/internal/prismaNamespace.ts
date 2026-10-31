@@ -394,6 +394,8 @@ export const ModelName = {
   Transaction: 'Transaction',
   Goal: 'Goal',
   PushSubscription: 'PushSubscription',
+  StatementImport: 'StatementImport',
+  ImportTransferChoice: 'ImportTransferChoice',
   NotificationLog: 'NotificationLog'
 } as const
 
@@ -410,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "wallet" | "category" | "budget" | "transaction" | "goal" | "pushSubscription" | "notificationLog"
+    modelProps: "user" | "session" | "account" | "verification" | "wallet" | "category" | "budget" | "transaction" | "goal" | "pushSubscription" | "statementImport" | "importTransferChoice" | "notificationLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1154,6 +1156,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    StatementImport: {
+      payload: Prisma.$StatementImportPayload<ExtArgs>
+      fields: Prisma.StatementImportFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StatementImportFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StatementImportFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload>
+        }
+        findFirst: {
+          args: Prisma.StatementImportFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StatementImportFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload>
+        }
+        findMany: {
+          args: Prisma.StatementImportFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload>[]
+        }
+        create: {
+          args: Prisma.StatementImportCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload>
+        }
+        createMany: {
+          args: Prisma.StatementImportCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StatementImportCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload>[]
+        }
+        delete: {
+          args: Prisma.StatementImportDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload>
+        }
+        update: {
+          args: Prisma.StatementImportUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload>
+        }
+        deleteMany: {
+          args: Prisma.StatementImportDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StatementImportUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StatementImportUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload>[]
+        }
+        upsert: {
+          args: Prisma.StatementImportUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatementImportPayload>
+        }
+        aggregate: {
+          args: Prisma.StatementImportAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStatementImport>
+        }
+        groupBy: {
+          args: Prisma.StatementImportGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StatementImportGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StatementImportCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StatementImportCountAggregateOutputType> | number
+        }
+      }
+    }
+    ImportTransferChoice: {
+      payload: Prisma.$ImportTransferChoicePayload<ExtArgs>
+      fields: Prisma.ImportTransferChoiceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ImportTransferChoiceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ImportTransferChoiceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload>
+        }
+        findFirst: {
+          args: Prisma.ImportTransferChoiceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ImportTransferChoiceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload>
+        }
+        findMany: {
+          args: Prisma.ImportTransferChoiceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload>[]
+        }
+        create: {
+          args: Prisma.ImportTransferChoiceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload>
+        }
+        createMany: {
+          args: Prisma.ImportTransferChoiceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ImportTransferChoiceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload>[]
+        }
+        delete: {
+          args: Prisma.ImportTransferChoiceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload>
+        }
+        update: {
+          args: Prisma.ImportTransferChoiceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload>
+        }
+        deleteMany: {
+          args: Prisma.ImportTransferChoiceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ImportTransferChoiceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ImportTransferChoiceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload>[]
+        }
+        upsert: {
+          args: Prisma.ImportTransferChoiceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImportTransferChoicePayload>
+        }
+        aggregate: {
+          args: Prisma.ImportTransferChoiceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImportTransferChoice>
+        }
+        groupBy: {
+          args: Prisma.ImportTransferChoiceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImportTransferChoiceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ImportTransferChoiceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImportTransferChoiceCountAggregateOutputType> | number
+        }
+      }
+    }
     NotificationLog: {
       payload: Prisma.$NotificationLogPayload<ExtArgs>
       fields: Prisma.NotificationLogFieldRefs
@@ -1386,6 +1536,8 @@ export const TransactionScalarFieldEnum = {
   isTransfer: 'isTransfer',
   parentId: 'parentId',
   goalId: 'goalId',
+  externalId: 'externalId',
+  importId: 'importId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -1419,6 +1571,29 @@ export const PushSubscriptionScalarFieldEnum = {
 } as const
 
 export type PushSubscriptionScalarFieldEnum = (typeof PushSubscriptionScalarFieldEnum)[keyof typeof PushSubscriptionScalarFieldEnum]
+
+
+export const StatementImportScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  walletId: 'walletId',
+  format: 'format',
+  transactionCount: 'transactionCount',
+  createdAt: 'createdAt',
+  undoneAt: 'undoneAt'
+} as const
+
+export type StatementImportScalarFieldEnum = (typeof StatementImportScalarFieldEnum)[keyof typeof StatementImportScalarFieldEnum]
+
+
+export const ImportTransferChoiceScalarFieldEnum = {
+  id: 'id',
+  walletId: 'walletId',
+  group: 'group',
+  outraPontaWalletId: 'outraPontaWalletId'
+} as const
+
+export type ImportTransferChoiceScalarFieldEnum = (typeof ImportTransferChoiceScalarFieldEnum)[keyof typeof ImportTransferChoiceScalarFieldEnum]
 
 
 export const NotificationLogScalarFieldEnum = {
@@ -1699,6 +1874,8 @@ export type GlobalOmitConfig = {
   transaction?: Prisma.TransactionOmit
   goal?: Prisma.GoalOmit
   pushSubscription?: Prisma.PushSubscriptionOmit
+  statementImport?: Prisma.StatementImportOmit
+  importTransferChoice?: Prisma.ImportTransferChoiceOmit
   notificationLog?: Prisma.NotificationLogOmit
 }
 
