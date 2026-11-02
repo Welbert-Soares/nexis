@@ -17,14 +17,14 @@ async function getSessionOrThrow() {
 }
 
 export const getCategories = createServerFn({ method: 'GET' })
-  .inputValidator(z.object({ type: z.enum(['INCOME', 'EXPENSE']) }))
+  .validator(z.object({ type: z.enum(['INCOME', 'EXPENSE']) }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     return getCategoriesByType(data.type, session.user.id)
   })
 
 export const addCategory = createServerFn({ method: 'POST' })
-  .inputValidator(z.object({
+  .validator(z.object({
     name: z.string().min(1),
     color: z.string(),
     icon: z.string().optional(),
@@ -36,7 +36,7 @@ export const addCategory = createServerFn({ method: 'POST' })
   })
 
 export const editCategory = createServerFn({ method: 'POST' })
-  .inputValidator(z.object({
+  .validator(z.object({
     id: z.string(),
     name: z.string().min(1),
     color: z.string(),
@@ -53,7 +53,7 @@ export const getCategoriesManagement = createServerFn({ method: 'GET' }).handler
 })
 
 export const removeCategory = createServerFn({ method: 'POST' })
-  .inputValidator(z.object({ id: z.string() }))
+  .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     return deleteCategory(data.id, session.user.id)
