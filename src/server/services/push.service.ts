@@ -11,14 +11,14 @@ async function getSessionOrThrow() {
 }
 
 export const subscribeToNotifications = createServerFn({ method: 'POST' })
-  .validator(z.object({ endpoint: z.string(), subscription: z.string() }))
+  .inputValidator(z.object({ endpoint: z.string(), subscription: z.string() }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     await upsertSubscription(session.user.id, data.endpoint, data.subscription)
   })
 
 export const unsubscribeFromNotifications = createServerFn({ method: 'POST' })
-  .validator(z.object({ endpoint: z.string() }))
+  .inputValidator(z.object({ endpoint: z.string() }))
   .handler(async ({ data }) => {
     await deleteSubscriptionByEndpoint(data.endpoint)
   })

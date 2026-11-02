@@ -11,7 +11,7 @@ async function getSessionOrThrow() {
 }
 
 export const getBudgets = createServerFn({ method: 'GET' })
-  .validator(z.object({ month: z.number().int(), year: z.number().int() }))
+  .inputValidator(z.object({ month: z.number().int(), year: z.number().int() }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const rows = await getBudgetsWithSpending(session.user.id, data.month, data.year)
@@ -27,7 +27,7 @@ export const getBudgets = createServerFn({ method: 'GET' })
   })
 
 export const saveBudget = createServerFn({ method: 'POST' })
-  .validator(z.object({
+  .inputValidator(z.object({
     categoryId: z.string(),
     month: z.number().int(),
     year: z.number().int(),
@@ -40,7 +40,7 @@ export const saveBudget = createServerFn({ method: 'POST' })
   })
 
 export const removeBudget = createServerFn({ method: 'POST' })
-  .validator(z.object({ id: z.string() }))
+  .inputValidator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const b = await deleteBudget(data.id, session.user.id)

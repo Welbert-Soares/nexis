@@ -34,7 +34,7 @@ const goalSchema = z.object({
 })
 
 export const createUserGoal = createServerFn({ method: 'POST' })
-  .validator(goalSchema)
+  .inputValidator(goalSchema)
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const goal = await createGoal({ userId: session.user.id, ...data })
@@ -55,7 +55,7 @@ const updateGoalSchema = z.object({
 })
 
 export const updateUserGoal = createServerFn({ method: 'POST' })
-  .validator(updateGoalSchema)
+  .inputValidator(updateGoalSchema)
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const { id, ...rest } = data
@@ -69,7 +69,7 @@ export const updateUserGoal = createServerFn({ method: 'POST' })
   })
 
 export const deleteUserGoal = createServerFn({ method: 'POST' })
-  .validator(z.object({ id: z.string() }))
+  .inputValidator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     await deleteGoal(data.id, session.user.id)
@@ -127,7 +127,7 @@ export const checkGoalDeadlines = createServerFn({ method: 'POST' }).handler(asy
 })
 
 export const withdrawFromGoal = createServerFn({ method: 'POST' })
-  .validator(z.object({
+  .inputValidator(z.object({
     goalId: z.string(),
     walletId: z.string(),
     amount: z.number().positive(),
@@ -138,7 +138,7 @@ export const withdrawFromGoal = createServerFn({ method: 'POST' })
   })
 
 export const depositGoalFromWallet = createServerFn({ method: 'POST' })
-  .validator(z.object({
+  .inputValidator(z.object({
     goalId: z.string(),
     walletId: z.string(),
     amount: z.number().positive(),
