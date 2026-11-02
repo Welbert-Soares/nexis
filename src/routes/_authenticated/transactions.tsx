@@ -605,7 +605,7 @@ function TransactionsPage() {
         </PullToRefresh>
       </div>
 
-      <Drawer.Root open={!!confirmingTx} onClose={() => setConfirmingTx(null)}>
+      <Drawer.Root handleOnly open={!!confirmingTx} onClose={() => setConfirmingTx(null)}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={() => setConfirmingTx(null)} />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">

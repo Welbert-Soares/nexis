@@ -191,7 +191,7 @@ function GoalsPage() {
       <GoalSheet open={sheetOpen} goal={editing} onClose={handleClose} />
 
       {/* Drawer de aporte */}
-      <Drawer.Root open={!!depositGoal} onClose={closeDeposit}>
+      <Drawer.Root handleOnly open={!!depositGoal} onClose={closeDeposit}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={closeDeposit} />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">
@@ -251,7 +251,7 @@ function GoalsPage() {
       </Drawer.Root>
 
       {/* Drawer de resgate */}
-      <Drawer.Root open={!!withdrawGoal} onClose={closeWithdraw}>
+      <Drawer.Root handleOnly open={!!withdrawGoal} onClose={closeWithdraw}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={closeWithdraw} />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900 outline-none">

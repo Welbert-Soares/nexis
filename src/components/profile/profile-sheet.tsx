@@ -123,7 +123,7 @@ export function ProfileSheet({ open, onClose, user }: Props) {
 
   return (
     <>
-      <Drawer.Root open={open} onClose={onClose}>
+      <Drawer.Root handleOnly open={open} onClose={onClose}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={onClose} />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col max-h-[calc(100dvh-16px)] overflow-hidden rounded-t-2xl bg-zinc-900 outline-none">
@@ -338,7 +338,7 @@ export function ProfileSheet({ open, onClose, user }: Props) {
       </Drawer.Root>
 
       {/* Modal de confirmação de exclusão */}
-      <Drawer.Root open={!!confirmingDelete} onClose={() => setConfirmingDelete(null)}>
+      <Drawer.Root handleOnly open={!!confirmingDelete} onClose={() => setConfirmingDelete(null)}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-50 bg-black/50" onClick={() => setConfirmingDelete(null)} />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[60] flex flex-col max-h-[calc(100dvh-16px)] overflow-hidden rounded-t-2xl bg-zinc-900 outline-none">

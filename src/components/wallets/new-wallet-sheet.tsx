@@ -49,7 +49,7 @@ export function NewWalletSheet({ open, onClose }: Props) {
   })
 
   return (
-    <Drawer.Root open={open} onClose={onClose}>
+    <Drawer.Root handleOnly open={open} onClose={onClose}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={onClose} />
         <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col max-h-[calc(100dvh-16px)] overflow-hidden rounded-t-2xl bg-zinc-900 outline-none">

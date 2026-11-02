@@ -191,7 +191,7 @@ export function ImportacaoSheet({ open, walletId: walletInicial, onClose }: Prop
   const nomeCarteira = (id: string) => wallets.find((w) => w.id === id)?.name ?? 'carteira'
 
   return (
-    <Drawer.Root open={open} onClose={fechar}>
+    <Drawer.Root handleOnly open={open} onClose={fechar}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/50" onClick={fechar} />
         <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex max-h-[calc(100dvh-16px)] flex-col overflow-hidden rounded-t-2xl bg-zinc-900 outline-none">
