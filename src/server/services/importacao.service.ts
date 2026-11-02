@@ -23,7 +23,7 @@ const grupoSchema = z.enum(['caixinhas', 'fatura_cartao', 'pix_proprio'])
 const escolhasSchema = z.partialRecord(grupoSchema, z.string().nullable())
 
 export const prepararImportacao = createServerFn({ method: 'POST' })
-  .inputValidator(
+  .validator(
     z.object({
       walletId: z.string(),
       texto: z.string().max(MAX_BYTES_EXTRATO, 'O arquivo passa de 1 MB'),
@@ -55,7 +55,7 @@ function vazio(walletId: string) {
 }
 
 export const confirmarImportacaoDoExtrato = createServerFn({ method: 'POST' })
-  .inputValidator(
+  .validator(
     z.object({
       walletId: z.string(),
       linhas: z
@@ -86,7 +86,7 @@ export const confirmarImportacaoDoExtrato = createServerFn({ method: 'POST' })
   })
 
 export const desfazerImportacaoDoExtrato = createServerFn({ method: 'POST' })
-  .inputValidator(z.object({ importId: z.string() }))
+  .validator(z.object({ importId: z.string() }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const resultado = await desfazerImportacao(session.user.id, data.importId)
@@ -95,7 +95,7 @@ export const desfazerImportacaoDoExtrato = createServerFn({ method: 'POST' })
   })
 
 export const getImportacoesDaCarteira = createServerFn({ method: 'GET' })
-  .inputValidator(z.object({ walletId: z.string() }))
+  .validator(z.object({ walletId: z.string() }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     return listarImportacoes(session.user.id, data.walletId)

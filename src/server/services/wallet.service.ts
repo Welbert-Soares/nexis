@@ -31,7 +31,7 @@ const createWalletSchema = z.object({
 })
 
 export const createUserWallet = createServerFn({ method: 'POST' })
-  .inputValidator(createWalletSchema)
+  .validator(createWalletSchema)
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const wallet = await createWallet({ userId: session.user.id, ...data })
@@ -48,7 +48,7 @@ const editWalletSchema = z.object({
 })
 
 export const editUserWallet = createServerFn({ method: 'POST' })
-  .inputValidator(editWalletSchema)
+  .validator(editWalletSchema)
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const { id, ...rest } = data
@@ -57,14 +57,14 @@ export const editUserWallet = createServerFn({ method: 'POST' })
   })
 
 export const deleteUserWallet = createServerFn({ method: 'POST' })
-  .inputValidator(z.object({ id: z.string() }))
+  .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     await deleteWallet(data.id, session.user.id)
   })
 
 export const transferUserWallets = createServerFn({ method: 'POST' })
-  .inputValidator(z.object({
+  .validator(z.object({
     fromWalletId: z.string(),
     toWalletId: z.string(),
     amount: z.number().positive(),
