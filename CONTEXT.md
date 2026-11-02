@@ -46,3 +46,11 @@ _Avoid_: Preview, rascunho
 
 **Possível duplicada**:
 Linha da prévia que corresponde a uma transação já existente na carteira de destino.
+
+**Grupo de transferência**:
+Conjunto de linhas do extrato reconhecidas como o mesmo tipo de movimentação entre carteiras do próprio usuário (Caixinhas, Fatura do cartão, Pix entre minhas contas), para o qual o usuário escolhe uma única outra ponta.
+_Avoid_: Categoria de transferência
+
+**Outra ponta**:
+A carteira que recebe a transação espelhada de uma transferência importada.
+_Avoid_: Contrapartida, carteira par

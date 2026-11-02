@@ -38,7 +38,7 @@ const createTransactionSchema = z.object({
 })
 
 export const addTransaction = createServerFn({ method: 'POST' })
-  .validator(createTransactionSchema)
+  .inputValidator(createTransactionSchema)
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     if (data.installments && data.installments >= 2) {
@@ -77,7 +77,7 @@ const editTransactionSchema = z.object({
 })
 
 export const editTransaction = createServerFn({ method: 'POST' })
-  .validator(editTransactionSchema)
+  .inputValidator(editTransactionSchema)
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     const { id, ...rest } = data
@@ -86,14 +86,14 @@ export const editTransaction = createServerFn({ method: 'POST' })
   })
 
 export const removeTransaction = createServerFn({ method: 'POST' })
-  .validator(z.object({ id: z.string() }))
+  .inputValidator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     await deleteTransaction(data.id, session.user.id)
   })
 
 export const removeInstallments = createServerFn({ method: 'POST' })
-  .validator(z.object({
+  .inputValidator(z.object({
     id: z.string(),
     mode: z.enum(['this', 'this-and-future', 'all']),
   }))
@@ -115,7 +115,7 @@ const listSchema = z.object({
 })
 
 export const listTransactions = createServerFn({ method: 'GET' })
-  .validator(listSchema)
+  .inputValidator(listSchema)
   .handler(async ({ data }) => {
     const session = await getSessionOrThrow()
     return getTransactionsByMonth(session.user.id, data.year, data.month, data.type, data.walletId)
