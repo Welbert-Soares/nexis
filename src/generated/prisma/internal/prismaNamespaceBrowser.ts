@@ -61,6 +61,8 @@ export const ModelName = {
   Transaction: 'Transaction',
   Goal: 'Goal',
   PushSubscription: 'PushSubscription',
+  StatementImport: 'StatementImport',
+  ImportTransferChoice: 'ImportTransferChoice',
   NotificationLog: 'NotificationLog'
 } as const
 
@@ -199,6 +201,8 @@ export const TransactionScalarFieldEnum = {
   isTransfer: 'isTransfer',
   parentId: 'parentId',
   goalId: 'goalId',
+  externalId: 'externalId',
+  importId: 'importId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -232,6 +236,29 @@ export const PushSubscriptionScalarFieldEnum = {
 } as const
 
 export type PushSubscriptionScalarFieldEnum = (typeof PushSubscriptionScalarFieldEnum)[keyof typeof PushSubscriptionScalarFieldEnum]
+
+
+export const StatementImportScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  walletId: 'walletId',
+  format: 'format',
+  transactionCount: 'transactionCount',
+  createdAt: 'createdAt',
+  undoneAt: 'undoneAt'
+} as const
+
+export type StatementImportScalarFieldEnum = (typeof StatementImportScalarFieldEnum)[keyof typeof StatementImportScalarFieldEnum]
+
+
+export const ImportTransferChoiceScalarFieldEnum = {
+  id: 'id',
+  walletId: 'walletId',
+  group: 'group',
+  outraPontaWalletId: 'outraPontaWalletId'
+} as const
+
+export type ImportTransferChoiceScalarFieldEnum = (typeof ImportTransferChoiceScalarFieldEnum)[keyof typeof ImportTransferChoiceScalarFieldEnum]
 
 
 export const NotificationLogScalarFieldEnum = {

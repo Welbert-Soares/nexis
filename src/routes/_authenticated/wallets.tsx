@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { WalletSheet, type EditableWallet } from '#/components/wallets/wallet-sheet'
 import { TransferSheet } from '#/components/wallets/transfer-sheet'
+import { ImportacaoSheet } from '#/components/importacao/importacao-sheet'
 import { PullToRefresh } from '#/components/ui/pull-to-refresh'
 import { Skeleton } from '#/components/ui/skeleton'
 import { cn } from '#/lib/utils'
@@ -33,6 +34,7 @@ function WalletsPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editing, setEditing] = useState<EditableWallet | undefined>()
   const [transferOpen, setTransferOpen] = useState(false)
+  const [importarWalletId, setImportarWalletId] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
   const { data: wallets = [], isLoading } = useQuery({
@@ -153,6 +155,12 @@ function WalletsPage() {
         open={sheetOpen}
         wallet={editing}
         onClose={() => { setSheetOpen(false); setEditing(undefined) }}
+        onImportar={(id) => { setSheetOpen(false); setEditing(undefined); setImportarWalletId(id) }}
+      />
+      <ImportacaoSheet
+        open={importarWalletId !== null}
+        walletId={importarWalletId ?? undefined}
+        onClose={() => setImportarWalletId(null)}
       />
       <TransferSheet
         open={transferOpen}

@@ -68,6 +68,16 @@ export type Goal = Prisma.GoalModel
  */
 export type PushSubscription = Prisma.PushSubscriptionModel
 /**
+ * Model StatementImport
+ * 
+ */
+export type StatementImport = Prisma.StatementImportModel
+/**
+ * Model ImportTransferChoice
+ * 
+ */
+export type ImportTransferChoice = Prisma.ImportTransferChoiceModel
+/**
  * Model NotificationLog
  * 
  */
