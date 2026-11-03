@@ -10,6 +10,7 @@ import { Avatar } from '#/components/ui/avatar'
 import { CATEGORY_ICONS } from '#/lib/category-icons'
 import { getCategoriesManagement, removeCategory } from '#/server/services/category.service'
 import { CategorySheet, type EditableCategory } from '#/components/categories/category-sheet'
+import { RecurrencesSection } from '#/components/recurrences/recurrences-section'
 import { usePushNotifications } from '#/hooks/use-push-notifications'
 import { useInstallPrompt } from '#/hooks/use-install-prompt'
 import { useHaptic } from '#/hooks/use-haptic'
@@ -254,6 +255,10 @@ export function ProfileSheet({ open, onClose, user }: Props) {
                   )}
                 </AnimatePresence>
               </div>
+
+              <div className="h-px bg-zinc-800" />
+
+              <RecurrencesSection />
 
               <div className="h-px bg-zinc-800" />
 

@@ -30,6 +30,14 @@ _Avoid_: Movimentação interna
 Devolução de uma despesa pelo banco; um estorno e a despesa que ele anula se cancelam e nenhum dos dois é registrado.
 _Avoid_: Reembolso, devolução
 
+**Recorrência**:
+Transação marcada para se repetir num intervalo (semanal, quinzenal, mensal ou anual), que serve de modelo para as próximas. Parar uma recorrência só impede as próximas ocorrências.
+_Avoid_: Transação fixa, assinatura
+
+**Ocorrência**:
+Transação criada automaticamente a partir de uma recorrência na data devida; excluí-la tira só aquele lançamento, sem parar a recorrência.
+_Avoid_: Cópia, filha
+
 ### Importação
 
 **Extrato**:

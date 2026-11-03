@@ -57,6 +57,7 @@ type Tx = {
   parentId: string | null
   isInstallment: boolean
   isTransfer: boolean
+  recurrenceId: string | null
 }
 
 function TransactionsPage() {
@@ -205,6 +206,7 @@ function TransactionsPage() {
       categoryId: t.categoryId,
       recurring: t.recurring,
       interval: t.interval as EditableTransaction['interval'],
+      recurrenceId: t.recurrenceId,
     })
   }
 
@@ -845,7 +847,7 @@ function TransactionRow({ transaction: t, onTap }: { transaction: Tx; onTap: () 
       <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center gap-1.5 min-w-0">
           <p className="truncate text-sm text-white">{label}</p>
-          {!transfer && (t.recurring || t.parentId) && (
+          {!transfer && t.recurrenceId && (
             <Repeat2 className="h-3 w-3 shrink-0 text-zinc-600" />
           )}
         </div>

@@ -133,19 +133,27 @@ export async function getTransactionsByMonth(
     include: {
       category: true,
       wallet: { select: { id: true, name: true, color: true } },
-      parent: { select: { recurring: true } },
+      parent: { select: { recurring: true, interval: true, deletedAt: true } },
       _count: { select: { children: true } },
     },
     orderBy: { date: 'desc' },
   })
 
   return rows.map((t) => {
-    const isInstallmentChild = !!t.parentId && t.parent?.recurring === false
-    const isInstallmentRoot = !t.parentId && !t.recurring && t._count.children > 0
+    // parentId liga parcelas, ocorrências de recorrência e as duas pontas de uma transferência.
+    // Recorrência (mesmo parada) mantém o interval; parcela não tem interval.
+    const isInstallmentChild = !t.isTransfer && !!t.parentId && !t.parent?.recurring && !t.parent?.interval
+    const isInstallmentRoot = !t.isTransfer && !t.parentId && !t.recurring && !t.interval && t._count.children > 0
+    const recurrenceId = t.recurring
+      ? t.id
+      : t.parentId && t.parent?.recurring && !t.parent.deletedAt
+        ? t.parentId
+        : null
     return {
       ...t,
       amount: t.amount.toNumber(),
       isInstallment: isInstallmentChild || isInstallmentRoot,
+      recurrenceId,
     }
   })
 }
@@ -269,4 +277,53 @@ export async function getRecentTransactions(userId: string, limit = 10) {
     take: limit,
   })
   return rows.map((t) => ({ ...t, amount: t.amount.toNumber() }))
+}
+
+/**
+ * Para a Recorrência de uma transação: a própria (se for a Recorrência) ou a que gerou esta Ocorrência.
+ * Só impede as próximas Ocorrências; as já lançadas ficam. Mantém o interval para que as
+ * Ocorrências antigas continuem reconhecidas como de recorrência, e não como parcelas.
+ */
+export async function stopRecurrence(id: string, userId: string) {
+  const tx = await prisma.transaction.findFirst({
+    where: { id, wallet: { userId }, deletedAt: null },
+    include: { parent: { select: { id: true, recurring: true, deletedAt: true } } },
+  })
+  if (!tx) throw new Error('Transaction not found')
+
+  const recurrenceId = tx.recurring
+    ? tx.id
+    : tx.parent?.recurring && !tx.parent.deletedAt
+      ? tx.parent.id
+      : null
+  if (!recurrenceId) throw new Error('Esta transação não faz parte de uma recorrência ativa')
+
+  await prisma.transaction.update({
+    where: { id: recurrenceId },
+    data: { recurring: false, nextDue: null },
+  })
+  return { recurrenceId }
+}
+
+/** Recorrências que ainda geram Ocorrências, da próxima a vencer para a mais distante. */
+export async function getActiveRecurrences(userId: string) {
+  const rows = await prisma.transaction.findMany({
+    where: { wallet: { userId }, recurring: true, parentId: null, deletedAt: null },
+    include: {
+      wallet: { select: { name: true } },
+      category: { select: { name: true, icon: true, color: true } },
+    },
+    orderBy: { nextDue: 'asc' },
+  })
+  return rows.map((t) => ({
+    id: t.id,
+    type: t.type,
+    amount: t.amount.toNumber(),
+    description: t.description,
+    interval: t.interval,
+    nextDue: t.nextDue,
+    since: t.date,
+    wallet: t.wallet,
+    category: t.category,
+  }))
 }
