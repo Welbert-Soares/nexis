@@ -7,6 +7,8 @@ import {
   createInstallments,
   deleteTransaction,
   deleteInstallmentGroup,
+  getActiveRecurrences,
+  stopRecurrence,
   getMaxTransactionDate,
   getRecentTransactions,
   getTransactionsByMonth,
@@ -154,3 +156,15 @@ export const triggerRecurring = createServerFn({ method: 'POST' })
     }
     return count
   })
+
+export const stopRecurring = createServerFn({ method: 'POST' })
+  .validator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => {
+    const session = await getSessionOrThrow()
+    return stopRecurrence(data.id, session.user.id)
+  })
+
+export const listActiveRecurrences = createServerFn({ method: 'GET' }).handler(async () => {
+  const session = await getSessionOrThrow()
+  return getActiveRecurrences(session.user.id)
+})

@@ -11,7 +11,7 @@ import { useHaptic } from '#/hooks/use-haptic'
 import { CATEGORY_ICONS } from '#/lib/category-icons'
 import { getUserWallets } from '#/server/services/wallet.service'
 import { getCategories } from '#/server/services/category.service'
-import { addTransaction, editTransaction, removeTransaction } from '#/server/services/transaction.service'
+import { addTransaction, editTransaction, removeTransaction, stopRecurring } from '#/server/services/transaction.service'
 import { CurrencyInput } from '#/components/ui/currency-input'
 import { CategorySheet, type EditableCategory } from '#/components/categories/category-sheet'
 
@@ -28,6 +28,8 @@ export type EditableTransaction = {
   categoryId: string | null
   recurring?: boolean
   interval?: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'YEARLY' | null
+  /** Recorrência ativa a que esta transação pertence (ela mesma ou a que gerou esta Ocorrência). */
+  recurrenceId?: string | null
 }
 
 interface Props {
@@ -143,6 +145,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
     queryClient.invalidateQueries({ queryKey: ['transactions'] })
     queryClient.invalidateQueries({ queryKey: ['wallets'] })
     queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    queryClient.invalidateQueries({ queryKey: ['recurrences'] })
   }
 
   const saveMutation = useMutation({
@@ -177,7 +180,8 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
             categoryId: values.categoryId || null,
             description: values.description || null,
             date,
-            recurring: recurring || undefined,
+            // Sempre explícito: false é o que desliga a recorrência no servidor.
+            recurring,
             interval: recurring ? interval : undefined,
             nextDue: recurring && !transaction!.recurring ? calcNextDue(date, interval) : undefined,
           },
@@ -218,7 +222,21 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
     },
   })
 
+  // Ocorrência: gerada por uma Recorrência ativa. Não pode virar recorrente nem parcelada.
+  const isOccurrence = isEdit && !!transaction!.recurrenceId && !transaction!.recurring
+  const [recurrenceStopped, setRecurrenceStopped] = useState(false)
+
+  const stopMutation = useMutation({
+    mutationFn: () => stopRecurring({ data: { id: transaction!.id } }),
+    onSuccess: () => {
+      haptic.success()
+      invalidateAll()
+      setRecurrenceStopped(true)
+    },
+  })
+
   function handleClose() {
+    setRecurrenceStopped(false)
     form.reset()
     setType('EXPENSE')
     setCents(0)
@@ -494,7 +512,37 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                   )}
                 </form.Field>
 
+                {/* Ocorrência de uma Recorrência: parar sem precisar achar a original */}
+                {isOccurrence && (
+                  <div className="flex items-center gap-3 rounded-xl bg-blue-400/10 px-4 py-3">
+                    <Repeat2 className="h-4 w-4 shrink-0 text-blue-400" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-blue-300">
+                        {recurrenceStopped ? 'Recorrência parada' : 'Lançada por uma recorrência'}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        {recurrenceStopped
+                          ? 'Não entra mais nos próximos meses'
+                          : stopMutation.isError
+                            ? 'Não foi possível parar. Tente de novo.'
+                            : 'Os meses já lançados continuam'}
+                      </p>
+                    </div>
+                    {!recurrenceStopped && (
+                      <button
+                        type="button"
+                        onClick={() => stopMutation.mutate()}
+                        disabled={stopMutation.isPending}
+                        className="shrink-0 rounded-lg bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-200 active:bg-zinc-700 disabled:opacity-50 transition-colors"
+                      >
+                        {stopMutation.isPending ? 'Parando...' : 'Parar de repetir'}
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {/* Recorrência / Parcelas */}
+                {!isOccurrence && (
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     {/* Repetir */}
@@ -625,6 +673,7 @@ export function TransactionSheet({ open, transaction, onClose }: Props) {
                     )}
                   </AnimatePresence>
                 </div>
+                )}
 
                 {saveMutation.isError && (
                   <p className="text-center text-xs text-red-400">
